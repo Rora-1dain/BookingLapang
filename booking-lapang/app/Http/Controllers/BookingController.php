@@ -27,10 +27,11 @@ class BookingController extends Controller
         return view('booking.index', compact('bookings'));
     }
 
-    public function create()
-    {
-        return view('booking.create');
-    }
+   public function create()
+{
+    $lapangans = \App\Models\Lapangan::where('status', 'aktif')->get();
+    return view('booking.create', compact('lapangans'));
+}
 
     public function store(Request $request)
     {
