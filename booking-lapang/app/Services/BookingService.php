@@ -31,7 +31,7 @@ class BookingService
     {
         $mulai = Carbon::parse($jamMulai);
         $selesai = Carbon::parse($jamSelesai);
-        $durasiJam = $selesai->diffInMinutes($mulai) / 60;
+        $durasiJam = $mulai->diffInMinutes($selesai) / 60;
 
         if ($durasiJam <= 0) {
             throw new Exception('Jam selesai harus lebih besar dari jam mulai.');
