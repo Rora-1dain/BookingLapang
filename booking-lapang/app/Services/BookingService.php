@@ -75,7 +75,14 @@ class BookingService
         $booking->update(['status' => 'cancelled']);
         return $booking;
     }
+public function konfirmasiBooking(Booking $booking): Booking
+{
+    if ($booking->status !== 'pending') {
+        throw new Exception('Hanya booking dengan status pending yang bisa dikonfirmasi.');
+    }
 
-    // Catatan: method konfirmasiBooking() ditambahkan oleh Bintang di file yang sama.
-    // Koordinasikan supaya tidak saling menimpa saat merge.
+    $booking->update(['status' => 'confirmed']);
+
+    return $booking;
+}
 }

@@ -32,4 +32,15 @@ class AdminBookingController extends Controller
             return back()->with('error', $e->getMessage());
         }
     }
+
+    public function cancel(Booking $booking)
+    {
+        try {
+            $this->bookingService->batalkanBooking($booking);
+
+            return back()->with('success', 'Booking berhasil dibatalkan.');
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
 }

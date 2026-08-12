@@ -37,4 +37,6 @@ Route::middleware(['auth', 'admin'])
             ->name('admin.booking.index');
         Route::post('/booking/{booking}/confirm', [AdminBookingController::class, 'confirm'])
             ->name('admin.booking.confirm');
+        Route::post('/booking/{booking}/cancel', [AdminBookingController::class, 'cancel'])
+            ->name('admin.booking.cancel');
     });
