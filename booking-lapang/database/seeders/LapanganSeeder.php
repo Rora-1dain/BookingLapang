@@ -26,7 +26,7 @@ class LapanganSeeder extends Seeder
                 'nama_lapangan' => 'Lapangan Basket C',
                 'jenis' => 'basket',
                 'harga_per_jam' => 120000,
-                'status' => 'aktif',
+                'status' => 'nonaktif', // sengaja nonaktif untuk testing validasi
             ],
         ]);
     }

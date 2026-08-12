@@ -31,7 +31,7 @@ class BookingService
     {
         $mulai = Carbon::parse($jamMulai);
         $selesai = Carbon::parse($jamSelesai);
-        $durasiJam = $mulai->diffInMinutes($selesai) / 60;
+        $durasiJam = abs($selesai->diffInMinutes($mulai)) / 60;
 
         if ($durasiJam <= 0) {
             throw new Exception('Jam selesai harus lebih besar dari jam mulai.');
@@ -43,6 +43,11 @@ class BookingService
     public function buatBooking(array $data): Booking
     {
         $lapangan = Lapangan::findOrFail($data['lapangan_id']);
+
+        // Validasi: lapangan nonaktif tidak boleh dibooking
+        if ($lapangan->status !== 'aktif') {
+            throw new Exception('Lapangan ini sedang tidak aktif dan tidak bisa dibooking.');
+        }
 
         $tersedia = $this->cekKetersediaan(
             $lapangan->id, $data['tanggal_booking'], $data['jam_mulai'], $data['jam_selesai']
@@ -68,7 +73,9 @@ class BookingService
     public function batalkanBooking(Booking $booking): Booking
     {
         $booking->update(['status' => 'cancelled']);
-
         return $booking;
     }
+
+    // Catatan: method konfirmasiBooking() ditambahkan oleh Bintang di file yang sama.
+    // Koordinasikan supaya tidak saling menimpa saat merge.
 }
