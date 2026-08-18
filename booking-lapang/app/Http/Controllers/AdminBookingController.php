@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Booking;
+use App\Models\Booking; 
 use App\Services\BookingService;
 use App\Exports\BookingExport;
 use Maatwebsite\Excel\Facades\Excel;

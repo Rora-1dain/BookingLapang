@@ -71,4 +71,15 @@ class BookingService
 
         return $booking;
     }
+
+    public function konfirmasiBooking(Booking $booking): Booking
+    {
+        if ($booking->status !== 'pending') {
+            throw new Exception('Hanya booking dengan status pending yang bisa dikonfirmasi.');
+        }
+
+        $booking->update(['status' => 'confirmed']);
+
+        return $booking;
+    }
 }
