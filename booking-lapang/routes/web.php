@@ -27,3 +27,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
     Route::post('/booking/{booking}/cancel', [BookingController::class, 'cancel'])->name('booking.cancel');
 });
+
+use App\Http\Controllers\AdminBookingController;
+
+Route::middleware('auth')->group(function () {
+    Route::get('/admin/booking/export', [AdminBookingController::class, 'export'])->name('admin.booking.export');
+});

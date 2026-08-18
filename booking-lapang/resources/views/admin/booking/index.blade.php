@@ -3,6 +3,8 @@
 @section('content')
 <h2>Kelola Booking (Admin)</h2>
 
+<a href="{{ route('admin.booking.export') }}">Export Excel</a>
+
 @if (session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
 @endif
