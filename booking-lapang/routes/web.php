@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\AdminBookingController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -19,11 +22,21 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-use App\Http\Controllers\BookingController;
-
 Route::middleware('auth')->group(function () {
     Route::get('/booking', [BookingController::class, 'index'])->name('booking.index');
     Route::get('/booking/create', [BookingController::class, 'create'])->name('booking.create');
     Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
     Route::post('/booking/{booking}/cancel', [BookingController::class, 'cancel'])->name('booking.cancel');
 });
+
+
+Route::middleware(['auth', 'admin'])
+    ->prefix('admin')
+    ->group(function () {
+        Route::get('/booking', [AdminBookingController::class, 'index'])
+            ->name('admin.booking.index');
+        Route::post('/booking/{booking}/confirm', [AdminBookingController::class, 'confirm'])
+            ->name('admin.booking.confirm');
+        Route::post('/booking/{booking}/cancel', [AdminBookingController::class, 'cancel'])
+            ->name('admin.booking.cancel');
+    });

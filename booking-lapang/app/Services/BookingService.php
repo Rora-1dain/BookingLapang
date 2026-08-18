@@ -76,7 +76,6 @@ class BookingService
         $booking->update(['status' => 'cancelled']);
         return $booking;
     }
-
     public function konfirmasiBooking(Booking $booking): Booking
     {
         if ($booking->status !== 'pending') {
