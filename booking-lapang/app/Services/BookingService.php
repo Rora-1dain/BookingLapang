@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\Lapangan;
+use App\Notifications\BookingDikonfirmasi;
 use Carbon\Carbon;
 use Exception;
 
@@ -75,14 +76,16 @@ class BookingService
         $booking->update(['status' => 'cancelled']);
         return $booking;
     }
-public function konfirmasiBooking(Booking $booking): Booking
-{
-    if ($booking->status !== 'pending') {
-        throw new Exception('Hanya booking dengan status pending yang bisa dikonfirmasi.');
+    public function konfirmasiBooking(Booking $booking): Booking
+    {
+        if ($booking->status !== 'pending') {
+            throw new Exception('Hanya booking dengan status pending yang bisa dikonfirmasi.');
+        }
+
+        $booking->update(['status' => 'confirmed']);
+
+        $booking->user->notify(new BookingDikonfirmasi($booking));
+
+        return $booking;
     }
-
-    $booking->update(['status' => 'confirmed']);
-
-    return $booking;
-}
 }
