@@ -29,14 +29,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/booking/{booking}/cancel', [BookingController::class, 'cancel'])->name('booking.cancel');
 });
 
-
-Route::middleware(['auth', 'admin'])
-    ->prefix('admin')
-    ->group(function () {
-        Route::get('/booking', [AdminBookingController::class, 'index'])
-            ->name('admin.booking.index');
-        Route::post('/booking/{booking}/confirm', [AdminBookingController::class, 'confirm'])
-            ->name('admin.booking.confirm');
-        Route::post('/booking/{booking}/cancel', [AdminBookingController::class, 'cancel'])
-            ->name('admin.booking.cancel');
-    });
+    Route::middleware(['auth', 'admin'])
+        ->prefix('admin')
+        ->group(function () {
+            Route::get('/booking', [AdminBookingController::class, 'index'])
+                ->name('admin.booking.index');
+            Route::get('/booking/export', [AdminBookingController::class, 'export'])
+                ->name('admin.booking.export');
+            Route::post('/booking/{booking}/confirm', [AdminBookingController::class, 'confirm'])
+                ->name('admin.booking.confirm');
+            Route::post('/booking/{booking}/cancel', [AdminBookingController::class, 'cancel'])
+                ->name('admin.booking.cancel');
+        });

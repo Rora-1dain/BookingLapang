@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Booking;
+use App\Models\Booking; 
 use App\Services\BookingService;
+use App\Exports\BookingExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Exception;
 
 class AdminBookingController extends Controller
@@ -33,6 +35,11 @@ class AdminBookingController extends Controller
         }
     }
 
+    public function export()
+    {
+        return Excel::download(new BookingExport(), 'laporan-booking.xlsx');
+    }
+
     public function cancel(Booking $booking)
     {
         try {
@@ -43,4 +50,3 @@ class AdminBookingController extends Controller
             return back()->with('error', $e->getMessage());
         }
     }
-}

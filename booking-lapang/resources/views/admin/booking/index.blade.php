@@ -3,7 +3,13 @@
 @section('content')
 <div class="max-w-6xl mx-auto py-10 px-4">
 
-    <h2 class="text-2xl font-bold text-gray-900 mb-6">Kelola Booking (Admin)</h2>
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-900">Kelola Booking (Admin)</h2>
+        <a href="{{ route('admin.booking.export') }}"
+           class="inline-flex items-center px-4 py-2 rounded-lg bg-teal-700 hover:bg-teal-800 text-white text-sm font-bold transition">
+            Export Excel
+        </a>
+    </div>
 
     @if (session('success'))
         <div x-data="{ show: true }" x-show="show"
