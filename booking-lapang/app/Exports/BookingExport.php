@@ -5,10 +5,11 @@ namespace App\Exports;
 use App\Models\Booking;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Illuminate\Support\Enumerable;
 
 class BookingExport implements FromCollection, WithHeadings
 {
-    public function collection()
+    public function collection(): Enumerable
     {
         return Booking::with(['lapangan', 'user'])->latest()->get()->map(function ($booking) {
             return [
