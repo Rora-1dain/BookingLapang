@@ -1,44 +1,60 @@
-<x-app-layout>
-    <div class="max-w-xl mx-auto py-8">
-        <h1 class="text-xl font-bold mb-4 text-white">Booking Lapangan</h1>
+@extends('layouts.app')
 
-       @if (session('error'))
-             <div class="bg-red-100 text-red-700 p-3 mb-4 rounded">{{ session('error') }}</div>
-        @endif
+@section('content')
+<div class="min-h-screen bg-gray-50 py-10">
+    <div class="max-w-xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-md p-8">
+            <h2 class="text-2xl font-bold text-gray-900">Form Booking Lapangan</h2>
+            <p class="text-gray-500 mb-6">Isi detail di bawah untuk mengamankan jadwal Anda.</p>
 
-        @if ($errors->any())
-            <div class="bg-red-100 text-red-700 p-3 mb-4 rounded">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
+            @if (session('error'))
+                <div class="flex items-center gap-2 bg-red-100 text-red-700 p-3 mb-6 rounded-lg">
+                    <span>⚠️</span> {{ session('error') }}
+                </div>
+            @endif
+
+            <form action="{{ route('booking.store') }}" method="POST">
+                @csrf
+
+                <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Lapangan</label>
+                <select name="lapangan_id" required
+                    class="w-full border border-gray-300 rounded-lg p-3 mb-4 text-gray-900">
+                    @foreach ($lapangans as $lapangan)
+                        <option value="{{ $lapangan->id }}">
+                            {{ $lapangan->nama_lapangan }} - {{ $lapangan->jenis }} - Rp{{ number_format($lapangan->harga_per_jam) }}/jam
+                        </option>
                     @endforeach
-                </ul>
-            </div>
-        @endif
+                </select>
 
-        <form method="POST" action="{{ route('booking.store') }}">
-            @csrf
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Booking</label>
+                <input type="date" name="tanggal_booking" required
+                    class="w-full border border-gray-300 rounded-lg p-3 mb-4 text-gray-900">
 
-            <label class="text-white">Lapangan</label>
-            <select name="lapangan_id" class="w-full border rounded p-2 mb-3 text-gray-900 bg-white">
-                <option value="">-- Pilih Lapangan --</option>
-                @foreach ($lapangans as $lapangan)
-                    <option value="{{ $lapangan->id }}">
-                        {{ $lapangan->nama_lapangan }} - Rp{{ number_format($lapangan->harga_per_jam) }}/jam
-                    </option>
-                @endforeach
-            </select>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jam Mulai</label>
+                        <input type="time" name="jam_mulai" required
+                            class="w-full border border-gray-300 rounded-lg p-3 text-gray-900">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jam Selesai</label>
+                        <input type="time" name="jam_selesai" required
+                            class="w-full border border-gray-300 rounded-lg p-3 text-gray-900">
+                    </div>
+                </div>
 
-            <label class="text-white">Tanggal</label>
-            <input type="date" name="tanggal_booking" class="w-full border rounded p-2 mb-3 text-gray-900 bg-white" value="{{ old('tanggal_booking') }}">
-
-            <label class="text-white">Jam Mulai</label>
-            <input type="time" name="jam_mulai" class="w-full border rounded p-2 mb-3 text-gray-900 bg-white" value="{{ old('jam_mulai') }}">
-
-            <label class="text-white">Jam Selesai</label>
-            <input type="time" name="jam_selesai" class="w-full border rounded p-2 mb-3 text-gray-900 bg-white" value="{{ old('jam_selesai') }}">
-
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Booking Sekarang</button>
-        </form>
+                <div class="flex gap-3">
+                    <a href="{{ route('booking.index') }}"
+                        class="flex-1 text-center border border-gray-300 rounded-lg py-3 text-gray-700 hover:bg-gray-50">
+                        Batal
+                    </a>
+                    <button type="submit"
+                        class="flex-1 bg-teal-600 hover:bg-teal-700 text-white rounded-lg py-3 font-medium">
+                        Booking Sekarang
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-</x-app-layout>
+</div>
+@endsection
