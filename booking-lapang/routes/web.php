@@ -3,7 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookingController;
-use App\Http\Controllers\AdminBookingController;
+use App\Http\Controllers\AdminBookingController; 
+use App\Http\Controllers\PaymentNotificationController;
 
 
 Route::get('/', function () {
@@ -41,3 +42,5 @@ Route::middleware('auth')->group(function () {
             Route::post('/booking/{booking}/cancel', [AdminBookingController::class, 'cancel'])
                 ->name('admin.booking.cancel');
         });
+     Route::post('/payment/notification', [PaymentNotificationController::class, 'handle'])
+        ->name('payment.notification');
