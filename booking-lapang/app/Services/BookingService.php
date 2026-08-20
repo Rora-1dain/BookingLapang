@@ -88,5 +88,4 @@ class BookingService
 
         return $booking;
     }
-
 }
