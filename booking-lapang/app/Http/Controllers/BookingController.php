@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Services\BookingService;
+use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Exception;
@@ -27,11 +28,11 @@ class BookingController extends Controller
         return view('booking.index', compact('bookings'));
     }
 
-   public function create()
-{
-    $lapangans = \App\Models\Lapangan::where('status', 'aktif')->get();
-    return view('booking.create', compact('lapangans'));
-}
+    public function create()
+    {
+        $lapangans = \App\Models\Lapangan::where('status', 'aktif')->get();
+        return view('booking.create', compact('lapangans'));
+    }
 
     public function store(Request $request)
     {
@@ -63,5 +64,16 @@ class BookingController extends Controller
         $this->bookingService->batalkanBooking($booking);
 
         return back()->with('success', 'Booking berhasil dibatalkan.');
+    }
+
+    public function bayar(Booking $booking, PaymentService $paymentService)
+    {
+        if ($booking->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $snapToken = $paymentService->buatTransaksi($booking);
+
+        return view('booking.bayar', compact('booking', 'snapToken'));
     }
 }
