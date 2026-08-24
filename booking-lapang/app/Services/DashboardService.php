@@ -4,13 +4,16 @@ namespace App\Services;
 
 use App\Models\Booking;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardService
 {
     public function totalPendapatan(): float
-    {
+{
+    return Cache::remember('dashboard.total_pendapatan', 600, function () {
         return (float) Booking::where('status_pembayaran', 'paid')->sum('total_harga');
-    }
+    });
+}
 
     public function jumlahBookingPerStatus(): array
     {
@@ -21,14 +24,16 @@ class DashboardService
     }
 
     public function lapanganTerfavorit(int $limit = 3)
-    {
+{
+    return Cache::remember("dashboard.lapangan_favorit.{$limit}", 600, function () use ($limit) {
         return Booking::select('lapangan_id', DB::raw('count(*) as total_booking'))
             ->with('lapangan')
             ->groupBy('lapangan_id')
             ->orderByDesc('total_booking')
             ->limit($limit)
             ->get();
-    }
+    });
+}
 
     public function pendapatanPerBulan(int $bulanTerakhir = 6): array
     {
