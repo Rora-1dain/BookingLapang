@@ -4,7 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\AdminBookingController;
-
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -30,15 +30,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/booking/{booking}/bayar', [BookingController::class, 'bayar'])->name('booking.bayar');
 });
 
-    Route::middleware(['auth', 'admin'])
-        ->prefix('admin')
-        ->group(function () {
-            Route::get('/booking', [AdminBookingController::class, 'index'])
-                ->name('admin.booking.index');
-            Route::get('/booking/export', [AdminBookingController::class, 'export'])
-                ->name('admin.booking.export');
-            Route::post('/booking/{booking}/confirm', [AdminBookingController::class, 'confirm'])
-                ->name('admin.booking.confirm');
-            Route::post('/booking/{booking}/cancel', [AdminBookingController::class, 'cancel'])
-                ->name('admin.booking.cancel');
-        });
+Route::middleware(['auth', 'admin'])
+    ->prefix('admin')
+    ->group(function () {
+        Route::get('/booking', [AdminBookingController::class, 'index'])
+            ->name('admin.booking.index');
+        Route::get('/booking/export', [AdminBookingController::class, 'export'])
+            ->name('admin.booking.export');
+        Route::post('/booking/{booking}/confirm', [AdminBookingController::class, 'confirm'])
+            ->name('admin.booking.confirm');
+        Route::post('/booking/{booking}/cancel', [AdminBookingController::class, 'cancel'])
+            ->name('admin.booking.cancel');
+
+        Route::get('/dashboard', [DashboardController::class, 'index'])
+            ->name('admin.dashboard');
+    });
