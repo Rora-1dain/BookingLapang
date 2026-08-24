@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class PaymentNotificationController extends Controller
 {
@@ -31,6 +32,9 @@ class PaymentNotificationController extends Controller
                 'status_pembayaran' => 'paid',
                 'status' => 'confirmed',
             ]);
+
+            Cache::forget('dashboard.total_pendapatan');
+            Cache::forget('dashboard.lapangan_favorit.3');
         } elseif (in_array($status, ['expire', 'deny', 'cancel'])) {
             $booking->update(['status_pembayaran' => 'failed']);
         }
