@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\AdminBookingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PaymentNotificationController;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 Route::get('/', function () {
     return view('welcome');
@@ -41,7 +44,26 @@ Route::middleware(['auth', 'admin'])
             ->name('admin.booking.confirm');
         Route::post('/booking/{booking}/cancel', [AdminBookingController::class, 'cancel'])
             ->name('admin.booking.cancel');
-
         Route::get('/dashboard', [DashboardController::class, 'index'])
             ->name('admin.dashboard');
     });
+
+Route::post('/payment/notification', [PaymentNotificationController::class, 'handle'])
+    ->name('payment.notification');
+
+Route::get('/health', function () {
+    try {
+        DB::connection()->getPdo();
+        $dbStatus = 'ok';
+    } catch (\Exception $e) {
+        $dbStatus = 'error';
+    }
+    Cache::put('health_check', 'ok', 10);
+    $cacheStatus = Cache::get('health_check') === 'ok' ? 'ok' : 'error';
+    $status = ($dbStatus === 'ok' && $cacheStatus === 'ok') ? 200 : 500;
+
+    return response()->json([
+        'database' => $dbStatus,
+        'cache' => $cacheStatus,
+    ], $status);
+});
