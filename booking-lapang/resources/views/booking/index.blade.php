@@ -41,14 +41,20 @@
                     </div>
 
                     @if ($booking->status === 'pending')
-                        <form action="{{ route('booking.cancel', $booking) }}" method="POST">
-                            @csrf
-                            <button type="submit"
-                                class="border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                                Batalkan
-                            </button>
-                        </form>
-                    @endif
+    <div class="flex gap-2">
+        <a href="{{ route('booking.bayar', $booking) }}"
+            class="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 text-sm font-medium">
+            Bayar
+        </a>
+        <form action="{{ route('booking.cancel', $booking) }}" method="POST">
+            @csrf
+            <button type="submit"
+                class="border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                Batalkan
+            </button>
+        </form>
+    </div>
+@endif
                 </div>
             @endforeach
         </div>
