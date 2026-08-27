@@ -31,7 +31,7 @@ class DashboardService
             $query = Booking::where('status_pembayaran', 'paid');
             $this->applyDateFilter($query, $dari, $sampai);
 
-            return (float) $query->sum('total_harga');
+            return (float) $query->selectRaw('COALESCE(sum(total_harga), 0) as total')->value('total');
         });
     }
 
