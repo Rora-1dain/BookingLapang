@@ -5,6 +5,7 @@
       "runtime": "vercel-php@0.9.0"
     }
   },
+  "buildCommand": "composer install --no-dev --optimize-autoloader && php artisan package:discover --ansi",
   "routes": [
     { "src": "/(.*)", "dest": "/api/index.php" }
   ]
