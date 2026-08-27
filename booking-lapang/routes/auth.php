@@ -56,4 +56,8 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+         
+    Route::get('/booking/{booking}/status', [BookingController::class, 'status'])->name('booking.status');
+
+    Route::post('/booking/{booking}/cek-status', [BookingController::class, 'cekStatus'])->name('booking.cek-status');
 });

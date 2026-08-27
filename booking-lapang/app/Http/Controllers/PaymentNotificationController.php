@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\PaymentLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -22,6 +23,21 @@ class PaymentNotificationController extends Controller
         if ($signature !== $payload['signature_key']) {
             return response()->json(['message' => 'Signature tidak valid.'], 403);
         }
+
+        $sudahDiproses = PaymentLog::where('order_id', $payload['order_id'])
+            ->where('transaction_status', $payload['transaction_status'])
+            ->exists();
+
+        if ($sudahDiproses) {
+            return response()->json(['message' => 'Notifikasi sudah pernah diproses, diabaikan.']);
+        }
+
+        PaymentLog::create([
+            'order_id' => $payload['order_id'],
+            'transaction_status' => $payload['transaction_status'],
+            'payload' => $payload,
+            'diterima_pada' => now(),
+        ]);
 
         $booking = Booking::where('payment_reference', $payload['order_id'])->firstOrFail();
 

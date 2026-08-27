@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Booking;
 use Midtrans\Config;
 use Midtrans\Snap;
+use Midtrans\Transaction;
 use Exception;
 
 class PaymentService
@@ -41,5 +42,26 @@ class PaymentService
         $booking->update(['payment_reference' => $orderId]);
 
         return $snapToken;
+    }
+
+    public function cekStatusTransaksi(Booking $booking): array
+    {
+        if (!$booking->payment_reference) {
+            throw new Exception('Booking ini belum memiliki transaksi pembayaran.');
+        }
+
+        $status = Transaction::status($booking->payment_reference);
+        $transactionStatus = $status->transaction_status;
+
+        if (in_array($transactionStatus, ['settlement', 'capture']) && $booking->status_pembayaran !== 'paid') {
+            $booking->update(['status_pembayaran' => 'paid', 'status' => 'confirmed']);
+        } elseif (in_array($transactionStatus, ['expire', 'deny', 'cancel']) && $booking->status_pembayaran !== 'failed') {
+            $booking->update(['status_pembayaran' => 'failed']);
+        }
+
+        return [
+            'transaction_status' => $transactionStatus,
+            'status_pembayaran'  => $booking->fresh()->status_pembayaran,
+        ];
     }
 }

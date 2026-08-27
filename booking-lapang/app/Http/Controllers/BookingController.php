@@ -76,4 +76,24 @@ class BookingController extends Controller
 
         return view('booking.bayar', compact('booking', 'snapToken'));
     }
+
+    public function status(Booking $booking)
+    {
+        if ($booking->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        return view('booking.status', compact('booking'));
+    }
+
+    public function cekStatus(Booking $booking, PaymentService $paymentService)
+    {
+        if ($booking->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $hasil = $paymentService->cekStatusTransaksi($booking);
+
+        return back()->with('info', 'Status transaksi: ' . $hasil['transaction_status']);
+    }
 }

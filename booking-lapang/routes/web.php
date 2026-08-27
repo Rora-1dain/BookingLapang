@@ -31,6 +31,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
     Route::post('/booking/{booking}/cancel', [BookingController::class, 'cancel'])->name('booking.cancel');
     Route::get('/booking/{booking}/bayar', [BookingController::class, 'bayar'])->name('booking.bayar');
+    Route::get('/booking/{booking}/status', [BookingController::class, 'status'])->name('booking.status');
+    Route::post('/booking/{booking}/cek-status', [BookingController::class, 'cekStatus'])->name('booking.cek-status');
 });
 
 Route::middleware(['auth', 'admin'])

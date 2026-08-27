@@ -17,3 +17,5 @@ Schedule::command('backup:database')
     ->onFailure(function () {
         Log::error('Backup database gagal.');
     });
+
+Schedule::command('booking:reconcile-payment')->everyThirtyMinutes();
