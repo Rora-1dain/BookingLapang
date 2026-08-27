@@ -19,6 +19,9 @@ class Booking extends Model
         'jam_selesai',
         'total_harga',
         'status',
+        'metode_pembayaran',
+        'status_pembayaran',
+        'payment_reference',
     ];
 
     protected $casts = [

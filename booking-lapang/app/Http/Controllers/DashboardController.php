@@ -15,12 +15,12 @@ class DashboardController extends Controller
         $dari = $request->query('dari');
         $sampai = $request->query('sampai');
 
-        $totalPendapatan   = $this->dashboardService->totalPendapatan();
-        $bookingPerStatus  = $this->dashboardService->jumlahBookingPerStatus();
-        $lapanganFavorit   = $this->dashboardService->lapanganTerfavorit();
+        $totalPendapatan   = $this->dashboardService->totalPendapatan($dari, $sampai);
+        $bookingPerStatus  = $this->dashboardService->jumlahBookingPerStatus($dari, $sampai);
+        $lapanganFavorit   = $this->dashboardService->lapanganTerfavorit(3, $dari, $sampai);
         $pendapatanBulanan = $this->dashboardService->pendapatanPerBulan();
-        $tingkatPembatalan = $this->dashboardService->tingkatPembatalan();
-        $userAktif         = $this->dashboardService->userPalingAktif();
+        $tingkatPembatalan = $this->dashboardService->tingkatPembatalan($dari, $sampai);
+        $userAktif         = $this->dashboardService->userPalingAktif(5, $dari, $sampai);
 
         $bookingTerbaru = Booking::with(['user:id,name', 'lapangan:id,nama_lapangan'])
             ->when($dari, fn ($q) => $q->whereDate('tanggal_booking', '>=', $dari))
