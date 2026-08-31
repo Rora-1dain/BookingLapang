@@ -327,80 +327,28 @@ return [
             'connection' => null,
         ],
     ],
-'temporary_files' => [
-    'local_path' => storage_path('framework/cache/laravel-excel'),
-    'local_path_permissions' => 0755,
-    'remote_disk' => null,
-    'remote_prefix' => null,
-    'force_resave' => false,
-],
 
-        /*
-        |--------------------------------------------------------------------------
-        | Local Temporary Path
-        |--------------------------------------------------------------------------
-        |
-        | When exporting and importing files, we use a temporary file, before
-        | storing reading or downloading. Here you can customize that path.
-        | permissions is an array with the permission flags for the directory (dir)
-        | and the create file (file).
-        |
-        */
-        'temporary_files' => [
-    'local_path' => sys_get_temp_dir(),
-    'local_path_permissions' => 0755,
-    'remote_disk' => null,
-    'remote_prefix' => null,
-    'force_resave' => false,
-],
-
-        /*
-        |--------------------------------------------------------------------------
-        | Local Temporary Path Permissions
-        |--------------------------------------------------------------------------
-        |
-        | Permissions is an array with the permission flags for the directory (dir)
-        | and the create file (file).
-        | If omitted the default permissions of the filesystem will be used.
-        |
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | Local Temporary Path
+    |--------------------------------------------------------------------------
+    |
+    | When exporting and importing files, we use a temporary file, before
+    | storing reading or downloading. Here you can customize that path.
+    | permissions is an array with the permission flags for the directory (dir)
+    | and the create file (file).
+    |
+    */
+    'temporary_files' => [
+        'local_path' => sys_get_temp_dir(),
+        'local_path_permissions' => 0755,
         'local_permissions' => [
             // 'dir'  => 0755,
             // 'file' => 0644,
         ],
-
-        /*
-        |--------------------------------------------------------------------------
-        | Remote Temporary Disk
-        |--------------------------------------------------------------------------
-        |
-        | When dealing with a multi server setup with queues in which you
-        | cannot rely on having a shared local temporary path, you might
-        | want to store the temporary file on a shared disk. During the
-        | queue executing, we'll retrieve the temporary file from that
-        | location instead. When left to null, it will always use
-        | the local path. This setting only has effect when using
-        | in conjunction with queued imports and exports.
-        |
-        */
         'remote_disk'   => null,
         'remote_prefix' => null,
-
-        /*
-        |--------------------------------------------------------------------------
-        | Force Resync
-        |--------------------------------------------------------------------------
-        |
-        | When dealing with a multi server setup as above, it's possible
-        | for the clean up that occurs after entire queue has been run to only
-        | cleanup the server that the last AfterImportJob runs on. The rest of the server
-        | would still have the local temporary file stored on it. In this case your
-        | local storage limits can be exceeded and future imports won't be processed.
-        | To mitigate this you can set this config value to be true, so that after every
-        | queued chunk is processed the local temporary file is deleted on the server that
-        | processed it.
-        |
-        */
+        'force_resave' => false,
         'force_resync_remote' => null,
     ],
 ];
