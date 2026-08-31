@@ -72,7 +72,7 @@ class DashboardService
     public function pendapatanPerBulan(int $bulanTerakhir = 6): array
     {
         return Booking::select(
-                DB::raw("TO_CHAR(tanggal_booking, 'YYYY-MM') as bulan")
+                DB::raw("TO_CHAR(tanggal_booking, 'YYYY-MM') as bulan"),
                 DB::raw('sum(total_harga) as total')
             )
             ->where('status_pembayaran', 'paid')
