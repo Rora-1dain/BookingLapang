@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\Booking;
@@ -11,7 +13,7 @@ class DashboardService
     /**
      * Terapkan filter tanggal ke query kalau $dari/$sampai diisi.
      */
-    protected function applyDateFilter($query, ?string $dari, ?string $sampai)
+    protected function terapkanFilterTanggal($query, ?string $dari, ?string $sampai)
     {
         if ($dari) {
             $query->whereDate('tanggal_booking', '>=', $dari);
@@ -29,7 +31,7 @@ class DashboardService
 
         return Cache::remember($cacheKey, 600, function () use ($dari, $sampai) {
             $query = Booking::where('status_pembayaran', 'paid');
-            $this->applyDateFilter($query, $dari, $sampai);
+            $this->terapkanFilterTanggal($query, $dari, $sampai);
 
             return (float) $query->sum('total_harga');
         });
@@ -38,7 +40,7 @@ class DashboardService
     public function jumlahBookingPerStatus(?string $dari = null, ?string $sampai = null): array
     {
         $query = Booking::select('status', DB::raw('count(*) as jumlah'));
-        $this->applyDateFilter($query, $dari, $sampai);
+        $this->terapkanFilterTanggal($query, $dari, $sampai);
 
         return $query->groupBy('status')
             ->pluck('jumlah', 'status')
@@ -52,7 +54,7 @@ class DashboardService
         return Cache::remember($cacheKey, 600, function () use ($limit, $dari, $sampai) {
             $query = Booking::select('lapangan_id', DB::raw('count(*) as total_booking'))
                 ->with('lapangan');
-            $this->applyDateFilter($query, $dari, $sampai);
+            $this->terapkanFilterTanggal($query, $dari, $sampai);
 
             return $query->groupBy('lapangan_id')
                 ->orderByDesc('total_booking')
@@ -86,7 +88,7 @@ class DashboardService
     public function tingkatPembatalan(?string $dari = null, ?string $sampai = null): float
     {
         $query = Booking::query();
-        $this->applyDateFilter($query, $dari, $sampai);
+        $this->terapkanFilterTanggal($query, $dari, $sampai);
 
         $total = (clone $query)->count();
 
@@ -99,29 +101,11 @@ class DashboardService
         return round(($dibatalkan / $total) * 100, 2);
     }
 
-    public function pendapatanPerJenisLapangan(?string $dari = null, ?string $sampai = null): array
-    {
-        $query = Booking::join('lapangans', 'bookings.lapangan_id', '=', 'lapangans.id')
-            ->select('lapangans.jenis', DB::raw('sum(bookings.total_harga) as total'))
-            ->where('bookings.status_pembayaran', 'paid');
-
-        if ($dari) {
-            $query->whereDate('bookings.tanggal_booking', '>=', $dari);
-        }
-        if ($sampai) {
-            $query->whereDate('bookings.tanggal_booking', '<=', $sampai);
-        }
-
-        return $query->groupBy('lapangans.jenis')
-            ->pluck('total', 'jenis')
-            ->toArray();
-    }
-
     public function userPalingAktif(int $limit = 5, ?string $dari = null, ?string $sampai = null): array
     {
         $query = Booking::select('user_id', DB::raw('count(*) as total_booking'))
             ->with('user:id,name');
-        $this->applyDateFilter($query, $dari, $sampai);
+        $this->terapkanFilterTanggal($query, $dari, $sampai);
 
         return $query->groupBy('user_id')
             ->orderByDesc('total_booking')

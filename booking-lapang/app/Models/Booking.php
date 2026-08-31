@@ -43,4 +43,15 @@ class Booking extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Pastikan booking ini milik user yang sedang login,
+     * hentikan request dengan 403 kalau bukan.
+     */
+    public function pastikanMilikUser(int $userId): void
+    {
+        if ($this->user_id !== $userId) {
+            abort(403, 'Anda tidak berhak mengakses booking ini.');
+        }
+    }
 }

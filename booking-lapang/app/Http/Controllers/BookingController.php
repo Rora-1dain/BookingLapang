@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreBookingRequest;
 use App\Models\Booking;
 use App\Models\Lapangan;
 use App\Services\BookingService;
 use App\Services\PaymentService;
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
@@ -36,16 +38,10 @@ class BookingController extends Controller
         return view('booking.create', compact('lapangans'));
     }
 
-    public function store(Request $request)
+    public function store(StoreBookingRequest $request)
     {
-        $validated = $request->validate([
-            'lapangan_id' => 'required|exists:lapangans,id',
-            'tanggal_booking' => 'required|date|after_or_equal:today',
-            'jam_mulai' => 'required|date_format:H:i',
-            'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
-        ]);
-
-        $validated['user_id'] = Auth::id();
+        $validated = $request->validated();
+        $validated['user_id'] = $request->user()->id;
 
         try {
             $booking = $this->bookingService->buatBooking($validated);
@@ -59,9 +55,7 @@ class BookingController extends Controller
 
     public function cancel(Booking $booking)
     {
-        if ($booking->user_id !== Auth::id()) {
-            abort(403, 'Anda tidak berhak membatalkan booking ini.');
-        }
+        $booking->pastikanMilikUser(Auth::id());
 
         $this->bookingService->batalkanBooking($booking);
 
@@ -70,9 +64,7 @@ class BookingController extends Controller
 
     public function bayar(Booking $booking, PaymentService $paymentService)
     {
-        if ($booking->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $booking->pastikanMilikUser(Auth::id());
 
         $snapToken = $paymentService->buatTransaksi($booking);
 
@@ -81,18 +73,14 @@ class BookingController extends Controller
 
     public function status(Booking $booking)
     {
-        if ($booking->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $booking->pastikanMilikUser(Auth::id());
 
         return view('booking.status', compact('booking'));
     }
 
     public function cekStatus(Booking $booking, PaymentService $paymentService)
     {
-        if ($booking->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $booking->pastikanMilikUser(Auth::id());
 
         $hasil = $paymentService->cekStatusTransaksi($booking);
 

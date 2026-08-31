@@ -13,7 +13,12 @@ return new class extends Migration
     {
         Schema::create('payment_logs', function (Blueprint $table) {
             $table->id();
+            $table->string('order_id');
+            $table->string('transaction_status');
+            $table->json('payload');
+            $table->timestamp('diterima_pada');
             $table->timestamps();
+            $table->unique(['order_id', 'transaction_status']);
         });
     }
 
