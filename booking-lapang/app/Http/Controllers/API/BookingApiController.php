@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\BookingResource;
 use App\Models\Booking;
 use App\Services\BookingService;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
 
 class BookingApiController extends Controller
 {

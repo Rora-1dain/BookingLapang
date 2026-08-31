@@ -25,7 +25,7 @@ class BookingService
             })
             ->exists();
 
-        return !$bentrok;
+        return ! $bentrok;
     }
 
     public function hitungTotalHarga(Lapangan $lapangan, string $jamMulai, string $jamSelesai): float
@@ -54,7 +54,7 @@ class BookingService
             $lapangan->id, $data['tanggal_booking'], $data['jam_mulai'], $data['jam_selesai']
         );
 
-        if (!$tersedia) {
+        if (! $tersedia) {
             throw new Exception('Lapangan sudah dibooking pada jam tersebut.');
         }
 
@@ -74,8 +74,10 @@ class BookingService
     public function batalkanBooking(Booking $booking): Booking
     {
         $booking->update(['status' => 'cancelled']);
+
         return $booking;
     }
+
     public function konfirmasiBooking(Booking $booking): Booking
     {
         if ($booking->status !== 'pending') {

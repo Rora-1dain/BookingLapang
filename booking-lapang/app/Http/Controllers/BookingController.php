@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Lapangan;
 use App\Services\BookingService;
 use App\Services\PaymentService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Exception;
 
 class BookingController extends Controller
 {
@@ -30,7 +31,8 @@ class BookingController extends Controller
 
     public function create()
     {
-        $lapangans = \App\Models\Lapangan::where('status', 'aktif')->get();
+        $lapangans = Lapangan::where('status', 'aktif')->get();
+
         return view('booking.create', compact('lapangans'));
     }
 
@@ -49,7 +51,7 @@ class BookingController extends Controller
             $booking = $this->bookingService->buatBooking($validated);
 
             return redirect()->route('booking.index')
-                ->with('success', 'Booking berhasil. Total: Rp' . number_format($booking->total_harga));
+                ->with('success', 'Booking berhasil. Total: Rp'.number_format($booking->total_harga));
         } catch (Exception $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }
@@ -94,6 +96,6 @@ class BookingController extends Controller
 
         $hasil = $paymentService->cekStatusTransaksi($booking);
 
-        return back()->with('info', 'Status transaksi: ' . $hasil['transaction_status']);
+        return back()->with('info', 'Status transaksi: '.$hasil['transaction_status']);
     }
 }

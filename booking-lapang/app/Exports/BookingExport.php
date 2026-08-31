@@ -3,9 +3,9 @@
 namespace App\Exports;
 
 use App\Models\Booking;
+use Illuminate\Support\Enumerable;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Illuminate\Support\Enumerable;
 
 class BookingExport implements FromCollection, WithHeadings
 {
@@ -16,7 +16,7 @@ class BookingExport implements FromCollection, WithHeadings
                 'nama_pemesan' => $booking->user->name,
                 'lapangan' => $booking->lapangan->nama_lapangan,
                 'tanggal_booking' => $booking->tanggal_booking->format('d-m-Y'),
-                'jam' => $booking->jam_mulai . ' - ' . $booking->jam_selesai,
+                'jam' => $booking->jam_mulai.' - '.$booking->jam_selesai,
                 'total_harga' => $booking->total_harga,
                 'status' => $booking->status,
             ];

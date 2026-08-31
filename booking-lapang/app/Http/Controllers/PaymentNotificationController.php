@@ -14,9 +14,9 @@ class PaymentNotificationController extends Controller
         $payload = $request->all();
 
         $signature = hash('sha512',
-            $payload['order_id'] .
-            $payload['status_code'] .
-            $payload['gross_amount'] .
+            $payload['order_id'].
+            $payload['status_code'].
+            $payload['gross_amount'].
             config('services.midtrans.server_key')
         );
 

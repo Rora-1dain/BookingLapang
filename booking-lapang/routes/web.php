@@ -1,13 +1,13 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\BookingController;
 use App\Http\Controllers\AdminBookingController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentNotificationController;
-use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -57,7 +57,7 @@ Route::get('/health', function () {
     try {
         DB::connection()->getPdo();
         $dbStatus = 'ok';
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         $dbStatus = 'error';
     }
     Cache::put('health_check', 'ok', 10);

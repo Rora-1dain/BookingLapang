@@ -24,7 +24,7 @@ class BackupDatabase extends Command
         $filename = "backup-{$database}-{$timestamp}.sql";
         $path = storage_path("app/backups/{$filename}");
 
-        if (!is_dir(storage_path('app/backups'))) {
+        if (! is_dir(storage_path('app/backups'))) {
             mkdir(storage_path('app/backups'), 0755, true);
         }
 
@@ -36,10 +36,12 @@ class BackupDatabase extends Command
 
         if ($resultCode === 0) {
             $this->info("Backup berhasil disimpan di: {$path}");
+
             return self::SUCCESS;
         }
 
         $this->error('Backup database gagal.');
+
         return self::FAILURE;
     }
 }
