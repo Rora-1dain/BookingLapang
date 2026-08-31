@@ -18,6 +18,16 @@ class PaymentService
         Config::$is3ds = true;
     }
 
+
+    /**
+ * Membuat transaksi pembayaran baru di Midtrans dan mengembalikan Snap Token
+ * untuk ditampilkan di frontend.
+ *
+ * @param Booking $booking Booking yang akan dibayar
+ * @return string Snap Token dari Midtrans
+ * @throws \Exception Jika booking sudah berstatus 'paid'
+ */
+
     public function buatTransaksi(Booking $booking): string
     {
         if ($booking->status_pembayaran === 'paid') {
@@ -43,6 +53,17 @@ class PaymentService
 
         return $snapToken;
     }
+
+
+    /**
+ * Mengecek status transaksi terkini langsung ke Midtrans (tidak hanya
+ * mengandalkan webhook), lalu menyinkronkan status_pembayaran di database
+ * jika ada perbedaan. Midtrans dianggap sebagai source of truth.
+ *
+ * @param Booking $booking Booking yang akan dicek statusnya
+ * @return array{transaction_status: string, status_pembayaran: string}
+ * @throws \Exception Jika booking belum memiliki payment_reference
+ */
 
     public function cekStatusTransaksi(Booking $booking): array
     {
