@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreBookingRequest;
 use App\Models\Booking;
+use App\Models\Lapangan;
 use App\Services\BookingService;
 use App\Services\PaymentService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Services\VoucherService;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
 {
@@ -30,26 +34,26 @@ class BookingController extends Controller
 
     public function create()
     {
-        $lapangans = \App\Models\Lapangan::where('status', 'aktif')->get();
+        $lapangans = Lapangan::where('status', 'aktif')->get();
+
         return view('booking.create', compact('lapangans'));
     }
 
-    public function store(Request $request)
+    public function store(StoreBookingRequest $request, VoucherService $voucherService)
     {
-        $validated = $request->validate([
-            'lapangan_id' => 'required|exists:lapangans,id',
-            'tanggal_booking' => 'required|date|after_or_equal:today',
-            'jam_mulai' => 'required|date_format:H:i',
-            'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
-        ]);
-
-        $validated['user_id'] = Auth::id();
+        $validated = $request->validated();
+        $validated['user_id'] = $request->user()->id;
 
         try {
-            $booking = $this->bookingService->buatBooking($validated);
+            $booking = $this->bookingService->buatBooking($validated, $voucherService);
 
-            return redirect()->route('booking.index')
-                ->with('success', 'Booking berhasil. Total: Rp' . number_format($booking->total_harga));
+            $pesan = 'Booking berhasil. Total: Rp'.number_format($booking->total_harga);
+
+            if ($booking->total_diskon > 0) {
+                $pesan .= ' (hemat Rp'.number_format($booking->total_diskon).')';
+            }
+
+            return redirect()->route('booking.index')->with('success', $pesan);
         } catch (Exception $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }
@@ -57,9 +61,7 @@ class BookingController extends Controller
 
     public function cancel(Booking $booking)
     {
-        if ($booking->user_id !== Auth::id()) {
-            abort(403, 'Anda tidak berhak membatalkan booking ini.');
-        }
+        $booking->pastikanMilikUser(Auth::id());
 
         $this->bookingService->batalkanBooking($booking);
 
@@ -68,9 +70,7 @@ class BookingController extends Controller
 
     public function bayar(Booking $booking, PaymentService $paymentService)
     {
-        if ($booking->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $booking->pastikanMilikUser(Auth::id());
 
         $snapToken = $paymentService->buatTransaksi($booking);
 
@@ -79,21 +79,17 @@ class BookingController extends Controller
 
     public function status(Booking $booking)
     {
-        if ($booking->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $booking->pastikanMilikUser(Auth::id());
 
         return view('booking.status', compact('booking'));
     }
 
     public function cekStatus(Booking $booking, PaymentService $paymentService)
     {
-        if ($booking->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $booking->pastikanMilikUser(Auth::id());
 
         $hasil = $paymentService->cekStatusTransaksi($booking);
 
-        return back()->with('info', 'Status transaksi: ' . $hasil['transaction_status']);
+        return back()->with('info', 'Status transaksi: '.$hasil['transaction_status']);
     }
 }

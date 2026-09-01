@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
@@ -15,12 +17,12 @@ class DashboardController extends Controller
         $dari = $request->query('dari');
         $sampai = $request->query('sampai');
 
-        $totalPendapatan   = $this->dashboardService->totalPendapatan($dari, $sampai);
-        $bookingPerStatus  = $this->dashboardService->jumlahBookingPerStatus($dari, $sampai);
-        $lapanganFavorit   = $this->dashboardService->lapanganTerfavorit(3, $dari, $sampai);
+        $totalPendapatan = $this->dashboardService->totalPendapatan($dari, $sampai);
+        $bookingPerStatus = $this->dashboardService->jumlahBookingPerStatus($dari, $sampai);
+        $lapanganFavorit = $this->dashboardService->lapanganTerfavorit(3, $dari, $sampai);
         $pendapatanBulanan = $this->dashboardService->pendapatanPerBulan();
         $tingkatPembatalan = $this->dashboardService->tingkatPembatalan($dari, $sampai);
-        $userAktif         = $this->dashboardService->userPalingAktif(5, $dari, $sampai);
+        $userAktif = $this->dashboardService->userPalingAktif(5, $dari, $sampai);
 
         $bookingTerbaru = Booking::with(['user:id,name', 'lapangan:id,nama_lapangan'])
             ->when($dari, fn ($q) => $q->whereDate('tanggal_booking', '>=', $dari))

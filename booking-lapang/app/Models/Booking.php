@@ -1,16 +1,12 @@
 <?php
-
+declare(strict_types=1);
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
 class Booking extends Model
 {
     use HasFactory;
-
     protected $table = 'bookings';
-
     protected $fillable = [
         'user_id',
         'lapangan_id',
@@ -22,12 +18,12 @@ class Booking extends Model
         'metode_pembayaran',
         'status_pembayaran',
         'payment_reference',
+        'voucher_id',
+        'total_diskon',
     ];
-
     protected $casts = [
         'tanggal_booking' => 'date',
     ];
-
     /**
      * Booking dimiliki oleh satu lapangan.
      */
@@ -35,7 +31,6 @@ class Booking extends Model
     {
         return $this->belongsTo(Lapangan::class);
     }
-
     /**
      * Booking dimiliki oleh satu user.
      */
@@ -44,21 +39,31 @@ class Booking extends Model
         return $this->belongsTo(User::class);
     }
 
-    // 1) Tambahkan relasi hasOne ke Ulasan
-public function ulasan()
-{
-    return $this->hasOne(\App\Models\Ulasan::class);
-}
+    /**
+     * Booking bisa memakai satu voucher (opsional).
+     */
+    public function voucher()
+    {
+        return $this->belongsTo(Voucher::class);
+    }
 
-// 3) Helper kecil supaya UlasanController::store() bisa cek kepemilikan booking
-//    (dipakai Revano di UlasanController::store() -> $booking->pastikanMilikUser())
-public function pastikanMilikUser(int $userId): void
-{
-    if ($this->user_id !== $userId) {
-        abort(403, 'Booking ini bukan milik Anda.');
+    /**
+     * Booking bisa punya satu ulasan.
+     */
+    public function ulasan()
+    {
+        return $this->hasOne(\App\Models\Ulasan::class);
+    }
+
+    /**
+     * Pastikan booking ini milik user yang sedang login,
+     * hentikan request dengan 403 kalau bukan.
+     * (dipakai Revano di UlasanController::store() -> $booking->pastikanMilikUser())
+     */
+    public function pastikanMilikUser(int $userId): void
+    {
+        if ($this->user_id !== $userId) {
+            abort(403, 'Booking ini bukan milik Anda.');
+        }
     }
 }
-
-}
-
-

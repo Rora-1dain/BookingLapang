@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\Booking;
@@ -11,16 +13,15 @@ use Exception;
 class BookingService
 {
 
-/**
- * Mengecek apakah suatu lapangan tersedia pada tanggal dan rentang jam tertentu.
- *
- * @param int $lapanganId ID lapangan yang ingin dicek
- * @param string $tanggal Tanggal booking, format Y-m-d
- * @param string $jamMulai Jam mulai, format H:i
- * @param string $jamSelesai Jam selesai, format H:i
- * @return bool true jika tersedia (tidak bentrok), false jika sudah terisi
- */
-
+    /**
+     * Mengecek apakah suatu lapangan tersedia pada tanggal dan rentang jam tertentu.
+     *
+     * @param int $lapanganId ID lapangan yang ingin dicek
+     * @param string $tanggal Tanggal booking, format Y-m-d
+     * @param string $jamMulai Jam mulai, format H:i
+     * @param string $jamSelesai Jam selesai, format H:i
+     * @return bool true jika tersedia (tidak bentrok), false jika sudah terisi
+     */
     public function cekKetersediaan(int $lapanganId, string $tanggal, string $jamMulai, string $jamSelesai): bool
     {
         $bentrok = Booking::where('lapangan_id', $lapanganId)
@@ -36,20 +37,19 @@ class BookingService
             })
             ->exists();
 
-        return !$bentrok;
+        return ! $bentrok;
     }
 
 
     /**
- * Menghitung total harga booking berdasarkan durasi jam dikali harga per jam lapangan.
- *
- * @param Lapangan $lapangan Lapangan yang dipesan
- * @param string $jamMulai Jam mulai, format H:i
- * @param string $jamSelesai Jam selesai, format H:i
- * @return float Total harga dalam Rupiah
- * @throws \Exception Jika jam selesai tidak lebih besar dari jam mulai
- */
-
+     * Menghitung total harga booking berdasarkan durasi jam dikali harga per jam lapangan.
+     *
+     * @param Lapangan $lapangan Lapangan yang dipesan
+     * @param string $jamMulai Jam mulai, format H:i
+     * @param string $jamSelesai Jam selesai, format H:i
+     * @return float Total harga dalam Rupiah
+     * @throws \Exception Jika jam selesai tidak lebih besar dari jam mulai
+     */
     public function hitungTotalHarga(Lapangan $lapangan, string $jamMulai, string $jamSelesai): float
     {
         $mulai = Carbon::parse($jamMulai);
@@ -65,14 +65,15 @@ class BookingService
 
 
     /**
- * Membuat booking baru setelah memvalidasi status lapangan dan ketersediaan jadwal.
- *
- * @param array{lapangan_id: int, user_id: int, tanggal_booking: string, jam_mulai: string, jam_selesai: string} $data
- * @return Booking Booking yang baru dibuat dengan status 'pending'
- * @throws \Exception Jika lapangan berstatus nonaktif, atau jadwal bentrok dengan booking lain
- */
-
-    public function buatBooking(array $data): Booking
+     * Membuat booking baru setelah memvalidasi status lapangan dan ketersediaan jadwal.
+     * Mendukung kode voucher opsional untuk potongan harga.
+     *
+     * @param array{lapangan_id: int, user_id: int, tanggal_booking: string, jam_mulai: string, jam_selesai: string, kode_voucher?: string} $data
+     * @param VoucherService|null $voucherService Service untuk validasi & hitung diskon voucher (opsional)
+     * @return Booking Booking yang baru dibuat dengan status 'pending'
+     * @throws \Exception Jika lapangan berstatus nonaktif, jadwal bentrok, atau voucher tidak valid
+     */
+    public function buatBooking(array $data, ?VoucherService $voucherService = null): Booking
     {
         $lapangan = Lapangan::findOrFail($data['lapangan_id']);
 
@@ -85,11 +86,24 @@ class BookingService
             $lapangan->id, $data['tanggal_booking'], $data['jam_mulai'], $data['jam_selesai']
         );
 
-        if (!$tersedia) {
+        if (! $tersedia) {
             throw new Exception('Lapangan sudah dibooking pada jam tersebut.');
         }
 
         $totalHarga = $this->hitungTotalHarga($lapangan, $data['jam_mulai'], $data['jam_selesai']);
+
+        $totalDiskon = 0;
+        $voucherId = null;
+
+        if (! empty($data['kode_voucher']) && $voucherService) {
+            $voucher = $voucherService->validasiVoucher(
+                $data['kode_voucher'], $data['user_id'], $totalHarga
+            );
+
+            $totalDiskon = $voucherService->hitungDiskon($voucher, $totalHarga);
+            $voucherService->catatPemakaian($voucher, $data['user_id']);
+            $voucherId = $voucher->id;
+        }
 
         return Booking::create([
             'user_id' => $data['user_id'],
@@ -97,34 +111,36 @@ class BookingService
             'tanggal_booking' => $data['tanggal_booking'],
             'jam_mulai' => $data['jam_mulai'],
             'jam_selesai' => $data['jam_selesai'],
-            'total_harga' => $totalHarga,
+            'total_harga' => $totalHarga - $totalDiskon,
+            'total_diskon' => $totalDiskon,
+            'voucher_id' => $voucherId,
             'status' => 'pending',
         ]);
     }
 
 
     /**
- * Membatalkan booking dengan mengubah status menjadi 'cancelled'.
- *
- * @param Booking $booking Booking yang akan dibatalkan
- * @return Booking Booking dengan status terbaru
- */
-
+     * Membatalkan booking dengan mengubah status menjadi 'cancelled'.
+     *
+     * @param Booking $booking Booking yang akan dibatalkan
+     * @return Booking Booking dengan status terbaru
+     */
     public function batalkanBooking(Booking $booking): Booking
     {
         $booking->update(['status' => 'cancelled']);
+
         return $booking;
     }
 
-    /**
- * Mengonfirmasi booking berstatus pending menjadi confirmed, lalu mengirim
- * notifikasi email ke user pemilik booking.
- *
- * @param Booking $booking Booking yang akan dikonfirmasi
- * @return Booking Booking dengan status terbaru
- * @throws \Exception Jika status booking bukan 'pending'
- */
 
+    /**
+     * Mengonfirmasi booking berstatus pending menjadi confirmed, lalu mengirim
+     * notifikasi email ke user pemilik booking.
+     *
+     * @param Booking $booking Booking yang akan dikonfirmasi
+     * @return Booking Booking dengan status terbaru
+     * @throws \Exception Jika status booking bukan 'pending'
+     */
     public function konfirmasiBooking(Booking $booking): Booking
     {
         if ($booking->status !== 'pending') {
