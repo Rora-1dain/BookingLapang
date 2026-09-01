@@ -43,7 +43,7 @@ class BookingService
         return $durasiJam * $lapangan->harga_per_jam;
     }
 
-    public function buatBooking(array $data): Booking
+    public function buatBooking(array $data, ?VoucherService $voucherService = null): Booking
     {
         $lapangan = Lapangan::findOrFail($data['lapangan_id']);
 
@@ -62,13 +62,28 @@ class BookingService
 
         $totalHarga = $this->hitungTotalHarga($lapangan, $data['jam_mulai'], $data['jam_selesai']);
 
+        $totalDiskon = 0;
+        $voucherId = null;
+
+        if (! empty($data['kode_voucher']) && $voucherService) {
+            $voucher = $voucherService->validasiVoucher(
+                $data['kode_voucher'], $data['user_id'], $totalHarga
+            );
+
+            $totalDiskon = $voucherService->hitungDiskon($voucher, $totalHarga);
+            $voucherService->catatPemakaian($voucher, $data['user_id']);
+            $voucherId = $voucher->id;
+        }
+
         return Booking::create([
             'user_id' => $data['user_id'],
             'lapangan_id' => $lapangan->id,
             'tanggal_booking' => $data['tanggal_booking'],
             'jam_mulai' => $data['jam_mulai'],
             'jam_selesai' => $data['jam_selesai'],
-            'total_harga' => $totalHarga,
+            'total_harga' => $totalHarga - $totalDiskon,
+            'total_diskon' => $totalDiskon,
+            'voucher_id' => $voucherId,
             'status' => 'pending',
         ]);
     }

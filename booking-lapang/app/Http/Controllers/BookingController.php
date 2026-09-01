@@ -9,6 +9,7 @@ use App\Models\Booking;
 use App\Models\Lapangan;
 use App\Services\BookingService;
 use App\Services\PaymentService;
+use App\Services\VoucherService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 
@@ -38,16 +39,21 @@ class BookingController extends Controller
         return view('booking.create', compact('lapangans'));
     }
 
-    public function store(StoreBookingRequest $request)
+    public function store(StoreBookingRequest $request, VoucherService $voucherService)
     {
         $validated = $request->validated();
         $validated['user_id'] = $request->user()->id;
 
         try {
-            $booking = $this->bookingService->buatBooking($validated);
+            $booking = $this->bookingService->buatBooking($validated, $voucherService);
 
-            return redirect()->route('booking.index')
-                ->with('success', 'Booking berhasil. Total: Rp'.number_format($booking->total_harga));
+            $pesan = 'Booking berhasil. Total: Rp'.number_format($booking->total_harga);
+
+            if ($booking->total_diskon > 0) {
+                $pesan .= ' (hemat Rp'.number_format($booking->total_diskon).')';
+            }
+
+            return redirect()->route('booking.index')->with('success', $pesan);
         } catch (Exception $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }

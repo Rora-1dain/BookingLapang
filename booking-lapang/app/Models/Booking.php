@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,6 +24,8 @@ class Booking extends Model
         'metode_pembayaran',
         'status_pembayaran',
         'payment_reference',
+        'voucher_id',
+        'total_diskon',
     ];
 
     protected $casts = [
@@ -42,6 +46,14 @@ class Booking extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Booking bisa memakai satu voucher (opsional).
+     */
+    public function voucher()
+    {
+        return $this->belongsTo(Voucher::class);
     }
 
     /**
