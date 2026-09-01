@@ -69,3 +69,11 @@ Route::get('/health', function () {
         'cache' => $cacheStatus,
     ], $status);
 });
+
+Route::middleware(['auth'])->group(function () {
+    Route::put('/ulasan/{ulasan}', [UlasanController::class, 'update'])
+        ->name('ulasan.update');
+
+    Route::post('/ulasan/{ulasan}/laporkan', [UlasanController::class, 'laporkan'])
+        ->name('ulasan.laporkan');
+});

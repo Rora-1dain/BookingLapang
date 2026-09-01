@@ -43,4 +43,22 @@ class Booking extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    // 1) Tambahkan relasi hasOne ke Ulasan
+public function ulasan()
+{
+    return $this->hasOne(\App\Models\Ulasan::class);
 }
+
+// 3) Helper kecil supaya UlasanController::store() bisa cek kepemilikan booking
+//    (dipakai Revano di UlasanController::store() -> $booking->pastikanMilikUser())
+public function pastikanMilikUser(int $userId): void
+{
+    if ($this->user_id !== $userId) {
+        abort(403, 'Booking ini bukan milik Anda.');
+    }
+}
+
+}
+
+
