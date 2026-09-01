@@ -185,4 +185,32 @@ class DashboardService
             })
             ->toArray();
     }
+
+
+    /**
+     * Menghitung berapa kali tiap voucher dipakai.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function statistikVoucher()
+    {
+        return \App\Models\VoucherUsage::selectRaw('voucher_id, count(*) as total_pakai')
+            ->groupBy('voucher_id')
+            ->with('voucher:id,kode')
+            ->get();
+    }
+
+
+    /**
+     * Mengambil daftar ulasan yang ditandai dilaporkan, menunggu tinjauan admin.
+     *
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function ulasanDilaporkan()
+    {
+        return \App\Models\Ulasan::where('dilaporkan', true)
+            ->with('booking.user:id,name')
+            ->latest()
+            ->paginate(20);
+    }
 }
