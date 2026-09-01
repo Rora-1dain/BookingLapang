@@ -6,6 +6,8 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\AdminBookingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentNotificationController;
+use App\Http\Controllers\UlasanController;
+use App\Http\Controllers\VoucherController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
@@ -33,6 +35,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/booking/{booking}/bayar', [BookingController::class, 'bayar'])->name('booking.bayar');
     Route::get('/booking/{booking}/status', [BookingController::class, 'status'])->name('booking.status');
     Route::post('/booking/{booking}/cek-status', [BookingController::class, 'cekStatus'])->name('booking.cek-status');
+    Route::post('/voucher/cek', [VoucherController::class, 'cek'])->name('voucher.cek');
+});
+
+Route::middleware(['auth', 'throttle:5,1'])->group(function () {
+    Route::post('/booking/{booking}/ulasan', [UlasanController::class, 'store'])
+        ->name('ulasan.store');
 });
 
 Route::middleware(['auth', 'admin'])

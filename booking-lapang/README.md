@@ -157,7 +157,7 @@ sequenceDiagram
 
 ## Tim
 
-| Nama | Fokus Utama |
+| Nama | Fokus Utama | Hyorin
 |---|---|
 | Ardan | Model, View, Validasi, Notifikasi, API Resource, Struktur Data, Dokumentasi |
 | Bintang | Service, Konfirmasi Admin, Export Laporan, Integrasi Midtrans, Refactoring |

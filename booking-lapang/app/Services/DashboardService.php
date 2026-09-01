@@ -25,14 +25,13 @@ class DashboardService
 
 
     /**
- * Menjumlahkan seluruh pendapatan dari booking berstatus pembayaran 'paid',
- * dengan opsi filter rentang tanggal. Hasil di-cache selama 10 menit.
- *
- * @param string|null $dari Tanggal awal filter, format Y-m-d (opsional)
- * @param string|null $sampai Tanggal akhir filter, format Y-m-d (opsional)
- * @return float Total pendapatan dalam Rupiah
- */
-
+     * Menjumlahkan seluruh pendapatan dari booking berstatus pembayaran 'paid',
+     * dengan opsi filter rentang tanggal. Hasil di-cache selama 10 menit.
+     *
+     * @param string|null $dari Tanggal awal filter, format Y-m-d (opsional)
+     * @param string|null $sampai Tanggal akhir filter, format Y-m-d (opsional)
+     * @return float Total pendapatan dalam Rupiah
+     */
     public function totalPendapatan(?string $dari = null, ?string $sampai = null): float
     {
         $cacheKey = 'dashboard.total_pendapatan.' . ($dari ?? 'all') . '.' . ($sampai ?? 'all');
@@ -47,11 +46,10 @@ class DashboardService
 
 
     /**
- * Menghitung jumlah booking untuk setiap nilai status (pending/confirmed/cancelled).
- *
- * @return array<string, int> Contoh: ['pending' => 5, 'confirmed' => 3, 'cancelled' => 2]
- */
-
+     * Menghitung jumlah booking untuk setiap nilai status (pending/confirmed/cancelled).
+     *
+     * @return array<string, int> Contoh: ['pending' => 5, 'confirmed' => 3, 'cancelled' => 2]
+     */
     public function jumlahBookingPerStatus(?string $dari = null, ?string $sampai = null): array
     {
         $query = Booking::select('status', DB::raw('count(*) as jumlah'));
@@ -64,12 +62,11 @@ class DashboardService
 
 
     /**
- * Mengambil lapangan dengan jumlah booking terbanyak.
- *
- * @param int $limit Jumlah lapangan yang ditampilkan, default 3
- * @return \Illuminate\Support\Collection Koleksi booking teragregasi per lapangan, diurutkan dari yang terbanyak
- */
-
+     * Mengambil lapangan dengan jumlah booking terbanyak.
+     *
+     * @param int $limit Jumlah lapangan yang ditampilkan, default 3
+     * @return \Illuminate\Support\Collection Koleksi booking teragregasi per lapangan, diurutkan dari yang terbanyak
+     */
     public function lapanganTerfavorit(int $limit = 3, ?string $dari = null, ?string $sampai = null): array
     {
         $cacheKey = "dashboard.lapangan_favorit.{$limit}." . ($dari ?? 'all') . '.' . ($sampai ?? 'all');
@@ -96,13 +93,12 @@ class DashboardService
 
 
     /**
- * Mengelompokkan total pendapatan (status_pembayaran = paid) per bulan
- * dalam rentang N bulan terakhir. Cocok untuk data grafik batang.
- *
- * @param int $bulanTerakhir Jumlah bulan ke belakang yang dihitung, default 6
- * @return array<string, float> Contoh: ['2026-07' => 500000, '2026-08' => 750000]
- */
-
+     * Mengelompokkan total pendapatan (status_pembayaran = paid) per bulan
+     * dalam rentang N bulan terakhir. Cocok untuk data grafik batang.
+     *
+     * @param int $bulanTerakhir Jumlah bulan ke belakang yang dihitung, default 6
+     * @return array<string, float> Contoh: ['2026-07' => 500000, '2026-08' => 750000]
+     */
     public function pendapatanPerBulan(int $bulanTerakhir = 6): array
     {
         return Booking::select(
@@ -117,12 +113,11 @@ class DashboardService
             ->toArray();
     }
 
-/**
- * Menghitung persentase booking berstatus 'cancelled' dibanding total seluruh booking.
- *
- * @return float Persentase pembatalan, dibulatkan 2 desimal (0 jika belum ada booking sama sekali)
- */
-    
+    /**
+     * Menghitung persentase booking berstatus 'cancelled' dibanding total seluruh booking.
+     *
+     * @return float Persentase pembatalan, dibulatkan 2 desimal (0 jika belum ada booking sama sekali)
+     */
     public function tingkatPembatalan(?string $dari = null, ?string $sampai = null): float
     {
         $query = Booking::query();
@@ -139,12 +134,11 @@ class DashboardService
         return round(($dibatalkan / $total) * 100, 2);
     }
 
-/**
- * Mengelompokkan total pendapatan berdasarkan jenis lapangan (futsal/badminton/basket).
- *
- * @return array<string, float> Contoh: ['futsal' => 1200000, 'badminton' => 400000]
- */
-
+    /**
+     * Mengelompokkan total pendapatan berdasarkan jenis lapangan (futsal/badminton/basket).
+     *
+     * @return array<string, float> Contoh: ['futsal' => 1200000, 'badminton' => 400000]
+     */
     public function pendapatanPerJenisLapangan(?string $dari = null, ?string $sampai = null): array
     {
         $query = Booking::join('lapangans', 'bookings.lapangan_id', '=', 'lapangans.id')
@@ -165,12 +159,11 @@ class DashboardService
 
 
     /**
- * Mengambil user dengan jumlah booking terbanyak.
- *
- * @param int $limit Jumlah user yang ditampilkan, default 5
- * @return \Illuminate\Support\Collection Koleksi booking teragregasi per user, lengkap dengan nama user
- */
-
+     * Mengambil user dengan jumlah booking terbanyak.
+     *
+     * @param int $limit Jumlah user yang ditampilkan, default 5
+     * @return \Illuminate\Support\Collection Koleksi booking teragregasi per user, lengkap dengan nama user
+     */
     public function userPalingAktif(int $limit = 5, ?string $dari = null, ?string $sampai = null): array
     {
         $query = Booking::select('user_id', DB::raw('count(*) as total_booking'))
@@ -189,5 +182,33 @@ class DashboardService
                 ];
             })
             ->toArray();
+    }
+
+
+    /**
+     * Menghitung berapa kali tiap voucher dipakai.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function statistikVoucher()
+    {
+        return \App\Models\VoucherUsage::selectRaw('voucher_id, count(*) as total_pakai')
+            ->groupBy('voucher_id')
+            ->with('voucher:id,kode')
+            ->get();
+    }
+
+
+    /**
+     * Mengambil daftar ulasan yang ditandai dilaporkan, menunggu tinjauan admin.
+     *
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function ulasanDilaporkan()
+    {
+        return \App\Models\Ulasan::where('dilaporkan', true)
+            ->with('booking.user:id,name')
+            ->latest()
+            ->paginate(20);
     }
 }

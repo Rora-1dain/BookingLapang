@@ -21,6 +21,8 @@ class DashboardController extends Controller
         $pendapatanBulanan = $this->dashboardService->pendapatanPerBulan();
         $tingkatPembatalan = $this->dashboardService->tingkatPembatalan($dari, $sampai);
         $userAktif         = $this->dashboardService->userPalingAktif(5, $dari, $sampai);
+        $statistikVoucher  = $this->dashboardService->statistikVoucher();
+        $ulasanDilaporkan  = $this->dashboardService->ulasanDilaporkan();
 
         $bookingTerbaru = Booking::with(['user:id,name', 'lapangan:id,nama_lapangan'])
             ->when($dari, fn ($q) => $q->whereDate('tanggal_booking', '>=', $dari))
@@ -32,7 +34,8 @@ class DashboardController extends Controller
         return view('admin.dashboard', compact(
             'totalPendapatan', 'bookingPerStatus', 'lapanganFavorit',
             'pendapatanBulanan', 'tingkatPembatalan', 'userAktif',
-            'bookingTerbaru', 'dari', 'sampai'
+            'bookingTerbaru', 'dari', 'sampai',
+            'statistikVoucher', 'ulasanDilaporkan'
         ));
     }
 }
