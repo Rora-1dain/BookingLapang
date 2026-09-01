@@ -1,17 +1,14 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    {{ __("You're logged in!") }}
-                </div>
-            </div>
-        </div>
+@section('content')
+<div class="min-h-screen bg-gray-50 py-10">
+    <div class="max-w-3xl mx-auto text-center">
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Selamat datang, {{ auth()->user()->name }}!</h2>
+        <p class="text-gray-600 mb-6">Kelola booking lapangan Anda di sini.</p>
+        <a href="{{ route('booking.index') }}"
+            class="inline-block bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg font-medium">
+            Lihat Daftar Booking
+        </a>
     </div>
-</x-app-layout>
+</div>
+@endsection

@@ -1,57 +1,44 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-xl mx-auto mt-10 p-6 bg-white rounded-lg shadow">
-    <h1 class="text-xl font-bold mb-4">Pembayaran Booking #{{ $booking->id }}</h1>
-
-    <div class="mb-6 space-y-1 text-gray-700">
-        <p><strong>Lapangan:</strong> {{ $booking->lapangan->nama_lapangan ?? '-' }}</p>
-        <p><strong>Total Harga:</strong> Rp {{ number_format($booking->total_harga, 0, ',', '.') }}</p>
-        <p><strong>Status Pembayaran:</strong>
-            <span class="font-semibold uppercase">{{ $booking->status_pembayaran }}</span>
+<div class="min-h-screen bg-gray-50 py-10">
+    <div class="max-w-md mx-auto bg-white rounded-2xl shadow-sm p-6 text-center">
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Pembayaran</h2>
+        <p class="text-gray-600 mb-1">{{ $booking->lapangan->nama_lapangan }}</p>
+        <p class="text-sm text-gray-500 mb-4">
+            {{ $booking->tanggal_booking->format('d M Y') }} · {{ $booking->jam_mulai }} - {{ $booking->jam_selesai }}
         </p>
-    </div>
+        <p class="text-2xl font-bold text-teal-700 mb-6">Rp{{ number_format($booking->total_harga) }}</p>
 
-    @if ($booking->status_pembayaran === 'unpaid')
-        <button id="pay-button" class="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700">
+        <button id="pay-button"
+            class="w-full bg-teal-600 hover:bg-teal-700 text-white rounded-lg px-4 py-3 font-medium">
             Bayar Sekarang
         </button>
-    @else
-        <p class="text-green-600 font-semibold">Booking ini sudah {{ $booking->status_pembayaran }}.</p>
-    @endif
+
+        <a href="{{ route('booking.index') }}" class="block mt-4 text-sm text-gray-500 hover:underline">
+            Kembali ke daftar booking
+        </a>
+    </div>
 </div>
 
-{{-- Snap.js dari Midtrans (Sandbox) --}}
 <script src="https://app.sandbox.midtrans.com/snap/snap.js"
-        data-client-key="{{ config('services.midtrans.client_key') }}"></script>
-
+    data-client-key="{{ config('services.midtrans.client_key') }}"></script>
 <script>
-    const payButton = document.getElementById('pay-button');
-    if (payButton) {
-        payButton.addEventListener('click', function () {
-            payButton.disabled = true;
-            payButton.innerText = 'Memproses...';
-
-            snap.pay('{{ $snapToken }}', {
-                onSuccess: function (result) {
-                    alert('Pembayaran berhasil!');
-                    window.location.reload();
-                },
-                onPending: function (result) {
-                    alert('Menunggu pembayaran diselesaikan.');
-                    window.location.reload();
-                },
-                onError: function (result) {
-                    alert('Pembayaran gagal.');
-                    payButton.disabled = false;
-                    payButton.innerText = 'Bayar Sekarang';
-                },
-                onClose: function () {
-                    payButton.disabled = false;
-                    payButton.innerText = 'Bayar Sekarang';
-                }
-            });
+    document.getElementById('pay-button').addEventListener('click', function () {
+        snap.pay('{{ $snapToken }}', {
+            onSuccess: function () {
+                window.location.href = "{{ route('booking.index') }}";
+            },
+            onPending: function () {
+                window.location.href = "{{ route('booking.index') }}";
+            },
+            onError: function () {
+                alert('Pembayaran gagal, coba lagi.');
+            },
+            onClose: function () {
+                // user closes popup without finishing
+            }
         });
-    }
+    });
 </script>
 @endsection
