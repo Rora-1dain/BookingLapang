@@ -51,8 +51,10 @@ class PaymentNotificationController extends Controller
                 'status' => 'confirmed',
             ]);
 
-            Cache::forget('dashboard.total_pendapatan');
-            Cache::forget('dashboard.lapangan_favorit.3');
+            // Flush semua cache dashboard (semua kombinasi filter tanggal
+            // sekaligus), bukan Cache::forget() per-key yang rawan meleset
+            // karena cache key aslinya selalu ada suffix ".dari.sampai".
+            Cache::tags(['dashboard'])->flush();
         } elseif (in_array($status, ['expire', 'deny', 'cancel'])) {
             $booking->update(['status_pembayaran' => 'failed']);
         }

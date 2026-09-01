@@ -28,7 +28,9 @@ class DashboardService
 
     /**
      * Menjumlahkan seluruh pendapatan dari booking berstatus pembayaran 'paid',
-     * dengan opsi filter rentang tanggal. Hasil di-cache selama 10 menit.
+     * dengan opsi filter rentang tanggal. Hasil di-cache selama 10 menit
+     * di bawah tag 'dashboard' agar bisa di-flush sekaligus tanpa perlu tahu
+     * kombinasi filter yang pernah dipakai.
      *
      * @param string|null $dari Tanggal awal filter, format Y-m-d (opsional)
      * @param string|null $sampai Tanggal akhir filter, format Y-m-d (opsional)
@@ -38,14 +40,13 @@ class DashboardService
     {
         $cacheKey = 'dashboard.total_pendapatan.'.($dari ?? 'all').'.'.($sampai ?? 'all');
 
-        return Cache::remember($cacheKey, 600, function () use ($dari, $sampai) {
+        return Cache::tags(['dashboard'])->remember($cacheKey, 600, function () use ($dari, $sampai) {
             $query = Booking::where('status_pembayaran', 'paid');
             $this->terapkanFilterTanggal($query, $dari, $sampai);
 
             return (float) $query->selectRaw('COALESCE(sum(total_harga), 0) as total')->value('total');
         });
     }
-
 
     /**
      * Menghitung jumlah booking untuk setiap nilai status (pending/confirmed/cancelled).
@@ -73,7 +74,7 @@ class DashboardService
     {
         $cacheKey = "dashboard.lapangan_favorit.{$limit}.".($dari ?? 'all').'.'.($sampai ?? 'all');
 
-        return Cache::remember($cacheKey, 600, function () use ($limit, $dari, $sampai) {
+        return Cache::tags(['dashboard'])->remember($cacheKey, 600, function () use ($limit, $dari, $sampai) {
             $query = Booking::select('lapangan_id', DB::raw('count(*) as total_booking'))
                 ->with('lapangan');
             $this->terapkanFilterTanggal($query, $dari, $sampai);
