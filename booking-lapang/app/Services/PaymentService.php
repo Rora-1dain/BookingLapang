@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\Booking;
+use Exception;
 use Midtrans\Config;
 use Midtrans\Snap;
 use Midtrans\Transaction;
-use Exception;
 
 class PaymentService
 {
@@ -34,7 +36,7 @@ class PaymentService
             throw new Exception('Booking ini sudah dibayar.');
         }
 
-        $orderId = 'BOOKING-' . $booking->id . '-' . time();
+        $orderId = 'BOOKING-'.$booking->id.'-'.time();
 
         $params = [
             'transaction_details' => [
@@ -67,7 +69,7 @@ class PaymentService
 
     public function cekStatusTransaksi(Booking $booking): array
     {
-        if (!$booking->payment_reference) {
+        if (! $booking->payment_reference) {
             throw new Exception('Booking ini belum memiliki transaksi pembayaran.');
         }
 
@@ -82,7 +84,7 @@ class PaymentService
 
         return [
             'transaction_status' => $transactionStatus,
-            'status_pembayaran'  => $booking->fresh()->status_pembayaran,
+            'status_pembayaran' => $booking->fresh()->status_pembayaran,
         ];
     }
 }

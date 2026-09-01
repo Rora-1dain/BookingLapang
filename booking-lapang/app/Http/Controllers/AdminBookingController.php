@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use App\Models\Booking; 
-use App\Services\BookingService;
 use App\Exports\BookingExport;
-use Maatwebsite\Excel\Facades\Excel;
+use App\Models\Booking;
+use App\Services\BookingService;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AdminBookingController extends Controller
 {
@@ -37,7 +39,7 @@ class AdminBookingController extends Controller
 
     public function export()
     {
-        return Excel::download(new BookingExport(), 'laporan-booking.xlsx');
+        return Excel::download(new BookingExport, 'laporan-booking.xlsx');
     }
 
     public function cancel(Booking $booking)
