@@ -1,18 +1,12 @@
 <?php
-
 declare(strict_types=1);
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
 class Booking extends Model
 {
     use HasFactory;
-
     protected $table = 'bookings';
-
     protected $fillable = [
         'user_id',
         'lapangan_id',
@@ -27,11 +21,9 @@ class Booking extends Model
         'voucher_id',
         'total_diskon',
     ];
-
     protected $casts = [
         'tanggal_booking' => 'date',
     ];
-
     /**
      * Booking dimiliki oleh satu lapangan.
      */
@@ -39,7 +31,6 @@ class Booking extends Model
     {
         return $this->belongsTo(Lapangan::class);
     }
-
     /**
      * Booking dimiliki oleh satu user.
      */
@@ -57,13 +48,22 @@ class Booking extends Model
     }
 
     /**
+     * Booking bisa punya satu ulasan.
+     */
+    public function ulasan()
+    {
+        return $this->hasOne(\App\Models\Ulasan::class);
+    }
+
+    /**
      * Pastikan booking ini milik user yang sedang login,
      * hentikan request dengan 403 kalau bukan.
+     * (dipakai Revano di UlasanController::store() -> $booking->pastikanMilikUser())
      */
     public function pastikanMilikUser(int $userId): void
     {
         if ($this->user_id !== $userId) {
-            abort(403, 'Anda tidak berhak mengakses booking ini.');
+            abort(403, 'Booking ini bukan milik Anda.');
         }
     }
 }
