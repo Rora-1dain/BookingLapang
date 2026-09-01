@@ -25,4 +25,23 @@ class Lapangan extends Model
     {
         return $this->hasMany(Booking::class);
     }
+
+    public function ulasans()
+{
+    return $this->hasManyThrough(\App\Models\Ulasan::class, \App\Models\Booking::class);
+}
+
+public function rataRataRating(): float
+{
+    return round($this->ulasans()->avg('rating') ?? 0, 1);
+}
+
+public function ulasanTerbaru(int $limit = 5)
+{
+    return $this->ulasans()
+        ->with('booking.user:id,name')
+        ->latest('ulasans.created_at')
+        ->limit($limit)
+        ->get();
+}
 }
