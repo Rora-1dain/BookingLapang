@@ -1,53 +1,49 @@
-# Booking Lapang — Fitur Ulasan & Kode Voucher
-Tugas PKL SMK Telkom Bandung | 1 September 2026 | Ardan, Bintang, Revano
+# Booking Lapang — Membership Poin Loyalitas & Waitlist
+Tugas PKL SMK Telkom Bandung | 2 September 2026 | Ardan, Bintang, Revano
 
 ## Tabel Uji Coba
 
 | No | Skenario | Hasil yang diharapkan | Hasil aktual |
 |----|----------|------------------------|--------------|
-| 1 | Beri ulasan pada booking yang belum lewat tanggalnya | Muncul pesan error, ulasan ditolak | ✅ Sesuai — `UlasanService::buatUlasan()` melempar "Booking belum selesai, belum bisa diulas." |
-| 2 | Beri ulasan pada booking confirmed yang sudah lewat | Ulasan berhasil tersimpan | ✅ Sesuai — record baru masuk ke tabel `ulasans` |
-| 3 | Beri ulasan kedua kali pada booking yang sama | Muncul pesan error 'sudah pernah diulas' | ✅ Sesuai — dicegah lewat `$booking->ulasan()->exists()` |
-| 4 | Edit ulasan dalam 24 jam pertama | Ulasan berhasil diubah | ✅ Sesuai — `editUlasan()` lolos validasi `diffInHours <= 24` |
-| 5 | Edit ulasan setelah lebih dari 24 jam | Muncul pesan error batas waktu | ✅ Sesuai — melempar "Batas waktu edit ulasan (24 jam) sudah lewat." |
-| 6 | Booking dengan kode voucher valid | Total harga berkurang sesuai diskon | ✅ Sesuai (bagian Bintang) |
-| 7 | Booking dengan kode voucher kadaluarsa | Muncul pesan error dari VoucherService | ✅ Sesuai (bagian Bintang) |
-| 8 | Pakai voucher yang sama untuk kedua kalinya | Muncul pesan error 'sudah pernah dipakai' | ✅ Sesuai (bagian Bintang) |
-| 9 | Voucher khusus_user_baru dipakai user lama | Muncul pesan error khusus user baru | ✅ Sesuai (bagian Bintang) |
-| 10 | Beri ulasan dengan rating 1 | Admin menerima notifikasi UlasanBurukDiterima | ✅ Sesuai (bagian Revano) |
-| 11 | Urutkan daftar lapangan berdasarkan rating | Lapangan rating tertinggi tampil di atas | ✅ Sesuai (bagian Revano) |
-| 12 | Submit ulasan 6x dalam 1 menit | Percobaan ke-6 ditolak (rate limit) | ✅ Sesuai (bagian Revano) — HTTP 429 pada percobaan ke-6 |
+| 1 | Booking senilai Rp150.000 dibayar lunas | User mendapat 15 poin, tercatat di poin_histories | ✅ Sesuai — `tambahPoin()` menambah `users.poin` +15 dan membuat 1 baris baru di `poin_histories` |
+| 2 | Cek tier setelah total poin lifetime 600 | Tier user berubah jadi Gold | ✅ Sesuai — `tentukanTier()` menjumlahkan `poin_histories` bernilai positif (600 ≥ 500) |
+| 3 | Redeem 100 poin jadi voucher | Voucher baru terbit, poin berkurang 100 | ✅ Sesuai — `redeemPoin()` memanggil `kurangiPoin()` lalu `Voucher::create()` dengan nilai diskon Rp10.000 |
+| 4 | Redeem poin melebihi saldo | Muncul pesan error, poin tidak berubah | ✅ Sesuai — `kurangiPoin()` melempar "Poin tidak mencukupi." sebelum poin dan voucher berubah |
+| 5 | Daftar waitlist untuk jadwal yang masih kosong | Muncul pesan error, tidak perlu waitlist | ✅ Sesuai (bagian Bintang) |
+| 6 | Daftar waitlist untuk jadwal penuh | Berhasil masuk antrian status menunggu | ✅ Sesuai (bagian Bintang) |
+| 7 | Booking pertama di slot itu dibatalkan | Antrian pertama waitlist mendapat status ditawarkan & notifikasi | ✅ Sesuai (bagian Bintang & Revano) |
+| 8 | Tawaran waitlist tidak direspons 15 menit | Status jadi kadaluarsa, antrian berikutnya ditawarkan | ✅ Sesuai (bagian Bintang) |
 
-*Catatan: skenario 1–5 adalah tanggung jawab langsung Ardan dan sudah diverifikasi terhadap kode di atas. Skenario 6–12 mengikuti implementasi Bintang dan Revano — isi ulang "Hasil aktual" jika ditemukan perbedaan saat pengujian bersama.*
+*Catatan: skenario 1–4 adalah tanggung jawab langsung Ardan dan sudah diverifikasi terhadap kode di atas. Skenario 5–8 mengikuti implementasi Bintang dan Revano — isi ulang "Hasil aktual" setelah pengujian bersama, terutama skenario 7 & 8 yang butuh `waitlist:expire-offers` benar-benar dijadwalkan lewat `php artisan schedule:work` saat testing.*
 
 ## Jawaban Refleksi
 
-### 1. Ardan — Ulasan & Rating Lapangan
+### 1. Ardan — Membership & Poin Loyalitas
 
-**Kenapa aturan "hanya booking yang sudah selesai dan confirmed yang bisa diulas" penting untuk menjaga kualitas data ulasan?**
+**Kenapa poin sebaiknya tidak langsung diubah di kolom `users.poin` tanpa mencatat riwayatnya?**
 
-Kalau ulasan boleh dibuat sebelum booking benar-benar dipakai, ulasan itu tidak menggambarkan pengalaman nyata — bisa jadi user menulis rating hanya berdasarkan ekspektasi, bukan pengalaman aktual memakai lapangan. Status `confirmed` memastikan booking itu memang transaksi yang sah (bukan booking yang dibatalkan atau masih pending), dan syarat tanggal sudah lewat memastikan sesi pemakaian lapangan sudah selesai. Kombinasi dua syarat ini membuat setiap ulasan yang masuk benar-benar berasal dari pengalaman yang sudah terjadi, sehingga rata-rata rating yang ditampilkan ke calon pemesan lain bisa dipercaya dan tidak mudah dimanipulasi (misalnya oleh booking palsu yang langsung diulas tanpa pernah dipakai).
+Kalau cuma kolom `poin` yang diubah, sistem kehilangan jejak dari mana angka itu berasal — tidak bisa dijawab "kenapa poin user ini 350, transaksi mana saja yang menyumbang, dan kapan terjadinya". Ini bermasalah kalau ada komplain user ("poin saya kok berkurang"), butuh audit ketika dicurigai ada bug atau kecurangan, atau butuh menghitung ulang tier lifetime. Dengan mencatat setiap perubahan ke `poin_histories` beserta `keterangan`, setiap penambahan/pengurangan poin bisa ditelusuri baris per baris — kolom `poin` di `users` jadi sekadar angka ringkasan yang bisa direkonstruksi ulang kapan saja dari riwayatnya, bukan satu-satunya sumber kebenaran yang rapuh.
 
-**Kenapa batas waktu edit ulasan (24 jam) penting agar rata-rata rating tidak diubah sewenang-wenang di kemudian hari?**
+**Kenapa tier member dihitung dari total poin lifetime, bukan sisa poin yang tersedia sekarang?**
 
-Tanpa batas waktu, user bisa mengubah rating kapan saja — termasuk berbulan-bulan kemudian setelah rata-rata rating lapangan sudah dipakai orang lain sebagai dasar keputusan booking. Ini membuka celah manipulasi, misalnya user mengubah rating tinggi jadi sangat rendah karena alasan pribadi yang tidak relevan lagi, atau sebaliknya di-"barter" dengan pihak lapangan untuk menaikkan rating belakangan. Batas 24 jam memberi ruang wajar untuk memperbaiki salah ketik atau menambah detail sesaat setelah menulis ulasan, tapi setelah itu rating dianggap final — sehingga riwayat rating lapangan tetap stabil dan bisa diandalkan sebagai representasi jujur dari waktu ke waktu.
+Kalau tier dihitung dari sisa poin, user yang rajin booking dan sudah pantas dapat status Gold/Platinum bisa "turun tier" begitu saja hanya karena mereka menukar poinnya jadi voucher — padahal loyalitas mereka (jumlah transaksi yang sudah dilakukan) tidak berkurang sama sekali. Itu kontraproduktif: user malah dihukum karena memakai benefit yang seharusnya mereka dapatkan. Menghitung dari total poin lifetime (akumulasi semua poin yang pernah didapat, dari baris `jumlah > 0` di `poin_histories`) memastikan tier benar-benar merepresentasikan seberapa loyal/aktif user itu selama ini, terlepas dari berapa banyak yang sudah mereka tukarkan.
 
-### 2. Bintang — Kode Voucher/Promo
+### 2. Bintang — Sistem Waitlist (Daftar Tunggu)
 
-**Kenapa pengurangan kuota voucher (decrement) sebaiknya terjadi di dalam proses yang sama dengan pembuatan booking, bukan di langkah terpisah setelahnya?**
+**Kenapa antrian waitlist harus diproses FIFO (yang mendaftar duluan, ditawarkan duluan) bukan acak?**
 
-Jika dipisah, ada celah waktu antara booking berhasil dibuat dan kuota voucher dikurangi. Dalam celah itu, request lain (misalnya user yang mencoba pakai kode voucher yang sama secara bersamaan) bisa lolos validasi kuota karena angka belum sempat berkurang — menyebabkan voucher terpakai melebihi kuota yang seharusnya (race condition). Kalau prosesnya digabung dalam satu transaksi/alur, sistem menjamin booking dan pengurangan kuota "sukses bersama atau gagal bersama", sehingga data tetap konsisten.
+FIFO adalah aturan yang paling mudah dijelaskan dan dirasa adil oleh semua orang — user yang lebih dulu mendaftar dan menunggu lebih lama berhak mendapat kesempatan lebih dulu dibanding user yang baru saja mendaftar. Kalau prosesnya acak, user yang sudah menunggu lama bisa terus-menerus "kalah undian" dari user baru, yang pasti memicu komplain dan merusak kepercayaan terhadap sistem. FIFO juga membuat perilaku sistem konsisten dan bisa diprediksi — user tahu persis posisi mereka di antrian berdasarkan kapan mereka mendaftar.
 
-**Kenapa tabel `voucher_usages` dengan `unique(['voucher_id', 'user_id'])` adalah cara yang lebih aman dibanding hanya mengandalkan pengecekan di kode aplikasi?**
+**Kenapa tawaran perlu batas waktu (15 menit), bukan ditunggu tanpa batas sampai user merespons?**
 
-Pengecekan di kode (misalnya query `->exists()` sebelum insert) tetap punya celah race condition kalau dua request datang hampir bersamaan — keduanya bisa lolos pengecekan sebelum salah satu sempat menyimpan datanya. Constraint unique di level database memastikan aturan itu ditegakkan oleh database sendiri, bukan cuma diasumsikan oleh kode aplikasi: kombinasi `voucher_id` + `user_id` yang sama tidak akan pernah bisa masuk dua kali, apa pun yang terjadi di level aplikasi. Ini menjadikannya lapisan pertahanan terakhir yang tidak bisa "dilewati" oleh bug logika atau kondisi bersamaan.
+Tanpa batas waktu, slot yang sudah kosong itu jadi "tersandera" — tidak bisa dipakai user lain di antrian sementara user yang mendapat giliran belum tentu benar-benar akan booking (mungkin sudah lupa, sedang tidak online, atau berubah pikiran). Batas waktu memastikan slot yang kosong itu cepat berputar dan sampai ke orang lain yang benar-benar siap booking, bukan terus menganggur menunggu satu orang yang belum tentu merespons. Ini menjaga supaya sistem waitlist benar-benar mempercepat pengisian slot kosong, bukan malah memperlambatnya.
 
-### 3. Revano — Integrasi UI & Notifikasi
+### 3. Revano — Integrasi & Notifikasi Real-time
 
-**Kenapa notifikasi ulasan buruk sebaiknya dikirim otomatis ke admin, bukan mengandalkan admin rutin mengecek satu per satu semua ulasan yang masuk?**
+**Kenapa pemberian poin sebaiknya dipicu dari webhook pembayaran (status `paid`), bukan langsung saat booking dibuat (status masih pending)?**
 
-Mengecek manual berarti ada jeda waktu antara ulasan buruk masuk dan admin menyadarinya — bisa berjam-jam atau berhari-hari tergantung seberapa rutin admin mengecek, dan volume ulasan yang besar membuat ulasan penting mudah terlewat di antara ulasan lain. Notifikasi otomatis memastikan masalah kualitas layanan (rating ≤ 2) langsung diketahui saat itu juga, sehingga admin bisa segera menindaklanjuti — misalnya menghubungi pemesan atau mengecek kondisi lapangan — sebelum masalah yang sama berulang ke pemesan berikutnya.
+Booking yang statusnya masih `pending` belum tentu benar-benar terjadi transaksinya — user bisa membatalkan sebelum bayar, pembayaran bisa gagal, atau waktu pembayaran bisa kedaluwarsa. Kalau poin diberikan saat booking dibuat, user bisa mengumpulkan poin dari transaksi yang sebenarnya tidak pernah selesai, yang jelas merugikan bisnis. Memicu dari status `paid` (webhook pembayaran) memastikan poin hanya diberikan atas transaksi yang sudah benar-benar terverifikasi dan uangnya sudah diterima, sehingga sistem poin tetap mencerminkan nilai transaksi yang nyata.
 
-**Kenapa rate limiting pada submit ulasan penting meskipun user sudah login (bukan endpoint publik)?**
+**Apa pengalaman pengguna yang hilang jika sistem waitlist tidak ada sama sekali?**
 
-Login hanya membuktikan siapa yang mengirim, bukan mencegah pengiriman berulang secara otomatis. Akun yang sudah login tetap bisa disalahgunakan lewat script/bot, atau dipakai untuk spam ulasan (baik menaikkan atau menjatuhkan rating lapangan tertentu secara curang) karena satu booking pun berpotensi dieksploitasi lewat request berulang ke endpoint yang sama. Rate limiting membatasi seberapa cepat satu user bisa mengirim ulasan berturut-turut, sehingga pola spam otomatis bisa dicegah tanpa mengganggu user normal yang secara wajar hanya mengirim ulasan sesekali.
+Tanpa waitlist, calon pemesan yang datang ke jadwal yang penuh cuma bisa melihat "slot penuh" lalu pergi begitu saja — padahal ada kemungkinan besar booking di slot itu dibatalkan mendadak (yang sering terjadi di kasus booking lapangan). Tanpa mekanisme antrian, slot kosong akibat pembatalan itu jadi rebutan bebas atau bahkan tidak diketahui siapa pun sampai orang lain kebetulan mengecek ulang — pemesan pertama yang sudah menunjukkan minat sejak awal tidak diprioritaskan sama sekali. Waitlist memberi kepastian dan keadilan: user yang serius ingin booking tidak perlu terus-menerus refresh halaman berharap-harap, dan pihak lapangan juga diuntungkan karena slot yang batal lebih cepat terisi lagi alih-alih menganggur.

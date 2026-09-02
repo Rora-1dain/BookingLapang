@@ -72,3 +72,8 @@ Route::get('/health', function () {
         'cache' => $cacheStatus,
     ], $status);
 });
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/poin/redeem', [\App\Http\Controllers\LoyaltyController::class, 'redeem'])
+        ->name('poin.redeem');
+});
