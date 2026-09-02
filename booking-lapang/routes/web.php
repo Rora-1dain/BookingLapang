@@ -6,6 +6,7 @@ use App\Http\Controllers\PaymentNotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UlasanController;
 use App\Http\Controllers\VoucherController;
+use App\Http\Controllers\PoinController;    
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/booking/{booking}/status', [BookingController::class, 'status'])->name('booking.status');
     Route::post('/booking/{booking}/cek-status', [BookingController::class, 'cekStatus'])->name('booking.cek-status');
     Route::post('/voucher/cek', [VoucherController::class, 'cek'])->name('voucher.cek');
+    Route::post('/poin/redeem', [PoinController::class, 'redeem'])->name('poin.redeem');
 });
 Route::middleware(['auth', 'throttle:5,1'])->group(function () {
     Route::post('/booking/{booking}/ulasan', [UlasanController::class, 'store'])
