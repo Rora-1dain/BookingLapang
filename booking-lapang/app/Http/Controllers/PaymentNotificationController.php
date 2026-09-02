@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\PaymentLog;
+use App\Services\LoyaltyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -71,6 +72,11 @@ class PaymentNotificationController extends Controller
                     'status_pembayaran' => 'paid',
                     'status' => 'confirmed',
                 ]);
+
+                $poinDidapat = intdiv((int) $booking->total_harga, 10000);
+                app(LoyaltyService::class)->tambahPoin(
+                    $booking->user, $poinDidapat, "Booking #{$booking->id} berhasil dibayar"
+                );
 
                 Cache::tags(['dashboard'])->flush();
             } elseif (in_array($status, ['expire', 'deny', 'cancel'])) {
