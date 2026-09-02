@@ -30,4 +30,11 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function poinHistories()
+{
+    return $this->hasMany(\App\Models\PoinHistory::class);
 }
+}
+
+
