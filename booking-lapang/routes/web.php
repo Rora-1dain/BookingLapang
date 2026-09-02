@@ -6,6 +6,7 @@ use App\Http\Controllers\PaymentNotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UlasanController;
 use App\Http\Controllers\VoucherController;
+use App\Http\Controllers\WaitlistController;
 use App\Http\Controllers\PoinController;    
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +31,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/booking/{booking}/bayar', [BookingController::class, 'bayar'])->name('booking.bayar');
     Route::get('/booking/{booking}/status', [BookingController::class, 'status'])->name('booking.status');
     Route::post('/booking/{booking}/cek-status', [BookingController::class, 'cekStatus'])->name('booking.cek-status');
+    Route::post('/booking/cek-ketersediaan', [BookingController::class, 'cekKetersediaanAjax'])
+    ->name('booking.cekKetersediaan');
+    Route::post('/waitlist/daftar', [WaitlistController::class, 'daftar'])
+    ->name('waitlist.daftar');
     Route::post('/voucher/cek', [VoucherController::class, 'cek'])->name('voucher.cek');
     Route::post('/poin/redeem', [PoinController::class, 'redeem'])->name('poin.redeem');
 });
