@@ -19,3 +19,5 @@ Schedule::command('backup:database')
     });
 
 Schedule::command('booking:reconcile-payment')->everyThirtyMinutes();
+
+Schedule::command('waitlist:expire-offers')->everyFiveMinutes();
