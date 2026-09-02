@@ -15,7 +15,7 @@ class BookingService
     public function cekKetersediaan(int $lapanganId, string $tanggal, string $jamMulai, string $jamSelesai): bool
     {
         $bentrok = Booking::where('lapangan_id', $lapanganId)
-            ->where('tanggal_booking', $tanggal)
+           ->whereDate('tanggal_booking', $tanggal)
             ->where('status', '!=', 'cancelled')
             ->where(function ($query) use ($jamMulai, $jamSelesai) {
                 $query->whereBetween('jam_mulai', [$jamMulai, $jamSelesai])
