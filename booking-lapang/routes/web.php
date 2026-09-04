@@ -107,3 +107,4 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/booking/{booking}/refund', [\App\Http\Controllers\AdminBookingController::class, 'refund'])
         ->name('refund.store');
 });
+Route::post('/admin/booking/{booking}/refund', [AdminBookingController::class, 'refund'])->name('admin.booking.refund');

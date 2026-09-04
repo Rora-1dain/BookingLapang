@@ -139,9 +139,36 @@
                             </form>
                         </div>
                     @elseif ($booking->status === 'confirmed')
-                        <div class="rounded-lg bg-green-50 text-green-700 text-sm px-4 py-3">
+                        <div class="rounded-lg bg-green-50 text-green-700 text-sm px-4 py-3 mb-4">
                             Booking ini sudah dikonfirmasi.
                         </div>
+
+                        @if (!$booking->status_refund || $booking->status_refund === 'belum_refund')
+                            <form action="{{ route('admin.refund.store', $booking) }}" method="POST"
+                                  onsubmit="return confirm('Yakin ajukan refund untuk booking ini?');">
+                                @csrf
+                                <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Alasan Pembatalan</label>
+                                <textarea name="alasan" rows="2" required
+                                    class="w-full mt-1 mb-3 text-sm rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500"
+                                    placeholder="Contoh: Lapangan bermasalah, permintaan user, dll."></textarea>
+                                <button type="submit"
+                                    class="w-full border border-red-300 text-red-600 hover:bg-red-50 text-sm font-bold px-5 py-3 rounded-lg transition">
+                                    Batalkan & Ajukan Refund
+                                </button>
+                            </form>
+                        @elseif ($booking->status_refund === 'diproses')
+                            <div class="rounded-lg bg-amber-50 text-amber-700 text-sm px-4 py-3">
+                                Refund sedang diproses.
+                            </div>
+                        @elseif ($booking->status_refund === 'selesai')
+                            <div class="rounded-lg bg-blue-50 text-blue-700 text-sm px-4 py-3">
+                                Refund sudah selesai diproses.
+                            </div>
+                        @elseif ($booking->status_refund === 'ditolak')
+                            <div class="rounded-lg bg-red-50 text-red-700 text-sm px-4 py-3">
+                                Refund ditolak. {{ $booking->catatan_refund }}
+                            </div>
+                        @endif
                     @else
                         <div class="rounded-lg bg-gray-100 text-gray-500 text-sm px-4 py-3">
                             Booking ini telah dibatalkan.
