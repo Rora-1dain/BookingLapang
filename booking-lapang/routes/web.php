@@ -84,3 +84,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/poin/redeem', [\App\Http\Controllers\LoyaltyController::class, 'redeem'])
         ->name('poin.redeem');
 });
+
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/refund', [\App\Http\Controllers\AdminBookingController::class, 'refundIndex'])
+        ->name('refund.index');
+
+    Route::post('/booking/{booking}/refund', [\App\Http\Controllers\AdminBookingController::class, 'refund'])
+        ->name('refund.store');
+});
