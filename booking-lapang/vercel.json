@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "functions": {
+    "api/*.php": {
+      "runtime": "vercel-php@0.9.0"
+    }
+  },
+  "routes": [
+    {
+      "src": "/build/(.*\\.css)",
+      "dest": "/public/build/$1",
+      "headers": { "content-type": "text/css; charset=utf-8" }
+    },
+    {
+      "src": "/build/(.*\\.js)",
+      "dest": "/public/build/$1",
+      "headers": { "content-type": "application/javascript; charset=utf-8" }
+    },
+    {
+      "src": "/build/(.*)",
+      "dest": "/public/build/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.php"
+    }
+  ]
+}

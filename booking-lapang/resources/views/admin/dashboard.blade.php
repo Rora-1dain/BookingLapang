@@ -79,7 +79,7 @@
         </table>
     </div>
 
-        <div class="bg-white rounded-lg shadow p-4 overflow-x-auto">
+    <div class="bg-white rounded-lg shadow p-4 mb-6 overflow-x-auto">
         <h3 class="text-sm font-semibold text-gray-600 mb-3">5 User Paling Aktif</h3>
         <table class="min-w-full text-sm text-left">
             <thead class="text-gray-500 border-b">
@@ -95,6 +95,55 @@
                         <td class="py-2 pr-4">{{ $item['total_booking'] }}</td>
                     </tr>
                 @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-4 mb-6 overflow-x-auto">
+        <h3 class="text-sm font-semibold text-gray-600 mb-3">Ulasan Dilaporkan — Menunggu Tinjauan</h3>
+        <table class="min-w-full text-sm text-left">
+            <thead class="text-gray-500 border-b">
+                <tr>
+                    <th class="py-2 pr-4">User</th>
+                    <th class="py-2 pr-4">Rating</th>
+                    <th class="py-2 pr-4">Komentar</th>
+                    <th class="py-2 pr-4">Tanggal</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">
+                @forelse ($ulasanDilaporkan as $ulasan)
+                    <tr>
+                        <td class="py-2 pr-4">{{ $ulasan->booking->user->name ?? '-' }}</td>
+                        <td class="py-2 pr-4">{{ str_repeat('★', $ulasan->rating) }} ({{ $ulasan->rating }})</td>
+                        <td class="py-2 pr-4">{{ $ulasan->komentar ?? '-' }}</td>
+                        <td class="py-2 pr-4">{{ $ulasan->created_at->format('d M Y') }}</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="4" class="py-3 text-gray-400">Tidak ada ulasan yang dilaporkan.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+        <div class="mt-3">{{ $ulasanDilaporkan->links() }}</div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-4 overflow-x-auto">
+        <h3 class="text-sm font-semibold text-gray-600 mb-3">Statistik Voucher Terpakai</h3>
+        <table class="min-w-full text-sm text-left">
+            <thead class="text-gray-500 border-b">
+                <tr>
+                    <th class="py-2 pr-4">Kode Voucher</th>
+                    <th class="py-2 pr-4">Total Dipakai</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">
+                @forelse ($statistikVoucher as $item)
+                    <tr>
+                        <td class="py-2 pr-4">{{ $item->voucher->kode ?? '-' }}</td>
+                        <td class="py-2 pr-4">{{ $item->total_pakai }}</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="2" class="py-3 text-gray-400">Belum ada voucher yang dipakai.</td></tr>
+                @endforelse
             </tbody>
         </table>
     </div>

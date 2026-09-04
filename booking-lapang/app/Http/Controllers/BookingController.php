@@ -12,6 +12,8 @@ use App\Services\BookingService;
 use App\Services\InvoiceService;
 use App\Services\PaymentService;
 use App\Services\VoucherService;
+use App\Services\WaitlistService;
+use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -62,11 +64,22 @@ class BookingController extends Controller
         }
     }
 
-    public function cancel(Booking $booking)
+    public function cancel(Booking $booking, WaitlistService $waitlistService)
     {
         $booking->pastikanMilikUser(Auth::id());
 
         $this->bookingService->batalkanBooking($booking);
+
+        $ditawarkan = $waitlistService->prosesAntrian(
+            $booking->lapangan_id,
+            $booking->tanggal_booking->format('Y-m-d'),
+            $booking->jam_mulai,
+            $booking->jam_selesai
+        );
+
+        if ($ditawarkan) {
+            $ditawarkan->user->notify(new \App\Notifications\SlotWaitlistTersedia($ditawarkan));
+        }
 
         return back()->with('success', 'Booking berhasil dibatalkan.');
     }
@@ -126,5 +139,19 @@ class BookingController extends Controller
         );
 
         return back()->with('success', 'Invoice telah dikirim ulang ke email Anda.');
+    public function cekKetersediaanAjax(Request $request)
+    {
+        $data = $request->validate([
+            'lapangan_id' => 'required|exists:lapangans,id',
+            'tanggal_booking' => 'required|date',
+            'jam_mulai' => 'required',
+            'jam_selesai' => 'required',
+        ]);
+
+        $tersedia = $this->bookingService->cekKetersediaan(
+            $data['lapangan_id'], $data['tanggal_booking'], $data['jam_mulai'], $data['jam_selesai']
+        );
+
+        return response()->json(['tersedia' => $tersedia]);
     }
 }

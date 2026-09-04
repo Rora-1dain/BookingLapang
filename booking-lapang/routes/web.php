@@ -1,31 +1,29 @@
 <?php
-
 use App\Http\Controllers\AdminBookingController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InvoiceVerifikasiController;
 use App\Http\Controllers\PaymentNotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UlasanController;
+use App\Http\Controllers\VoucherController;
+use App\Http\Controllers\WaitlistController;
+use App\Http\Controllers\PoinController;    
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
-
 Route::get('/', function () {
     return view('welcome');
 });
-
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
+})->middleware(['auth'])->name('dashboard');
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
 require __DIR__.'/auth.php';
-
 Route::middleware('auth')->group(function () {
     Route::get('/booking', [BookingController::class, 'index'])->name('booking.index');
     Route::get('/booking/create', [BookingController::class, 'create'])->name('booking.create');
@@ -36,8 +34,23 @@ Route::middleware('auth')->group(function () {
     Route::post('/booking/{booking}/cek-status', [BookingController::class, 'cekStatus'])->name('booking.cek-status');
     Route::get('/booking/{booking}/invoice', [BookingController::class, 'invoice'])->name('booking.invoice');
     Route::post('/booking/{booking}/invoice/kirim-ulang', [BookingController::class, 'kirimUlangInvoice'])->name('booking.invoice.kirim-ulang');
+    Route::post('/booking/cek-ketersediaan', [BookingController::class, 'cekKetersediaanAjax'])
+    ->name('booking.cekKetersediaan');
+    Route::post('/waitlist/daftar', [WaitlistController::class, 'daftar'])
+    ->name('waitlist.daftar');
+    Route::post('/voucher/cek', [VoucherController::class, 'cek'])->name('voucher.cek');
+    Route::post('/poin/redeem', [PoinController::class, 'redeem'])->name('poin.redeem');
 });
-
+Route::middleware(['auth', 'throttle:5,1'])->group(function () {
+    Route::post('/booking/{booking}/ulasan', [UlasanController::class, 'store'])
+        ->name('ulasan.store');
+});
+Route::middleware(['auth'])->group(function () {
+    Route::put('/ulasan/{ulasan}', [UlasanController::class, 'update'])
+        ->name('ulasan.update');
+    Route::post('/ulasan/{ulasan}/laporkan', [UlasanController::class, 'laporkan'])
+        ->name('ulasan.laporkan');
+});
 Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->group(function () {
@@ -52,7 +65,6 @@ Route::middleware(['auth', 'admin'])
         Route::get('/dashboard', [DashboardController::class, 'index'])
             ->name('admin.dashboard');
     });
-
 Route::post('/payment/notification', [PaymentNotificationController::class, 'handle'])
     ->name('payment.notification');
 
@@ -70,9 +82,13 @@ Route::get('/health', function () {
     Cache::put('health_check', 'ok', 10);
     $cacheStatus = Cache::get('health_check') === 'ok' ? 'ok' : 'error';
     $status = ($dbStatus === 'ok' && $cacheStatus === 'ok') ? 200 : 500;
-
     return response()->json([
         'database' => $dbStatus,
         'cache' => $cacheStatus,
     ], $status);
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/poin/redeem', [\App\Http\Controllers\LoyaltyController::class, 'redeem'])
+        ->name('poin.redeem');
 });
