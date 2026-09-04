@@ -139,6 +139,8 @@ class BookingController extends Controller
         );
 
         return back()->with('success', 'Invoice telah dikirim ulang ke email Anda.');
+    }
+
     public function cekKetersediaanAjax(Request $request)
     {
         $data = $request->validate([
