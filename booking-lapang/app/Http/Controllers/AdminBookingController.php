@@ -64,7 +64,7 @@ class AdminBookingController extends Controller
     $validated = $request->validate(['alasan' => 'required|string|max:255']);
 
     try {
-        $refundService->ajukanRefund($booking, $validated['alasan'], auth()->id());
+        $refundService->ajukanrefund($booking, $validated['alasan'], auth()->id());
 
         return back()->with('success', 'Refund berhasil diproses.');
     } catch (\Exception $e) {
