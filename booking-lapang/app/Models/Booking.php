@@ -26,6 +26,7 @@ class Booking extends Model
         'payment_reference',
         'voucher_id',
         'total_diskon',
+        'nomor_invoice',
     ];
 
     protected $casts = [
