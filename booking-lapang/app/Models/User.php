@@ -35,6 +35,10 @@ class User extends Authenticatable
 {
     return $this->hasMany(\App\Models\PoinHistory::class);
 }
+    public function referrals()
+{
+    return $this->hasMany(User::class, 'direferensikan_oleh');
+}
 }
 
 
