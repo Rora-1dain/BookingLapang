@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreBookingRequest;
+use App\Mail\InvoiceMail;
 use App\Models\Booking;
 use App\Models\Lapangan;
 use App\Services\BookingService;
+use App\Services\InvoiceService;
 use App\Services\PaymentService;
 use App\Services\VoucherService;
 use App\Services\WaitlistService;
 use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class BookingController extends Controller
 {
@@ -106,6 +109,36 @@ class BookingController extends Controller
         return back()->with('info', 'Status transaksi: '.$hasil['transaction_status']);
     }
 
+    public function invoice(Booking $booking, InvoiceService $invoiceService)
+    {
+        $isPemilik = $booking->user_id === Auth::id();
+        $isAdmin = Auth::user()->role === 'admin';
+
+        if (! $isPemilik && ! $isAdmin) {
+            abort(403, 'Anda tidak berhak mengunduh invoice ini.');
+        }
+
+        $pdf = $invoiceService->buatPdf($booking);
+
+        return $pdf->download("invoice-{$booking->payment_reference}.pdf");
+    }
+
+    public function kirimUlangInvoice(Booking $booking, InvoiceService $invoiceService)
+    {
+        $isPemilik = $booking->user_id === Auth::id();
+        $isAdmin = Auth::user()->role === 'admin';
+
+        if (! $isPemilik && ! $isAdmin) {
+            abort(403);
+        }
+
+        $pdf = $invoiceService->buatPdf($booking);
+
+        Mail::to($booking->user->email)->send(
+            new InvoiceMail($booking, $pdf->output())
+        );
+
+        return back()->with('success', 'Invoice telah dikirim ulang ke email Anda.');
     public function cekKetersediaanAjax(Request $request)
     {
         $data = $request->validate([

@@ -2,6 +2,7 @@
 use App\Http\Controllers\AdminBookingController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InvoiceVerifikasiController;
 use App\Http\Controllers\PaymentNotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UlasanController;
@@ -31,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/booking/{booking}/bayar', [BookingController::class, 'bayar'])->name('booking.bayar');
     Route::get('/booking/{booking}/status', [BookingController::class, 'status'])->name('booking.status');
     Route::post('/booking/{booking}/cek-status', [BookingController::class, 'cekStatus'])->name('booking.cek-status');
+    Route::get('/booking/{booking}/invoice', [BookingController::class, 'invoice'])->name('booking.invoice');
+    Route::post('/booking/{booking}/invoice/kirim-ulang', [BookingController::class, 'kirimUlangInvoice'])->name('booking.invoice.kirim-ulang');
     Route::post('/booking/cek-ketersediaan', [BookingController::class, 'cekKetersediaanAjax'])
     ->name('booking.cekKetersediaan');
     Route::post('/waitlist/daftar', [WaitlistController::class, 'daftar'])
@@ -64,6 +67,11 @@ Route::middleware(['auth', 'admin'])
     });
 Route::post('/payment/notification', [PaymentNotificationController::class, 'handle'])
     ->name('payment.notification');
+
+Route::get('/verifikasi-invoice/{nomor}', [InvoiceVerifikasiController::class, 'show'])
+    ->name('invoice.verifikasi')
+    ->where('nomor', '.*');
+
 Route::get('/health', function () {
     try {
         DB::connection()->getPdo();
