@@ -9,6 +9,8 @@ use App\Models\Booking;
 use App\Services\BookingService;
 use Exception;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\RefundService;
+use Illuminate\Http\Request;
 
 class AdminBookingController extends Controller
 {
@@ -52,4 +54,38 @@ class AdminBookingController extends Controller
             return back()->with('error', $e->getMessage());
         }
     }
+
+    public function refund(Request $request, Booking $booking, RefundService $refundService)
+{
+    if (auth()->user()->role !== 'admin') {
+        abort(403, 'Hanya admin yang dapat mengajukan refund.');
+    }
+
+    $validated = $request->validate(['alasan' => 'required|string|max:255']);
+
+    try {
+        $refundService->ajukanRefund($booking, $validated['alasan'], auth()->id());
+
+        return back()->with('success', 'Refund berhasil diproses.');
+    } catch (\Exception $e) {
+        return back()->with('error', $e->getMessage());
+    }
+}
+
+public function refundIndex(Request $request)
+{
+    if (auth()->user()->role !== 'admin') {
+        abort(403);
+    }
+
+    $query = Booking::with(['lapangan', 'user'])
+        ->where('status_refund', '!=', 'belum_refund');
+
+    if ($request->filled('status')) {
+        $query->where('status_refund', $request->query('status'));
+    }
+
+    return view('admin.refund.index', ['bookings' => $query->latest()->paginate(15)]);
+}
+
 }
