@@ -185,8 +185,11 @@
                 <p class="text-sm">Pilih booking di sebelah kiri untuk melihat detail</p>
             </div>
             @endforelse
-
         </div>
+    </div>
+
+    <div class="mt-6">
+        {{ $bookings->links() }}
     </div>
 
 </div>

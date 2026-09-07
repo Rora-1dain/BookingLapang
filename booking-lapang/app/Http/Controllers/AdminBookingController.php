@@ -23,8 +23,8 @@ class AdminBookingController extends Controller
 
     public function index()
     {
-        $bookings = Booking::with(['lapangan', 'user'])->latest()->get();
-
+        $bookings = Booking::with(['lapangan', 'user'])->latest()->paginate(15);
+        
         return view('admin.booking.index', compact('bookings'));
     }
 

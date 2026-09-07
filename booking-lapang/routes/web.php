@@ -43,7 +43,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/waitlist/daftar', [WaitlistController::class, 'daftar'])
     ->name('waitlist.daftar');
     Route::post('/voucher/cek', [VoucherController::class, 'cek'])->name('voucher.cek');
-    Route::post('/poin/redeem', [PoinController::class, 'redeem'])->name('poin.redeem');
 });
     Route::get('/leaderboard-referral', [ReferralController::class, 'leaderboard'])->name('referral.leaderboard');
     
@@ -107,4 +106,3 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/booking/{booking}/refund', [\App\Http\Controllers\AdminBookingController::class, 'refund'])
         ->name('refund.store');
 });
-Route::post('/admin/booking/{booking}/refund', [AdminBookingController::class, 'refund'])->name('admin.booking.refund');
