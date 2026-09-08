@@ -15,12 +15,18 @@ class Booking extends Model
         'jam_selesai',
         'total_harga',
         'status',
+        'status_refund',
+        'alasan_pembatalan',
+        'catatan_refund',
         'metode_pembayaran',
         'status_pembayaran',
         'payment_reference',
         'voucher_id',
         'total_diskon',
         'nomor_invoice',
+        'status_refund',
+        'alasan_pembatalan',
+        'catatan_refund',
     ];
     protected $casts = [
         'tanggal_booking' => 'date',
@@ -54,6 +60,14 @@ class Booking extends Model
     public function ulasan()
     {
         return $this->hasOne(\App\Models\Ulasan::class);
+    }
+
+    /**
+     * Booking bisa punya banyak riwayat pengajuan refund.
+     */
+    public function refundLogs()
+    {
+        return $this->hasMany(RefundLog::class);
     }
 
     /**

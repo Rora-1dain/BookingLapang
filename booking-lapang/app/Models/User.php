@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'kode_referral', 'direferensikan_oleh', 'ip_terakhir'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -34,6 +34,10 @@ class User extends Authenticatable
     public function poinHistories()
 {
     return $this->hasMany(\App\Models\PoinHistory::class);
+}
+    public function referrals()
+{
+    return $this->hasMany(User::class, 'direferensikan_oleh');
 }
 }
 

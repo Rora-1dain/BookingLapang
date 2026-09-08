@@ -77,12 +77,14 @@
         ]
     },
     "extra": {
-        "laravel": {
-            "dont-discover": [
-                "laravel/pail"
-            ]
-        }
-    },
+    "laravel": {
+        "dont-discover": [
+            "laravel/pail",
+            "barryvdh/laravel-debugbar",
+            "laravel/pao"
+        ]
+    }
+},
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
