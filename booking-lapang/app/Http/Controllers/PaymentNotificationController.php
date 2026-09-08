@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\PaymentLog;
+use App\Services\CommissionService;
 use App\Services\LoyaltyService;
 use App\Services\ReferralService;
 use Illuminate\Http\Request;
@@ -82,6 +83,8 @@ class PaymentNotificationController extends Controller
                 app(ReferralService::class)->prosesRewardReferral(
                     $booking, app(LoyaltyService::class)
                 );
+
+                 app(CommissionService::class)->hitungKomisi($booking);
 
                 Cache::tags(['dashboard'])->flush();
             } elseif (in_array($status, ['expire', 'deny', 'cancel'])) {
