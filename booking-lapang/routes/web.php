@@ -112,10 +112,10 @@ Route::middleware('auth')->prefix('pemilik')->name('pemilik.')->group(function (
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/refund', [\App\Http\Controllers\AdminBookingController::class, 'refundIndex'])
+    Route::get('/refund', [AdminBookingController::class, 'refundIndex'])
         ->name('refund.index');
 
-    Route::post('/booking/{booking}/refund', [\App\Http\Controllers\AdminBookingController::class, 'refund'])
+    Route::post('/booking/{booking}/refund', [AdminBookingController::class, 'refund'])
         ->name('refund.store');
 
     Route::get('/lapangan/approval', [AdminLapanganController::class, 'approval'])
