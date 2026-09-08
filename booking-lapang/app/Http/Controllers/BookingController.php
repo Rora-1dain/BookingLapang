@@ -39,7 +39,7 @@ class BookingController extends Controller
 
     public function create()
     {
-        $lapangans = Lapangan::where('status', 'aktif')->get();
+        $lapangans = Lapangan::tampilPublik()->get();
 
         return view('booking.create', compact('lapangans'));
     }
