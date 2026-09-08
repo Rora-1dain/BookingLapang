@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PemilikLapanganController;
-use App\Http\Controllers\AdminLapanganController;
 
 Route::get('/', function () {
     return view('welcome');
