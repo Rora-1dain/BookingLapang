@@ -102,3 +102,11 @@ Route::middleware('auth')->prefix('pemilik')->name('pemilik.')->group(function (
     Route::put('/lapangan/{lapangan}', [PemilikLapanganController::class, 'update'])->name('lapangan.update');
     Route::get('/dashboard', [PemilikLapanganController::class, 'dashboard'])->name('dashboard');
 });
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/refund', [AdminBookingController::class, 'refundIndex'])
+        ->name('refund.index');
+
+    Route::post('/booking/{booking}/refund', [AdminBookingController::class, 'refund'])
+        ->name('refund.store');
+});

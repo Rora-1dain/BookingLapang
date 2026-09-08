@@ -32,9 +32,12 @@ class User extends Authenticatable
     }
 
     public function poinHistories()
-{
-    return $this->hasMany(\App\Models\PoinHistory::class);
-}
-}
+    {
+        return $this->hasMany(\App\Models\PoinHistory::class);
+    }
 
-
+    public function lapangans()
+    {
+        return $this->hasMany(Lapangan::class, 'pemilik_id');
+    }
+}

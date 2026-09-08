@@ -21,6 +21,9 @@ class Booking extends Model
         'voucher_id',
         'total_diskon',
         'nomor_invoice',
+        'nominal_komisi',
+        'pendapatan_pemilik',
+        'payout_id',
     ];
     protected $casts = [
         'tanggal_booking' => 'date',
@@ -54,6 +57,14 @@ class Booking extends Model
     public function ulasan()
     {
         return $this->hasOne(\App\Models\Ulasan::class);
+    }
+
+    /**
+     * Booking termasuk dalam satu payout (opsional, terisi setelah dicairkan).
+     */
+    public function payout()
+    {
+        return $this->belongsTo(Payout::class);
     }
 
     /**

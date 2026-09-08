@@ -16,6 +16,9 @@ class Lapangan extends Model
         'jenis',
         'harga_per_jam',
         'status',
+        'pemilik_id',
+        'status_approval',
+        'persentase_komisi',
     ];
 
     /**
@@ -26,22 +29,36 @@ class Lapangan extends Model
         return $this->hasMany(Booking::class);
     }
 
+    /**
+     * Lapangan dimiliki oleh satu user (sebagai pemilik).
+     */
+    public function pemilik()
+    {
+        return $this->belongsTo(User::class, 'pemilik_id');
+    }
+
+    public function scopeTampilPublik($query)
+    {
+        return $query->where('status_approval', 'disetujui')
+            ->where('status', 'aktif');
+    }
+
     public function ulasans()
-{
-    return $this->hasManyThrough(\App\Models\Ulasan::class, \App\Models\Booking::class);
-}
+    {
+        return $this->hasManyThrough(\App\Models\Ulasan::class, \App\Models\Booking::class);
+    }
 
-public function rataRataRating(): float
-{
-    return round($this->ulasans()->avg('rating') ?? 0, 1);
-}
+    public function rataRataRating(): float
+    {
+        return round($this->ulasans()->avg('rating') ?? 0, 1);
+    }
 
-public function ulasanTerbaru(int $limit = 5)
-{
-    return $this->ulasans()
-        ->with('booking.user:id,name')
-        ->latest('ulasans.created_at')
-        ->limit($limit)
-        ->get();
-}
+    public function ulasanTerbaru(int $limit = 5)
+    {
+        return $this->ulasans()
+            ->with('booking.user:id,name')
+            ->latest('ulasans.created_at')
+            ->limit($limit)
+            ->get();
+    }
 }
