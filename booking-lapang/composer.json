@@ -80,7 +80,8 @@
     "laravel": {
         "dont-discover": [
             "laravel/pail",
-            "barryvdh/laravel-debugbar"
+            "barryvdh/laravel-debugbar",
+            "laravel/pao"
         ]
     }
 },
