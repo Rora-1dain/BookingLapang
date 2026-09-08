@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\PaymentLog;
 use App\Services\LoyaltyService;
+use App\Services\ReferralService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -76,6 +77,10 @@ class PaymentNotificationController extends Controller
                 $poinDidapat = intdiv((int) $booking->total_harga, 10000);
                 app(LoyaltyService::class)->tambahPoin(
                     $booking->user, $poinDidapat, "Booking #{$booking->id} berhasil dibayar"
+                );
+
+                app(ReferralService::class)->prosesRewardReferral(
+                    $booking, app(LoyaltyService::class)
                 );
 
                 Cache::tags(['dashboard'])->flush();

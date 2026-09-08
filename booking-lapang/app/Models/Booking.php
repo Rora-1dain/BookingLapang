@@ -15,6 +15,9 @@ class Booking extends Model
         'jam_selesai',
         'total_harga',
         'status',
+        'status_refund',
+        'alasan_pembatalan',
+        'catatan_refund',
         'metode_pembayaran',
         'status_pembayaran',
         'payment_reference',
@@ -42,7 +45,6 @@ class Booking extends Model
     {
         return $this->belongsTo(User::class);
     }
-
     /**
      * Booking bisa memakai satu voucher (opsional).
      */
@@ -50,7 +52,6 @@ class Booking extends Model
     {
         return $this->belongsTo(Voucher::class);
     }
-
     /**
      * Booking bisa punya satu ulasan.
      */
@@ -58,7 +59,6 @@ class Booking extends Model
     {
         return $this->hasOne(\App\Models\Ulasan::class);
     }
-
     /**
      * Booking termasuk dalam satu payout (opsional, terisi setelah dicairkan).
      */
@@ -66,7 +66,13 @@ class Booking extends Model
     {
         return $this->belongsTo(Payout::class);
     }
-
+    /**
+     * Booking bisa punya banyak riwayat pengajuan refund.
+     */
+    public function refundLogs()
+    {
+        return $this->hasMany(RefundLog::class);
+    }
     /**
      * Pastikan booking ini milik user yang sedang login,
      * hentikan request dengan 403 kalau bukan.

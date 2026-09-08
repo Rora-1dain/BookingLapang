@@ -8,11 +8,14 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UlasanController;
 use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\WaitlistController;
-use App\Http\Controllers\PoinController;    
+use App\Http\Controllers\PoinController;  
+use App\Http\Controllers\ReferralController;  
+use App\Http\Controllers\AdminLapanganController;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PemilikLapanganController;
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -23,7 +26,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/ajak-teman', [ReferralController::class, 'index'])->name('referral.index');
 });
+
 require __DIR__.'/auth.php';
 Route::middleware('auth')->group(function () {
     Route::get('/booking', [BookingController::class, 'index'])->name('booking.index');
@@ -40,8 +46,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/waitlist/daftar', [WaitlistController::class, 'daftar'])
     ->name('waitlist.daftar');
     Route::post('/voucher/cek', [VoucherController::class, 'cek'])->name('voucher.cek');
-    Route::post('/poin/redeem', [PoinController::class, 'redeem'])->name('poin.redeem');
 });
+    Route::get('/leaderboard-referral', [ReferralController::class, 'leaderboard'])->name('referral.leaderboard');
+    
 Route::middleware(['auth', 'throttle:5,1'])->group(function () {
     Route::post('/booking/{booking}/ulasan', [UlasanController::class, 'store'])
         ->name('ulasan.store');
@@ -52,6 +59,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/ulasan/{ulasan}/laporkan', [UlasanController::class, 'laporkan'])
         ->name('ulasan.laporkan');
 });
+
 Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->group(function () {
@@ -109,4 +117,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::post('/booking/{booking}/refund', [AdminBookingController::class, 'refund'])
         ->name('refund.store');
+
+    Route::get('/lapangan/approval', [AdminLapanganController::class, 'approval'])
+        ->name('lapangan.approval');
+    Route::post('/lapangan/{lapangan}/setujui', [AdminLapanganController::class, 'setujui'])
+        ->name('lapangan.setujui');
+    Route::post('/lapangan/{lapangan}/tolak', [AdminLapanganController::class, 'tolak'])
+        ->name('lapangan.tolak');
 });
