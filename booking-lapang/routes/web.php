@@ -10,6 +10,7 @@ use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\WaitlistController;
 use App\Http\Controllers\PoinController;  
 use App\Http\Controllers\ReferralController;  
+use App\Http\Controllers\AdminLapanganController;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
