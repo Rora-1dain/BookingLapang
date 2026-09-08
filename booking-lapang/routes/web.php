@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PemilikLapanganController;
 use App\Http\Controllers\AdminPayoutController;
+use App\Http\Controllers\PemilikPayoutController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -111,8 +112,10 @@ Route::middleware('auth')->prefix('pemilik')->name('pemilik.')->group(function (
     Route::put('/lapangan/{lapangan}', [PemilikLapanganController::class, 'update'])->name('lapangan.update');
     Route::get('/dashboard', [PemilikLapanganController::class, 'dashboard'])->name('dashboard');
 
-    Route::get('/payout', [\App\Http\Controllers\PemilikPayoutController::class, 'index'])
+    Route::get('/payout', [PemilikPayoutController::class, 'index'])
         ->name('payout.index');
+    Route::get('/payout/{payout}/download', [PemilikPayoutController::class, 'download'])
+        ->name('payout.download');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
