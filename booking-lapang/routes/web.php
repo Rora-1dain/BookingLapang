@@ -129,6 +129,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/lapangan/{lapangan}/tolak', [AdminLapanganController::class, 'tolak'])
         ->name('lapangan.tolak');
 
+    Route::get('/payout', [AdminPayoutController::class, 'index'])
+        ->name('payout.index');
     Route::get('/payout/create', [AdminPayoutController::class, 'create'])
         ->name('payout.create');
     Route::post('/payout', [AdminPayoutController::class, 'store'])

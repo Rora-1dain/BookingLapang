@@ -48,4 +48,10 @@ class AdminPayoutController extends Controller
 
         return back()->with('success', 'Payout ditandai selesai.');
     }
+
+    public function index()
+    {
+        $payouts = \App\Models\Payout::with('pemilik')->latest()->get();
+        return view('admin.payout.index', compact('payouts'));
+    }
 }
