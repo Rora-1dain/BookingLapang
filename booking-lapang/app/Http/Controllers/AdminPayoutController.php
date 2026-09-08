@@ -28,8 +28,10 @@ class AdminPayoutController extends Controller
 
         try {
             $pemilik = User::findOrFail($validated['pemilik_id']);
-            $payoutService->buatPayout(
-                $pemilik, $validated['periode_mulai'], $validated['periode_selesai']
+           $payoutService->buatPayout(
+            $pemilik,
+            \Carbon\Carbon::parse($validated['periode_mulai']),
+            \Carbon\Carbon::parse($validated['periode_selesai'])
             );
 
             return back()->with('success', 'Payout berhasil dibuat.');
