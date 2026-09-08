@@ -36,7 +36,7 @@
                                     <td class="py-2 px-3">{{ $lapangan->pemilik->name ?? '-' }}</td>
                                     <td class="py-2 px-3">{{ $lapangan->jenis }}</td>
                                     <td class="py-2 px-3">Rp{{ number_format($lapangan->harga_per_jam, 0, ',', '.') }}</td>
-                                    <td class="py-2 px-3">{{ $lapangan->created_at->format('d M Y') }}</td>
+                                    <td class="py-2 px-3">{{ $lapangan->created_at?->format('d M Y') ?? '-' }}</td>
                                     <td class="py-2 px-3 space-x-2">
                                         <form action="{{ route('admin.lapangan.setujui', $lapangan) }}" method="POST" class="inline">
                                             @csrf
