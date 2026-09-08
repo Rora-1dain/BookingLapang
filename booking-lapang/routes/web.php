@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PemilikLapanganController;
-use App\Http\Controllers\AdminLapanganController;
+use App\Http\Controllers\AdminPayoutController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -110,6 +110,9 @@ Route::middleware('auth')->prefix('pemilik')->name('pemilik.')->group(function (
     Route::get('/lapangan/{lapangan}/edit', [PemilikLapanganController::class, 'edit'])->name('lapangan.edit');
     Route::put('/lapangan/{lapangan}', [PemilikLapanganController::class, 'update'])->name('lapangan.update');
     Route::get('/dashboard', [PemilikLapanganController::class, 'dashboard'])->name('dashboard');
+
+    Route::get('/payout', [\App\Http\Controllers\PemilikPayoutController::class, 'index'])
+        ->name('payout.index');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -125,4 +128,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->name('lapangan.setujui');
     Route::post('/lapangan/{lapangan}/tolak', [AdminLapanganController::class, 'tolak'])
         ->name('lapangan.tolak');
+
+    Route::get('/payout/create', [AdminPayoutController::class, 'create'])
+        ->name('payout.create');
+    Route::post('/payout', [AdminPayoutController::class, 'store'])
+        ->name('payout.store');
+    Route::post('/payout/{payoutId}/selesai', [AdminPayoutController::class, 'selesai'])
+        ->name('payout.selesai');
 });
