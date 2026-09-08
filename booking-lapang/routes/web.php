@@ -13,6 +13,9 @@ use App\Http\Controllers\ReferralController;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PemilikLapanganController;
+use App\Http\Controllers\AdminLapanganController;
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -99,10 +102,26 @@ Route::middleware(['auth'])->group(function () {
         ->name('poin.redeem');
 });
 
+Route::middleware('auth')->prefix('pemilik')->name('pemilik.')->group(function () {
+    Route::get('/lapangan', [PemilikLapanganController::class, 'index'])->name('lapangan.index');
+    Route::get('/lapangan/create', [PemilikLapanganController::class, 'create'])->name('lapangan.create');
+    Route::post('/lapangan', [PemilikLapanganController::class, 'store'])->name('lapangan.store');
+    Route::get('/lapangan/{lapangan}/edit', [PemilikLapanganController::class, 'edit'])->name('lapangan.edit');
+    Route::put('/lapangan/{lapangan}', [PemilikLapanganController::class, 'update'])->name('lapangan.update');
+    Route::get('/dashboard', [PemilikLapanganController::class, 'dashboard'])->name('dashboard');
+});
+
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/refund', [\App\Http\Controllers\AdminBookingController::class, 'refundIndex'])
         ->name('refund.index');
 
     Route::post('/booking/{booking}/refund', [\App\Http\Controllers\AdminBookingController::class, 'refund'])
         ->name('refund.store');
+
+    Route::get('/lapangan/approval', [AdminLapanganController::class, 'approval'])
+        ->name('lapangan.approval');
+    Route::post('/lapangan/{lapangan}/setujui', [AdminLapanganController::class, 'setujui'])
+        ->name('lapangan.setujui');
+    Route::post('/lapangan/{lapangan}/tolak', [AdminLapanganController::class, 'tolak'])
+        ->name('lapangan.tolak');
 });
