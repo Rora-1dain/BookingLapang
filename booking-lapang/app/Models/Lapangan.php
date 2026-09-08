@@ -44,4 +44,16 @@ public function ulasanTerbaru(int $limit = 5)
         ->limit($limit)
         ->get();
 }
+
+public function pemilik()
+{
+    return $this->belongsTo(\App\Models\User::class, 'pemilik_id');
+}
+
+public function scopeTampilPublik($query)
+{
+    return $query->where('status_approval', 'disetujui')
+        ->where('status', 'aktif');
+}
+
 }

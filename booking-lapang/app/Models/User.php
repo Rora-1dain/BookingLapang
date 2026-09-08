@@ -39,6 +39,13 @@ class User extends Authenticatable
 {
     return $this->hasMany(User::class, 'direferensikan_oleh');
 }
+
+public function lapangans()
+{
+    return $this->hasMany(\App\Models\Lapangan::class, 'pemilik_id');
+}
+
+
 }
 
 
