@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Models;
-
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -10,14 +8,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-
 #[Fillable(['name', 'email', 'password', 'kode_referral', 'direferensikan_oleh', 'ip_terakhir'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens ,HasFactory, Notifiable;
-
     /**
      * Get the attributes that should be cast.
      *
@@ -30,22 +26,16 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-
     public function poinHistories()
-{
-    return $this->hasMany(\App\Models\PoinHistory::class);
-}
+    {
+        return $this->hasMany(\App\Models\PoinHistory::class);
+    }
     public function referrals()
-{
-    return $this->hasMany(User::class, 'direferensikan_oleh');
+    {
+        return $this->hasMany(User::class, 'direferensikan_oleh');
+    }
+    public function lapangans()
+    {
+        return $this->hasMany(\App\Models\Lapangan::class, 'pemilik_id');
+    }
 }
-
-public function lapangans()
-{
-    return $this->hasMany(\App\Models\Lapangan::class, 'pemilik_id');
-}
-
-
-}
-
-
