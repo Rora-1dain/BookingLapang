@@ -41,7 +41,7 @@
                                     </td>
                                     <td class="py-2 px-3">
                                         @if($payout->status === 'selesai')
-                                            <a href="#" class="text-blue-600 hover:underline">Unduh PDF</a>
+                                            <a href="{{ route('pemilik.payout.download', $payout->id) }}" class="text-blue-600 hover:underline">Unduh PDF</a>
                                         @else
                                             <span class="text-gray-400">-</span>
                                         @endif

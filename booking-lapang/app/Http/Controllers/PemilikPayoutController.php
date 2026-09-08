@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payout;
+use App\Models\Booking;
 
 class PemilikPayoutController extends Controller
 {
