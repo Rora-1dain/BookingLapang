@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PemilikLapanganController;
+use App\Http\Controllers\LapanganController;
 use App\Http\Controllers\AdminPayoutController;
 use App\Http\Controllers\PemilikPayoutController;
 
@@ -24,6 +25,9 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
+
+Route::get('/lapangan', [LapanganController::class, 'index'])->name('lapangan.publik.index');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
