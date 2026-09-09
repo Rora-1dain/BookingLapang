@@ -11,13 +11,15 @@ use App\Http\Controllers\WaitlistController;
 use App\Http\Controllers\PoinController;  
 use App\Http\Controllers\ReferralController;  
 use App\Http\Controllers\AdminLapanganController;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PemilikLapanganController;
 use App\Http\Controllers\LapanganController;
 use App\Http\Controllers\AdminPayoutController;
 use App\Http\Controllers\PemilikPayoutController;
+use App\Http\Controllers\AdminVerifikasiController;
+use App\Http\Controllers\PemilikVerifikasiController;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -120,6 +122,11 @@ Route::middleware('auth')->prefix('pemilik')->name('pemilik.')->group(function (
         ->name('payout.index');
     Route::get('/payout/{payout}/download', [PemilikPayoutController::class, 'download'])
         ->name('payout.download');
+
+    Route::get('/verifikasi', [PemilikVerifikasiController::class, 'create'])
+        ->name('verifikasi.create');
+    Route::post('/verifikasi', [PemilikVerifikasiController::class, 'store'])
+        ->name('verifikasi.store');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -145,7 +152,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/payout/{payoutId}/selesai', [AdminPayoutController::class, 'selesai'])
         ->name('payout.selesai');
 
-        
+    Route::get('/verifikasi', [AdminVerifikasiController::class, 'index'])
+        ->name('verifikasi.index');
+    Route::get('/verifikasi/{pemilik}/dokumen', [AdminVerifikasiController::class, 'lihatDokumen'])
+        ->name('verifikasi.dokumen');
+    Route::post('/verifikasi/{pemilik}/tinjau', [AdminVerifikasiController::class, 'tinjau'])
+        ->name('verifikasi.tinjau');
 });
 
 Route::middleware(['auth'])->group(function () {
