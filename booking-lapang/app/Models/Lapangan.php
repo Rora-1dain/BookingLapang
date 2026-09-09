@@ -14,6 +14,7 @@ class Lapangan extends Model
         'pemilik_id',
         'status_approval',
         'persentase_komisi',
+        'kota',
     ];
     /**
      * Satu lapangan bisa punya banyak booking.
@@ -49,5 +50,17 @@ class Lapangan extends Model
             ->latest('ulasans.created_at')
             ->limit($limit)
             ->get();
+    }
+
+
+    public function fotos()
+    {
+    return $this->hasMany(\App\Models\FotoLapangan::class)->orderBy('urutan');
+    }
+
+    public function fotoUtama()
+    {
+    return $this->fotos()->where('is_utama', true)->first()
+        ?? $this->fotos()->first();
     }
 }

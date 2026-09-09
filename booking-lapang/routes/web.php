@@ -12,6 +12,7 @@ use App\Http\Controllers\PoinController;
 use App\Http\Controllers\ReferralController;  
 use App\Http\Controllers\AdminLapanganController;
 use App\Http\Controllers\PemilikLapanganController;
+use App\Http\Controllers\LapanganController;
 use App\Http\Controllers\AdminPayoutController;
 use App\Http\Controllers\PemilikPayoutController;
 use App\Http\Controllers\AdminVerifikasiController;
@@ -26,6 +27,9 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
+
+Route::get('/lapangan', [LapanganController::class, 'index'])->name('lapangan.publik.index');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -154,4 +158,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->name('verifikasi.dokumen');
     Route::post('/verifikasi/{pemilik}/tinjau', [AdminVerifikasiController::class, 'tinjau'])
         ->name('verifikasi.tinjau');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/lapangan/{lapangan}/foto', [\App\Http\Controllers\FotoLapanganController::class, 'store'])
+        ->name('lapangan.foto.store');
+
+    Route::delete('/foto/{foto}', [\App\Http\Controllers\FotoLapanganController::class, 'destroy'])
+        ->name('lapangan.foto.destroy');
+
+    Route::post('/foto/{foto}/jadikan-utama', [\App\Http\Controllers\FotoLapanganController::class, 'jadikanUtama'])
+        ->name('lapangan.foto.utama');
 });
