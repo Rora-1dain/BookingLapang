@@ -8,23 +8,34 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UlasanController;
 use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\WaitlistController;
-use App\Http\Controllers\PoinController;    
+use App\Http\Controllers\PoinController;  
+use App\Http\Controllers\ReferralController;  
+use App\Http\Controllers\AdminLapanganController;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PemilikLapanganController;
 use App\Http\Controllers\LapanganController;
+use App\Http\Controllers\AdminPayoutController;
+use App\Http\Controllers\PemilikPayoutController;
+
 Route::get('/', function () {
     return view('welcome');
 });
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
+
+Route::get('/lapangan', [LapanganController::class, 'index'])->name('lapangan.publik.index');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/ajak-teman', [ReferralController::class, 'index'])->name('referral.index');
 });
+
 require __DIR__.'/auth.php';
 Route::middleware('auth')->group(function () {
     Route::get('/booking', [BookingController::class, 'index'])->name('booking.index');
@@ -41,8 +52,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/waitlist/daftar', [WaitlistController::class, 'daftar'])
     ->name('waitlist.daftar');
     Route::post('/voucher/cek', [VoucherController::class, 'cek'])->name('voucher.cek');
-    Route::post('/poin/redeem', [PoinController::class, 'redeem'])->name('poin.redeem');
 });
+    Route::get('/leaderboard-referral', [ReferralController::class, 'leaderboard'])->name('referral.leaderboard');
+    
 Route::middleware(['auth', 'throttle:5,1'])->group(function () {
     Route::post('/booking/{booking}/ulasan', [UlasanController::class, 'store'])
         ->name('ulasan.store');
@@ -53,6 +65,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/ulasan/{ulasan}/laporkan', [UlasanController::class, 'laporkan'])
         ->name('ulasan.laporkan');
 });
+
 Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->group(function () {
@@ -102,6 +115,11 @@ Route::middleware('auth')->prefix('pemilik')->name('pemilik.')->group(function (
     Route::get('/lapangan/{lapangan}/edit', [PemilikLapanganController::class, 'edit'])->name('lapangan.edit');
     Route::put('/lapangan/{lapangan}', [PemilikLapanganController::class, 'update'])->name('lapangan.update');
     Route::get('/dashboard', [PemilikLapanganController::class, 'dashboard'])->name('dashboard');
+
+    Route::get('/payout', [PemilikPayoutController::class, 'index'])
+        ->name('payout.index');
+    Route::get('/payout/{payout}/download', [PemilikPayoutController::class, 'download'])
+        ->name('payout.download');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -110,4 +128,20 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::post('/booking/{booking}/refund', [AdminBookingController::class, 'refund'])
         ->name('refund.store');
+
+    Route::get('/lapangan/approval', [AdminLapanganController::class, 'approval'])
+        ->name('lapangan.approval');
+    Route::post('/lapangan/{lapangan}/setujui', [AdminLapanganController::class, 'setujui'])
+        ->name('lapangan.setujui');
+    Route::post('/lapangan/{lapangan}/tolak', [AdminLapanganController::class, 'tolak'])
+        ->name('lapangan.tolak');
+
+    Route::get('/payout', [AdminPayoutController::class, 'index'])
+        ->name('payout.index');
+    Route::get('/payout/create', [AdminPayoutController::class, 'create'])
+        ->name('payout.create');
+    Route::post('/payout', [AdminPayoutController::class, 'store'])
+        ->name('payout.store');
+    Route::post('/payout/{payoutId}/selesai', [AdminPayoutController::class, 'selesai'])
+        ->name('payout.selesai');
 });
