@@ -19,7 +19,10 @@ class LapanganSearchService
             })
             ->when($kriteria['rating_min'] ?? null, function (Builder $q, $v) {
                 $q->withAvg('ulasans', 'rating')
-                    ->having('ulasans_avg_rating', '>=', $v);
+                    ->whereRaw(
+                        '(select avg("ulasans"."rating") from "ulasans" inner join "bookings" on "bookings"."id" = "ulasans"."booking_id" where "lapangans"."id" = "bookings"."lapangan_id") >= ?',
+                        [$v]
+                    );
             })
             ->paginate(12);
     }
