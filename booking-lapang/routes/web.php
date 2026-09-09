@@ -140,4 +140,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->name('payout.store');
     Route::post('/payout/{payoutId}/selesai', [AdminPayoutController::class, 'selesai'])
         ->name('payout.selesai');
+
+        
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/lapangan/{lapangan}/foto', [\App\Http\Controllers\FotoLapanganController::class, 'store'])
+        ->name('lapangan.foto.store');
+
+    Route::delete('/foto/{foto}', [\App\Http\Controllers\FotoLapanganController::class, 'destroy'])
+        ->name('lapangan.foto.destroy');
+
+    Route::post('/foto/{foto}/jadikan-utama', [\App\Http\Controllers\FotoLapanganController::class, 'jadikanUtama'])
+        ->name('lapangan.foto.utama');
 });
