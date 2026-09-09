@@ -21,6 +21,10 @@ class PemilikLapanganController extends Controller
 
     public function store(Request $request)
     {
+        if (auth()->user()->status_verifikasi !== 'terverifikasi') {
+            return back()->with('error', 'Anda harus terverifikasi terlebih dahulu sebelum mengajukan lapangan.');
+        }
+
         $validated = $request->validate([
             'nama_lapangan' => 'required|string|max:255',
             'jenis' => 'required|string',
