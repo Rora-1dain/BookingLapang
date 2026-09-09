@@ -20,7 +20,8 @@ class AdminVerifikasiController extends Controller
     {
         abort_unless(auth()->user()->role === 'admin', 403);
 
-        return Storage::disk('local')->response($pemilik->path_dokumen_identitas);
+        return response('<img src="' . $pemilik->path_dokumen_identitas . '" style="max-width:100%">')
+            ->header('Content-Type', 'text/html');
     }
 
     public function tinjau(Request $request, User $pemilik, VerifikasiService $verifikasiService)

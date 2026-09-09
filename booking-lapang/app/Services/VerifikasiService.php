@@ -11,18 +11,20 @@ use Exception;
 class VerifikasiService
 {
     public function ajukanVerifikasi(User $pemilik, $fileDokumen): void
-    {
-        if ($pemilik->status_verifikasi === 'menunggu') {
-            throw new Exception('Pengajuan verifikasi Anda masih dalam peninjauan.');
-        }
-
-        $path = $fileDokumen->store('dokumen-identitas', 'public');
-
-        $pemilik->update([
-            'status_verifikasi' => 'menunggu',
-            'path_dokumen_identitas' => $path,
-        ]);
+{
+    if ($pemilik->status_verifikasi === 'menunggu') {
+        throw new Exception('Pengajuan verifikasi Anda masih dalam peninjauan.');
     }
+
+    $base64 = base64_encode(file_get_contents($fileDokumen->getRealPath()));
+    $mimeType = $fileDokumen->getMimeType();
+    $dataUri = "data:{$mimeType};base64,{$base64}";
+
+    $pemilik->update([
+        'status_verifikasi' => 'menunggu',
+        'path_dokumen_identitas' => $dataUri,
+    ]);
+}
 
     public function tinjauVerifikasi(User $pemilik, bool $disetujui, ?string $catatan): void
     {
