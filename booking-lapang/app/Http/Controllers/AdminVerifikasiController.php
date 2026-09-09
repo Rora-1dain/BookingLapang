@@ -11,7 +11,9 @@ class AdminVerifikasiController extends Controller
 {
     public function index()
     {
-        $menunggu = User::where('status_verifikasi', 'menunggu')->latest()->get();
+        $menunggu = User::where('status_verifikasi', 'menunggu')
+            ->latest()
+            ->get(['id', 'name', 'email', 'updated_at']);
 
         return view('admin.verifikasi.index', compact('menunggu'));
     }
