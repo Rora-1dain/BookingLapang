@@ -16,7 +16,7 @@ class VerifikasiService
             throw new Exception('Pengajuan verifikasi Anda masih dalam peninjauan.');
         }
 
-        $path = $fileDokumen->store('dokumen-identitas', 'local');
+        $path = $fileDokumen->store('dokumen-identitas', 'public');
 
         $pemilik->update([
             'status_verifikasi' => 'menunggu',
