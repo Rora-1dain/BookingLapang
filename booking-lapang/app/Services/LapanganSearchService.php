@@ -19,7 +19,6 @@ class LapanganSearchService
             })
             ->when($kriteria['rating_min'] ?? null, function (Builder $q, $v) {
                 $q->withAvg('ulasans', 'rating')
-                    ->groupBy('lapangans.id')
                     ->having('ulasans_avg_rating', '>=', $v);
             })
             ->paginate(12);
