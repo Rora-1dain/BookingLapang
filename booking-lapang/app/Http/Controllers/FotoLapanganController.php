@@ -10,6 +10,15 @@ use Exception;
 
 class FotoLapanganController extends Controller
 {
+    public function index(Lapangan $lapangan)
+    {
+        if (auth()->id() !== $lapangan->pemilik_id && auth()->user()->role !== 'admin') {
+            abort(403, 'Anda tidak berhak melihat galeri lapangan ini.');
+        }
+
+        return view('lapangan.galeri', compact('lapangan'));
+    }
+
     public function store(Request $request, Lapangan $lapangan, FotoLapanganService $fotoService)
     {
         // Hanya pemilik lapangan itu sendiri atau admin yang boleh unggah foto

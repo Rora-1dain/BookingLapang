@@ -161,6 +161,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 });
 
 Route::middleware(['auth'])->group(function () {
+    Route::get('/lapangan/{lapangan}/galeri', [\App\Http\Controllers\FotoLapanganController::class, 'index'])
+        ->name('lapangan.foto.index');
+
     Route::post('/lapangan/{lapangan}/foto', [\App\Http\Controllers\FotoLapanganController::class, 'store'])
         ->name('lapangan.foto.store');
 
