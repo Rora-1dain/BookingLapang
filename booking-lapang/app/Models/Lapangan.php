@@ -19,6 +19,7 @@ class Lapangan extends Model
         'pemilik_id',
         'status_approval',
         'persentase_komisi',
+        'kota',
     ];
 
     /**
