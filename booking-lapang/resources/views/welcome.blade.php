@@ -23,28 +23,28 @@
         </p>
 </div>
 <!-- Quick Sport Filter Chips -->
-<div class="flex items-center justify-center gap-2.5 overflow-x-auto pb-4 max-w-4xl mx-auto no-scrollbar">
-<button class="inline-flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-xl font-label-md text-label-md shadow-grass-resting active:scale-95 transition-transform" type="button">
+<div class="flex items-center justify-center gap-2.5 overflow-x-auto pb-4 max-w-4xl mx-auto no-scrollbar" id="sportChips">
+<button data-index="0" type="button" class="sport-chip inline-flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-xl font-label-md text-label-md shadow-grass-resting active:scale-95 transition-transform">
 <span class="text-base">🏸</span>
 <span>Badminton</span>
 </button>
-<button class="inline-flex items-center gap-2 bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary px-4 py-2 rounded-xl font-label-md text-label-md hover:bg-surface-container transition-all" type="button">
+<button data-index="1" type="button" class="sport-chip inline-flex items-center gap-2 bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary px-4 py-2 rounded-xl font-label-md text-label-md hover:bg-surface-container transition-all">
 <span class="text-base">⚽</span>
 <span>Futsal</span>
 </button>
-<button class="inline-flex items-center gap-2 bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary px-4 py-2 rounded-xl font-label-md text-label-md hover:bg-surface-container transition-all" type="button">
+<button data-index="2" type="button" class="sport-chip inline-flex items-center gap-2 bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary px-4 py-2 rounded-xl font-label-md text-label-md hover:bg-surface-container transition-all">
 <span class="text-base">🥅</span>
 <span>Mini Soccer</span>
 </button>
-<button class="inline-flex items-center gap-2 bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary px-4 py-2 rounded-xl font-label-md text-label-md hover:bg-surface-container transition-all" type="button">
+<button data-index="3" type="button" class="sport-chip inline-flex items-center gap-2 bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary px-4 py-2 rounded-xl font-label-md text-label-md hover:bg-surface-container transition-all">
 <span class="text-base">🏀</span>
 <span>Basket</span>
 </button>
-<button class="inline-flex items-center gap-2 bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary px-4 py-2 rounded-xl font-label-md text-label-md hover:bg-surface-container transition-all" type="button">
+<button data-index="4" type="button" class="sport-chip inline-flex items-center gap-2 bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary px-4 py-2 rounded-xl font-label-md text-label-md hover:bg-surface-container transition-all">
 <span class="text-base">🎾</span>
 <span>Tenis</span>
 </button>
-<button class="inline-flex items-center gap-2 bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary px-4 py-2 rounded-xl font-label-md text-label-md hover:bg-surface-container transition-all" type="button">
+<button data-index="5" type="button" class="sport-chip inline-flex items-center gap-2 bg-surface-container-lowest text-on-surface border border-outline-variant hover:border-primary px-4 py-2 rounded-xl font-label-md text-label-md hover:bg-surface-container transition-all">
 <span class="text-base">🏓</span>
 <span>Padel</span>
 </button>
@@ -57,7 +57,7 @@
 <label class="block font-label-md text-label-md text-on-surface-variant mb-1.5">Cabang Olahraga</label>
 <div class="relative">
 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-primary material-symbols-outlined" data-icon="sports_tennis">sports_tennis</span>
-<select name="jenis" class="w-full h-12 pl-10 pr-8 bg-surface-container-low border border-outline-variant rounded-xl font-body-md text-body-md text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container focus:outline-none appearance-none cursor-pointer">
+<select id="jenisSelect" name="jenis" class="w-full h-12 pl-10 pr-8 bg-surface-container-low border border-outline-variant rounded-xl font-body-md text-body-md text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container focus:outline-none appearance-none cursor-pointer">
 <option selected="">Badminton</option>
 <option>Futsal Interlock</option>
 <option>Mini Soccer Turf</option>
@@ -334,5 +334,28 @@
 </div>
 </section>
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const chips = document.querySelectorAll('.sport-chip');
+    const select = document.getElementById('jenisSelect');
+
+    const activeClasses = ['bg-primary', 'text-on-primary', 'shadow-grass-resting'];
+    const inactiveClasses = ['bg-surface-container-lowest', 'text-on-surface', 'border', 'border-outline-variant', 'hover:border-primary', 'hover:bg-surface-container'];
+
+    chips.forEach(chip => {
+        chip.addEventListener('click', function () {
+            const index = parseInt(this.dataset.index, 10);
+            select.selectedIndex = index;
+
+            chips.forEach(c => {
+                c.classList.remove(...activeClasses);
+                c.classList.add(...inactiveClasses);
+            });
+            this.classList.remove(...inactiveClasses);
+            this.classList.add(...activeClasses);
+        });
+    });
+});
+</script>
 
 @endsection
