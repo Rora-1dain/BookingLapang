@@ -9,7 +9,7 @@ class PemilikLapanganController extends Controller
 {
     public function index()
     {
-        $lapangans = Lapangan::where('pemilik_id', auth()->id())->latest()->get();
+        $lapangans = Lapangan::where('pemilik_id', auth()->id())->with('fotos')->latest()->get();
 
         return view('pemilik.lapangan.index', compact('lapangans'));
     }
@@ -29,6 +29,7 @@ class PemilikLapanganController extends Controller
             'nama_lapangan' => 'required|string|max:255',
             'jenis' => 'required|string',
             'harga_per_jam' => 'required|numeric|min:0',
+            'kota' => 'nullable|string|max:255',
         ]);
 
         Lapangan::create([
@@ -61,6 +62,7 @@ class PemilikLapanganController extends Controller
             'nama_lapangan' => 'required|string|max:255',
             'jenis' => 'required|string',
             'harga_per_jam' => 'required|numeric|min:0',
+            'kota' => 'nullable|string|max:255',
         ]);
 
         $lapangan->update($validated);
@@ -86,10 +88,40 @@ class PemilikLapanganController extends Controller
         ->whereMonth('tanggal_booking', now()->month)
         ->sum('total_harga');
 
+    // Daftar lapangan milik pemilik ini, lengkap dengan foto utama & rating,
+    // buat ditampilin sebagai card di dashboard (bukan tabel data mentah).
+    $lapangans = Lapangan::where('pemilik_id', auth()->id())
+        ->with('fotos')
+        ->latest()
+        ->get();
+
+    // Rating gabungan dari semua lapangan pemilik ini
+    $ratingRataRata = round(
+        \App\Models\Ulasan::whereHas('booking', fn ($q) => $q->whereIn('lapangan_id', $lapanganIds))
+            ->where('disembunyikan', false)
+            ->avg('rating') ?? 0,
+        1
+    );
+
+    $totalUlasan = \App\Models\Ulasan::whereHas('booking', fn ($q) => $q->whereIn('lapangan_id', $lapanganIds))
+        ->where('disembunyikan', false)
+        ->count();
+
+    // 5 booking terbaru buat "Daftar Booking Terbaru" di dashboard
+    $bookingTerbaru = \App\Models\Booking::whereIn('lapangan_id', $lapanganIds)
+        ->with(['lapangan', 'user'])
+        ->latest()
+        ->limit(5)
+        ->get();
+
     return view('pemilik.dashboard', compact(
         'totalLapanganAktif',
         'jumlahBookingBulanIni',
-        'pendapatanBulanIni'
+        'pendapatanBulanIni',
+        'lapangans',
+        'ratingRataRata',
+        'totalUlasan',
+        'bookingTerbaru'
     ));
 }
 

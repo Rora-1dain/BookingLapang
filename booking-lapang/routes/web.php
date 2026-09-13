@@ -11,9 +11,11 @@ use App\Http\Controllers\WaitlistController;
 use App\Http\Controllers\PoinController;  
 use App\Http\Controllers\ReferralController;  
 use App\Http\Controllers\AdminLapanganController;
+use App\Http\Controllers\PemilikBookingController;
 use App\Http\Controllers\PemilikLapanganController;
 use App\Http\Controllers\LapanganController;
 use App\Http\Controllers\AdminPayoutController;
+use App\Http\Controllers\AdminUlasanController;
 use App\Http\Controllers\PemilikPayoutController;
 use App\Http\Controllers\AdminVerifikasiController;
 use App\Http\Controllers\PemilikVerifikasiController;
@@ -118,6 +120,8 @@ Route::middleware('auth')->prefix('pemilik')->name('pemilik.')->group(function (
     Route::put('/lapangan/{lapangan}', [PemilikLapanganController::class, 'update'])->name('lapangan.update');
     Route::get('/dashboard', [PemilikLapanganController::class, 'dashboard'])->name('dashboard');
 
+    Route::get('/booking', [PemilikBookingController::class, 'index'])->name('booking.index');
+
     Route::get('/payout', [PemilikPayoutController::class, 'index'])
         ->name('payout.index');
     Route::get('/payout/{payout}/download', [PemilikPayoutController::class, 'download'])
@@ -151,6 +155,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->name('payout.store');
     Route::post('/payout/{payoutId}/selesai', [AdminPayoutController::class, 'selesai'])
         ->name('payout.selesai');
+
+    Route::get('/ulasan', [AdminUlasanController::class, 'index'])
+        ->name('ulasan.index');
+    Route::post('/ulasan/{ulasan}/publikasikan', [AdminUlasanController::class, 'publikasikan'])
+        ->name('ulasan.publikasikan');
+    Route::post('/ulasan/{ulasan}/sembunyikan', [AdminUlasanController::class, 'sembunyikan'])
+        ->name('ulasan.sembunyikan');
 
     Route::get('/verifikasi', [AdminVerifikasiController::class, 'index'])
         ->name('verifikasi.index');

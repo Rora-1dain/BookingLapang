@@ -4,16 +4,36 @@ namespace App\Http\Controllers;
 
 use App\Models\Payout;
 use App\Models\Booking;
+use Illuminate\Http\Request;
 
 class PemilikPayoutController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $payouts = Payout::where('pemilik_id', auth()->id())
-            ->latest()
-            ->get();
+        $base = fn () => Payout::where('pemilik_id', auth()->id());
 
-        return view('pemilik.payout.index', compact('payouts'));
+        $counts = [
+            'semua' => $base()->count(),
+            'menunggu' => $base()->where('status', 'menunggu')->count(),
+            'diproses' => $base()->where('status', 'diproses')->count(),
+            'selesai' => $base()->where('status', 'selesai')->count(),
+        ];
+
+        $filter = $request->query('filter', 'semua');
+
+        $query = $base();
+        if ($filter !== 'semua') {
+            $query->where('status', $filter);
+        }
+
+        $payouts = $query->latest('periode_mulai')->paginate(10)->withQueryString();
+
+        $totalDiproses = $base()->where('status', 'diproses')->sum('total_nominal');
+        $totalSelesaiBulanIni = $base()->where('status', 'selesai')
+            ->whereMonth('selesai_pada', now()->month)
+            ->sum('total_nominal');
+
+        return view('pemilik.payout.index', compact('payouts', 'filter', 'counts', 'totalDiproses', 'totalSelesaiBulanIni'));
     }
     public function download(Payout $payout)
     {
