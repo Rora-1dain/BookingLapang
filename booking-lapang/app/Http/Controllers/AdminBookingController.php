@@ -78,6 +78,15 @@ class AdminBookingController extends Controller
         abort(403);
     }
 
+    $baseQuery = Booking::where('status_refund', '!=', 'belum_refund');
+
+    $counts = [
+        'semua' => (clone $baseQuery)->count(),
+        'diproses' => (clone $baseQuery)->where('status_refund', 'diproses')->count(),
+        'selesai' => (clone $baseQuery)->where('status_refund', 'selesai')->count(),
+        'ditolak' => (clone $baseQuery)->where('status_refund', 'ditolak')->count(),
+    ];
+
     $query = Booking::with(['lapangan', 'user'])
         ->where('status_refund', '!=', 'belum_refund');
 
@@ -88,6 +97,7 @@ class AdminBookingController extends Controller
     return view('admin.refund.index', [
         'bookings' => $query->latest()->paginate(15),
         'statusAktif' => $request->query('status', 'semua'),
+        'counts' => $counts,
     ]);
 }
 }
