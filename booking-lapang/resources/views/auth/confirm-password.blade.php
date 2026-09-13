@@ -1,27 +1,26 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
+    <div class="mb-6 text-center">
+        <div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3">
+            <span class="material-symbols-outlined text-[24px]">shield_lock</span>
+        </div>
+        <h1 class="font-headline-sm text-headline-sm text-on-background">Konfirmasi Kata Sandi</h1>
+        <p class="mt-2 font-body-md text-body-md text-on-surface-variant">
+            Ini area yang aman. Masukkan kata sandi kamu lagi sebelum melanjutkan.
+        </p>
     </div>
 
-    <form method="POST" action="{{ route('password.confirm') }}">
+    <form method="POST" action="{{ route('password.confirm') }}" class="space-y-4">
         @csrf
 
-        <!-- Password -->
         <div>
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
+            <x-input-label for="password" :value="__('Kata Sandi')" />
+            <x-text-input id="password" type="password" name="password" required autocomplete="current-password" autofocus />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
-        <div class="flex justify-end mt-4">
-            <x-primary-button>
-                {{ __('Confirm') }}
-            </x-primary-button>
-        </div>
+        <x-primary-button>
+            <span>Konfirmasi</span>
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+        </x-primary-button>
     </form>
 </x-guest-layout>

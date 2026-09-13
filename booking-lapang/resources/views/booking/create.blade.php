@@ -1,14 +1,17 @@
-@extends('layouts.app')
+@extends('layouts.frontend')
+
+@section('title', 'Booking Lapangan - Booking Lapang')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 py-10">
-    <div class="max-w-xl mx-auto">
-        <div class="bg-white rounded-2xl shadow-md p-8">
-            <h2 class="text-2xl font-bold text-gray-900">Form Booking Lapangan</h2>
-            <p class="text-gray-500 mb-6">Isi detail di bawah untuk mengamankan jadwal Anda.</p>
-
-            @if (session('error'))
-                <div class="flex items-center gap-2 bg-red-100 text-red-700 p-3 mb-6 rounded-lg">
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-10 md:py-14">
+    <div class="mb-7">
+        <p class="text-label-sm text-primary font-bold uppercase tracking-wider">Booking Lapangan</p>
+        <h1 class="mt-2 text-headline-lg-mobile md:text-headline-lg text-on-surface font-extrabold tracking-tight">Amankan jadwal main kamu</h1>
+        <p class="mt-2 text-body-md text-on-surface-variant">Pilih venue, tanggal, dan jam bermain. Kami cek ketersediaannya sebelum booking dikirim.</p>
+    </div>
+    <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-soft-md p-5 sm:p-7">
+                        @if (session('error'))
+                <div class="flex items-center gap-2 bg-error-container text-on-error-container p-3 mb-6 rounded-xl border border-red-200">
                     <span>⚠️</span> {{ session('error') }}
                 </div>
             @endif
@@ -16,9 +19,9 @@
             <form action="{{ route('booking.store') }}" method="POST" id="form-booking">
                 @csrf
 
-                <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Lapangan</label>
+                <label class="block text-label-md text-on-surface-variant mb-1.5">Pilih Lapangan</label>
                 <select name="lapangan_id" id="lapangan_id" required
-                    class="w-full border border-gray-300 rounded-lg p-3 mb-1 text-gray-900">
+                    class="w-full h-12 border border-outline-variant rounded-xl px-4 bg-surface-container-low text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10">
                     @foreach ($lapangans as $lapangan)
                         <option value="{{ $lapangan->id }}"
                             data-rating="{{ $lapangan->rataRataRating() }}"
@@ -29,60 +32,60 @@
                     @endforeach
                 </select>
 
-                <div id="badge-rating" class="flex items-center gap-1 text-sm mb-4 text-gray-500">
-                    <span class="text-yellow-400" id="badge-bintang">☆☆☆☆☆</span>
+                <div id="badge-rating" class="flex items-center gap-2 text-body-sm mb-6 text-on-surface-variant">
+                    <span class="text-tertiary text-lg tracking-[2px]" id="badge-bintang">☆☆☆☆☆</span>
                     <span id="badge-teks">Pilih lapangan untuk lihat rating</span>
                 </div>
 
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Booking</label>
+                <label class="block text-label-md text-on-surface-variant mb-1.5">Tanggal Booking</label>
                 <input type="date" name="tanggal_booking" id="tanggal_booking" required
-                    class="w-full border border-gray-300 rounded-lg p-3 mb-4 text-gray-900">
+                    class="w-full h-12 border border-outline-variant rounded-xl px-4 bg-surface-container-low text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10">
 
-                <div class="grid grid-cols-2 gap-4 mb-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Jam Mulai</label>
+                        <label class="block text-label-md text-on-surface-variant mb-1.5">Jam Mulai</label>
                         <input type="time" name="jam_mulai" id="jam_mulai" required
-                            class="w-full border border-gray-300 rounded-lg p-3 text-gray-900">
+                            class="w-full h-12 border border-outline-variant rounded-xl px-4 bg-surface-container-low text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Jam Selesai</label>
+                        <label class="block text-label-md text-on-surface-variant mb-1.5">Jam Selesai</label>
                         <input type="time" name="jam_selesai" id="jam_selesai" required
-                            class="w-full border border-gray-300 rounded-lg p-3 text-gray-900">
+                            class="w-full h-12 border border-outline-variant rounded-xl px-4 bg-surface-container-low text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/10">
                     </div>
                 </div>
 
                 {{-- Status ketersediaan + tombol Daftar Tunggu, muncul otomatis kalau slot penuh --}}
-                <p id="ketersediaan-info" class="text-sm mb-2 hidden"></p>
-                <div id="waitlist-box" class="hidden bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
-                    <p class="text-sm text-amber-800 mb-2">
+                <p id="ketersediaan-info" class="text-body-sm mb-2 hidden font-semibold"></p>
+                <div id="waitlist-box" class="hidden bg-tertiary-fixed/40 border border-tertiary-fixed rounded-xl p-4 mb-5">
+                    <p class="text-body-sm text-on-surface mb-3">
                         Jadwal ini sedang penuh. Daftar tunggu untuk dapat notifikasi kalau ada yang batal.
                     </p>
                     <button type="button" id="btn-daftar-tunggu"
-                        class="bg-amber-500 hover:bg-amber-600 text-white rounded-lg px-4 py-2 text-sm font-medium">
+                        class="btn btn-secondary !border-tertiary !text-tertiary-container !bg-white">
                         Daftar Tunggu
                     </button>
-                    <p id="waitlist-info" class="text-sm mt-2"></p>
+                    <p id="waitlist-info" class="text-body-sm mt-2"></p>
                 </div>
 
-                <label class="block text-sm font-medium text-gray-700 mb-1">Kode Voucher (opsional)</label>
-                <div class="flex gap-2 mb-1">
+                <label class="block text-label-md text-on-surface-variant mb-1.5">Kode Voucher (opsional)</label>
+                <div class="flex flex-col sm:flex-row gap-2 mb-1">
                     <input type="text" name="kode_voucher" id="kode_voucher"
-                        class="flex-1 border border-gray-300 rounded-lg p-3 text-gray-900 uppercase"
+                        class="flex-1 h-12 border border-outline-variant rounded-xl px-4 bg-surface-container-low text-on-surface uppercase focus:border-primary focus:ring-2 focus:ring-primary/10"
                         placeholder="PROMO-XXXXXX">
                     <button type="button" id="btn-cek-voucher"
-                        class="bg-gray-800 hover:bg-gray-900 text-white rounded-lg px-4 font-medium">
+                        class="btn btn-secondary">
                         Cek Voucher
                     </button>
                 </div>
-                <p id="voucher-info" class="text-sm mb-6"></p>
+                <p id="voucher-info" class="text-body-sm mb-6"></p>
 
-                <div class="flex gap-3">
+                <div class="flex flex-col-reverse sm:flex-row gap-3 pt-2 border-t border-outline-variant">
                     <a href="{{ route('booking.index') }}"
-                        class="flex-1 text-center border border-gray-300 rounded-lg py-3 text-gray-700 hover:bg-gray-50">
+                        class="btn btn-secondary flex-1">
                         Batal
                     </a>
                     <button type="submit" id="btn-submit-booking"
-                        class="flex-1 bg-teal-600 hover:bg-teal-700 text-white rounded-lg py-3 font-medium">
+                        class="btn btn-primary flex-1">
                         Booking Sekarang
                     </button>
                 </div>

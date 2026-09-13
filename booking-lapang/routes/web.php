@@ -20,18 +20,20 @@ use App\Http\Controllers\PemilikVerifikasiController;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\FrontendController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [FrontendController::class, 'home'])->name('home');
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return redirect()->route('home');
 })->middleware(['auth'])->name('dashboard');
 
 Route::get('/lapangan', [LapanganController::class, 'index'])->name('lapangan.publik.index');
+Route::get('/lapangan/{lapangan}', [FrontendController::class, 'showLapangan'])->name('lapangan.show');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/poin', [FrontendController::class, 'points'])->name('poin.index');
+    Route::get('/waitlist', [FrontendController::class, 'waitlist'])->name('waitlist.index');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
@@ -53,11 +55,14 @@ Route::middleware('auth')->group(function () {
     ->name('booking.cekKetersediaan');
     Route::post('/waitlist/daftar', [WaitlistController::class, 'daftar'])
     ->name('waitlist.daftar');
+    Route::post('/waitlist/{waitlist}/cancel', [WaitlistController::class, 'cancel'])
+    ->name('waitlist.cancel');
     Route::post('/voucher/cek', [VoucherController::class, 'cek'])->name('voucher.cek');
 });
     Route::get('/leaderboard-referral', [ReferralController::class, 'leaderboard'])->name('referral.leaderboard');
     
 Route::middleware(['auth', 'throttle:5,1'])->group(function () {
+    Route::get('/booking/{booking}/rating', [FrontendController::class, 'rating'])->name('booking.rating');
     Route::post('/booking/{booking}/ulasan', [UlasanController::class, 'store'])
         ->name('ulasan.store');
 });

@@ -1,105 +1,47 @@
-@extends('layouts.app')
-
+@extends('layouts.frontend')
+@section('title','Riwayat Booking & Invoice - Booking Lapang')
 @section('content')
-<div class="min-h-screen bg-gray-50 py-10">
-    <div class="max-w-3xl mx-auto">
-
-        @if (session('success'))
-            <div class="bg-teal-100 text-teal-800 p-3 mb-6 rounded-lg flex items-center gap-2">
-                ✅ {{ session('success') }}
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="bg-red-100 text-red-700 p-3 mb-6 rounded-lg flex items-center gap-2">
-                ⚠️ {{ session('error') }}
-            </div>
-        @endif
-
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Daftar Booking Saya</h2>
-            <a href="{{ route('booking.create') }}"
-                class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-medium">
-                + Booking Baru
-            </a>
-        </div>
-
-        <div class="space-y-4">
-            @foreach ($bookings as $booking)
-                <div class="bg-white rounded-2xl shadow-sm p-5
-                    {{ $booking->status === 'cancelled' ? 'opacity-60' : '' }}">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                @if ($booking->status === 'pending')
-                                    <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Pending</span>
-                                @elseif ($booking->status === 'confirmed')
-                                    <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Confirmed</span>
-                                @else
-                                    <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Cancelled</span>
-                                @endif
-                            </div>
-                            <h3 class="font-semibold text-gray-900 {{ $booking->status === 'cancelled' ? 'line-through' : '' }}">
-                                {{ $booking->lapangan->nama_lapangan }}
-                            </h3>
-                            <p class="text-sm text-gray-500">📅 {{ $booking->tanggal_booking->format('d M Y') }}</p>
-                            <p class="text-sm text-gray-500">🕐 {{ $booking->jam_mulai }} - {{ $booking->jam_selesai }}</p>
-                            <p class="text-sm text-gray-700 mt-1">Total: Rp{{ number_format($booking->total_harga) }}</p>
-                        </div>
-
-                        @if ($booking->status === 'pending')
-                            <div class="flex gap-2">
-                                <a href="{{ route('booking.bayar', $booking) }}"
-                                    class="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 text-sm font-medium">
-                                    Bayar
-                                </a>
-                                <form action="{{ route('booking.cancel', $booking) }}" method="POST">
-                                    @csrf
-                                    <button type="submit"
-                                        class="border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                                        Batalkan
-                                    </button>
-                                </form>
-                            </div>
-                        @endif
-
-                        {{-- TODO(merge Ardan): $booking->ulasan (hasOne) baru valid pas relasi Ardan udah masuk --}}
-                        @if ($booking->status === 'confirmed' && $booking->tanggal_booking->isPast() && !$booking->ulasan()->exists())
-                            <button type="button"
-                                onclick="document.getElementById('form-ulasan-{{ $booking->id }}').classList.toggle('hidden')"
-                                class="bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg px-4 py-2 text-sm font-medium">
-                                ⭐ Beri Ulasan
-                            </button>
-                        @elseif ($booking->status === 'confirmed' && $booking->tanggal_booking->isPast())
-                            <span class="text-xs text-gray-400">Sudah diulas</span>
-                        @endif
-                    </div>
-
-                    @if ($booking->status === 'confirmed' && $booking->tanggal_booking->isPast() && !$booking->ulasan()->exists())
-                        <div id="form-ulasan-{{ $booking->id }}" class="hidden mt-4 pt-4 border-t border-gray-100">
-                            <form action="{{ route('ulasan.store', $booking) }}" method="POST">
-                                @csrf
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Rating</label>
-                                <select name="rating" required class="border border-gray-300 rounded-lg p-2 mb-3 text-gray-900">
-                                    <option value="">Pilih rating</option>
-                                    @for ($i = 5; $i >= 1; $i--)
-                                        <option value="{{ $i }}">{{ str_repeat('★', $i) }} ({{ $i }})</option>
-                                    @endfor
-                                </select>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Komentar (opsional)</label>
-                                <textarea name="komentar" rows="3" maxlength="500"
-                                    class="w-full border border-gray-300 rounded-lg p-2 mb-3 text-gray-900"
-                                    placeholder="Bagaimana pengalaman Anda?"></textarea>
-                                <button type="submit"
-                                    class="bg-teal-600 hover:bg-teal-700 text-white rounded-lg px-4 py-2 text-sm font-medium">
-                                    Kirim Ulasan
-                                </button>
-                            </form>
-                        </div>
-                    @endif
-                </div>
-            @endforeach
-        </div>
-    </div>
+<main class="flex-grow max-w-7xl w-full mx-auto px-6 md:px-12 py-8">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+<div><p class="text-label-sm text-primary-container font-bold uppercase tracking-wider mb-1">Akun Saya</p><h1 class="text-headline-lg font-headline-lg text-on-surface font-bold">Riwayat Booking & Invoice</h1><p class="text-body-md text-on-surface-variant mt-1">Semua pesanan lapangan olahraga kamu ada di sini.</p></div>
+<a href="{{ route('booking.create') }}" class="bg-primary-container text-white px-5 py-3 rounded-xl font-bold flex items-center gap-2"><span class="material-symbols-outlined">add_circle</span>Booking Lapangan Baru</a>
 </div>
+@if(session('success'))<div class="mb-6 p-4 rounded-xl bg-primary-fixed text-on-primary-fixed">{{ session('success') }}</div>@endif
+@if(session('error'))<div class="mb-6 p-4 rounded-xl bg-error-container text-error">{{ session('error') }}</div>@endif
+<div class="space-y-4">
+@forelse($bookings as $booking)
+<article class="bg-surface-container-lowest rounded-2xl border border-outline-variant p-5 shadow-sm">
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b border-outline-variant/60">
+<div class="flex gap-4">
+<div class="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-outline-variant bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl text-primary">sports_soccer</span>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="px-2 py-0.5 rounded-full text-label-sm font-bold {{ $booking->status === 'confirmed' ? 'bg-primary-fixed text-primary' : ($booking->status === 'pending' ? 'bg-tertiary-fixed text-tertiary-container' : 'bg-surface-container-high text-on-surface-variant') }}">{{ ucfirst($booking->status) }}</span>
+@if($booking->status_pembayaran)<span class="px-2 py-0.5 rounded-full text-label-sm font-bold bg-surface-container text-on-surface-variant">{{ ucfirst($booking->status_pembayaran) }}</span>@endif
+</div>
+<h3 class="text-title-lg font-title-lg text-on-surface font-bold">{{ $booking->lapangan->nama_lapangan }}</h3>
+<p class="text-body-sm text-on-surface-variant">{{ $booking->lapangan->jenis }} · {{ $booking->lapangan->kota ?? '-' }}</p>
+<p class="text-body-sm text-outline font-mono mt-1">Booking ID: <strong class="text-on-surface">#{{ $booking->id }}</strong></p>
+</div></div>
+<div class="text-right"><p class="text-label-sm text-outline">Total Pembayaran</p><p class="text-title-lg text-primary font-bold">Rp {{ number_format($booking->total_harga,0,',','.') }}</p></div>
+</div>
+<div class="pt-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex flex-wrap items-center gap-4 text-body-sm text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">calendar_today</span>{{ $booking->tanggal_booking->translatedFormat('l, d F Y') }}</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span>{{ $booking->jam_mulai }} - {{ $booking->jam_selesai }} WIB</span>
+</div>
+<div class="flex flex-wrap gap-2">
+@if($booking->status === 'pending')<a href="{{ route('booking.bayar',$booking) }}" class="px-4 py-2 bg-primary-container text-white rounded-xl text-label-sm font-bold">Bayar Sekarang</a><form method="POST" action="{{ route('booking.cancel',$booking) }}">@csrf<button class="px-4 py-2 border border-outline-variant rounded-xl text-label-sm font-bold">Batalkan</button></form>@endif
+<a href="{{ route('booking.status',$booking) }}" class="px-4 py-2 bg-surface-container border border-outline-variant text-primary rounded-xl text-label-sm font-bold">Status</a>
+<a href="{{ route('booking.invoice',$booking) }}" class="px-4 py-2 bg-surface-container border border-outline-variant text-primary rounded-xl text-label-sm font-bold">Invoice PDF</a>
+@if($booking->status === 'confirmed' && $booking->tanggal_booking->isPast() && !$booking->ulasan()->exists())<a href="{{ route('booking.rating',$booking) }}" class="px-4 py-2 bg-secondary text-white rounded-xl text-label-sm font-bold">Beri Ulasan</a>@endif
+</div></div>
+</article>
+@empty
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-12 text-center text-on-surface-variant">Belum ada booking.</div>
+@endforelse
+</div>
+</main>
 @endsection
