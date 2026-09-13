@@ -2,6 +2,8 @@
 declare(strict_types=1);
 namespace App\Http\Controllers;
 use App\Models\Booking;
+use App\Models\Lapangan;
+use App\Models\User;
 use App\Services\DashboardService;
 use Illuminate\Http\Request;
 class DashboardController extends Controller
@@ -25,11 +27,31 @@ class DashboardController extends Controller
             ->latest('tanggal_booking')
             ->limit(5)
             ->get();
+
+        // Data khusus admin: komisi platform & antrian yang butuh tindakan
+        $totalKomisi = Booking::where('status_pembayaran', 'paid')
+            ->when($dari, fn ($q) => $q->whereDate('tanggal_booking', '>=', $dari))
+            ->when($sampai, fn ($q) => $q->whereDate('tanggal_booking', '<=', $sampai))
+            ->sum('nominal_komisi');
+
+        $lapanganMenunggu = Lapangan::with('pemilik')
+            ->where('status_approval', 'pending')
+            ->latest()
+            ->limit(3)
+            ->get();
+        $totalLapanganMenunggu = Lapangan::where('status_approval', 'pending')->count();
+
+        $mitraMenunggu = User::where('status_verifikasi', 'menunggu')->count();
+        $totalMitraAktif = Lapangan::whereNotNull('pemilik_id')->distinct('pemilik_id')->count('pemilik_id');
+        $refundMenunggu = Booking::where('status_refund', 'diproses')->count();
+
         return view('admin.dashboard', compact(
             'totalPendapatan', 'bookingPerStatus', 'lapanganFavorit',
             'pendapatanBulanan', 'tingkatPembatalan', 'userAktif',
             'bookingTerbaru', 'dari', 'sampai',
-            'statistikVoucher', 'ulasanDilaporkan'
+            'statistikVoucher', 'ulasanDilaporkan',
+            'totalKomisi', 'lapanganMenunggu', 'totalLapanganMenunggu',
+            'mitraMenunggu', 'totalMitraAktif', 'refundMenunggu'
         ));
     }
 }

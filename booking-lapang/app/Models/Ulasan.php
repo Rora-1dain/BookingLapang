@@ -9,10 +9,11 @@ class Ulasan extends Model
     // 'dilaporkan' ditambahkan di fillable karena UlasanService::laporkanUlasan()
     // memanggil update(['dilaporkan' => true]) — tanpa ini, mass assignment akan
     // ditolak oleh Eloquent (MassAssignmentException) walaupun nilainya boolean sederhana.
-    protected $fillable = ['booking_id', 'rating', 'komentar', 'dilaporkan'];
+    protected $fillable = ['booking_id', 'rating', 'komentar', 'dilaporkan', 'disembunyikan'];
 
     protected $casts = [
         'dilaporkan' => 'boolean',
+        'disembunyikan' => 'boolean',
     ];
 
     public function booking()

@@ -49,9 +49,29 @@ class AdminPayoutController extends Controller
         return back()->with('success', 'Payout ditandai selesai.');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $payouts = \App\Models\Payout::with('pemilik')->latest()->get();
-        return view('admin.payout.index', compact('payouts'));
+        $base = fn () => Payout::query();
+
+        $counts = [
+            'semua' => $base()->count(),
+            'menunggu' => $base()->where('status', 'menunggu')->count(),
+            'selesai' => $base()->where('status', 'selesai')->count(),
+        ];
+
+        $filter = $request->query('filter', 'semua');
+        $query = Payout::with(['pemilik', 'bookings']);
+        if ($filter !== 'semua') {
+            $query->where('status', $filter);
+        }
+
+        $payouts = $query->latest()->paginate(10)->withQueryString();
+
+        $totalMenunggu = $base()->where('status', 'menunggu')->sum('total_nominal');
+        $totalSelesaiBulanIni = $base()->where('status', 'selesai')
+            ->whereMonth('selesai_pada', now()->month)
+            ->sum('total_nominal');
+
+        return view('admin.payout.index', compact('payouts', 'filter', 'counts', 'totalMenunggu', 'totalSelesaiBulanIni'));
     }
 }
