@@ -36,4 +36,14 @@ class WaitlistController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
+    public function cancel(Waitlist $waitlist)
+    {
+        abort_unless($waitlist->user_id === Auth::id(), 403);
+
+        if ($waitlist->status === 'menunggu') {
+            $waitlist->update(['status' => 'dibatalkan']);
+        }
+
+        return back()->with('success', 'Antrian berhasil dibatalkan.');
+    }
 }

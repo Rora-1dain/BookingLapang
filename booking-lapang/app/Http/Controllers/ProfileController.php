@@ -8,16 +8,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Services\LoyaltyService;
 
 class ProfileController extends Controller
 {
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request): View
+    public function edit(Request $request, LoyaltyService $loyaltyService): View
     {
+        $user = $request->user();
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
+            'riwayatPoin' => $user->poinHistories()->latest()->limit(10)->get(),
+            'tier' => $loyaltyService->tentukanTier($user),
         ]);
     }
 
