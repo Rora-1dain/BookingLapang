@@ -37,11 +37,17 @@ class BookingController extends Controller
         return view('booking.index', compact('bookings'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        $lapangans = Lapangan::tampilPublik()->get();
+        $lapangans = Lapangan::tampilPublik()->with('fotos')->get();
 
-        return view('booking.create', compact('lapangans'));
+        $lapangan = $request->filled('lapangan_id')
+            ? $lapangans->firstWhere('id', (int) $request->integer('lapangan_id'))
+            : $lapangans->first();
+
+        abort_unless($lapangan, 404, 'Lapangan tidak ditemukan.');
+
+        return view('booking.create', compact('lapangans', 'lapangan'));
     }
 
     public function store(StoreBookingRequest $request, VoucherService $voucherService)
