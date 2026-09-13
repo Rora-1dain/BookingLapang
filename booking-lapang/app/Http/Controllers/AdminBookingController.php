@@ -73,18 +73,20 @@ class AdminBookingController extends Controller
     }
 
     public function refundIndex(Request $request)
-    {
-        if (auth()->user()->role !== 'admin') {
-            abort(403);
-        }
-
-        $query = Booking::with(['lapangan', 'user'])
-            ->where('status_refund', '!=', 'belum_refund');
-
-        if ($request->filled('status')) {
-            $query->where('status_refund', $request->query('status'));
-        }
-
-        return view('admin.refund.index', ['bookings' => $query->latest()->paginate(15)]);
+{
+    if (auth()->user()->role !== 'admin') {
+        abort(403);
     }
+
+    $query = Booking::with(['lapangan', 'user'])
+        ->where('status_refund', '!=', 'belum_refund');
+
+    if ($request->filled('status')) {
+        $query->where('status_refund', $request->query('status'));
+    }
+
+    return view('admin.refund.index', [
+        'bookings' => $query->latest()->paginate(15),
+        'statusAktif' => $request->query('status', 'semua'),
+    ]);
 }
