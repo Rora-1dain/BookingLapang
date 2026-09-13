@@ -90,3 +90,4 @@ class AdminBookingController extends Controller
         'statusAktif' => $request->query('status', 'semua'),
     ]);
 }
+}
