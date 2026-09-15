@@ -19,6 +19,9 @@ use App\Http\Controllers\AdminUlasanController;
 use App\Http\Controllers\PemilikPayoutController;
 use App\Http\Controllers\AdminVerifikasiController;
 use App\Http\Controllers\PemilikVerifikasiController;
+use App\Http\Controllers\JadwalOperasionalController;
+use App\Http\Controllers\HariLiburController;
+use App\Http\Controllers\Admin\LaporanPlatformController;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -61,6 +64,16 @@ Route::middleware('auth')->group(function () {
     ->name('waitlist.cancel');
     Route::post('/voucher/cek', [VoucherController::class, 'cek'])->name('voucher.cek');
 });
+
+    Route::middleware('auth')->group(function () {
+    Route::get('/chat/{lapangan}', [\App\Http\Controllers\ChatController::class, 'mulai'])
+        ->name('chat.mulai');
+    Route::post('/chat/{percakapan}/kirim', [\App\Http\Controllers\ChatController::class, 'kirim'])
+        ->name('chat.kirim');
+    Route::post('/chat/{percakapan}/tandai-dibaca', [\App\Http\Controllers\ChatController::class, 'tandaiDibaca'])
+        ->name('chat.tandaiDibaca');
+});
+
     Route::get('/leaderboard-referral', [ReferralController::class, 'leaderboard'])->name('referral.leaderboard');
     
 Route::middleware(['auth', 'throttle:5,1'])->group(function () {
@@ -136,6 +149,18 @@ Route::middleware('auth')->prefix('pemilik')->name('pemilik.')->group(function (
         ->name('verifikasi.create');
     Route::post('/verifikasi', [PemilikVerifikasiController::class, 'store'])
         ->name('verifikasi.store');
+
+    Route::get('/lapangan/{lapangan}/jadwal', [JadwalOperasionalController::class, 'edit'])
+        ->name('jadwal.edit');
+    Route::put('/lapangan/{lapangan}/jadwal', [JadwalOperasionalController::class, 'update'])
+        ->name('jadwal.update');
+
+    Route::get('/lapangan/{lapangan}/hari-libur', [HariLiburController::class, 'index'])
+        ->name('hari-libur.index');
+    Route::post('/lapangan/{lapangan}/hari-libur', [HariLiburController::class, 'store'])
+        ->name('hari-libur.store');
+    Route::delete('/lapangan/{lapangan}/hari-libur/{hariLibur}', [HariLiburController::class, 'destroy'])
+        ->name('hari-libur.destroy');
 });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -174,6 +199,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->name('verifikasi.dokumen');
     Route::post('/verifikasi/{pemilik}/tinjau', [AdminVerifikasiController::class, 'tinjau'])
         ->name('verifikasi.tinjau');
+
+    Route::get('/laporan/platform', [LaporanPlatformController::class, 'index'])
+        ->name('laporan.platform');
+    Route::get('/laporan/platform/export', [LaporanPlatformController::class, 'export'])
+        ->name('laporan.platform.export');
 });
 
 Route::middleware(['auth'])->group(function () {
