@@ -16,11 +16,9 @@ class JadwalOperasionalController extends Controller
         return view('pemilik.jadwal.edit', compact('lapangan', 'jadwal'));
     }
 
-   public function update(Request $request, Lapangan $lapangan)
+  public function update(Request $request, Lapangan $lapangan)
 {
     $this->authorize('update', $lapangan);
-
-    dd($request->all());
 
     $request->validate([
         'jadwal' => ['required', 'array'],
@@ -38,6 +36,8 @@ class JadwalOperasionalController extends Controller
             ]
         );
     }
+
+    dd('selesai loop', $lapangan->jadwalOperasionals()->where('hari', 5)->first(['hari','is_tutup']));
 
     return back()->with('success', 'Jadwal operasional diperbarui.');
 }
