@@ -172,9 +172,8 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const labelsTren = @json($tren->pluck('label'));
-    const dataGmv = @json($tren->pluck('gmv'));
-    const dataKomisi = @json($tren->pluck('komisi'));
+   const labelsTren = @json($tren['label']);
+   const dataGmv = @json($tren['data']);
 
     new Chart(document.getElementById('chart-tren-gmv'), {
         type: 'bar',
