@@ -16,27 +16,29 @@ class JadwalOperasionalController extends Controller
         return view('pemilik.jadwal.edit', compact('lapangan', 'jadwal'));
     }
 
-    public function update(Request $request, Lapangan $lapangan)
-    {
-        $this->authorize('update', $lapangan);
+   public function update(Request $request, Lapangan $lapangan)
+{
+    $this->authorize('update', $lapangan);
 
-        $request->validate([
-            'jadwal' => ['required', 'array'],
-            'jadwal.*.jam_buka' => ['nullable', 'date_format:H:i'],
-            'jadwal.*.jam_tutup' => ['nullable', 'date_format:H:i', 'after:jadwal.*.jam_buka'],
-        ]);
+    dd($request->all());
 
-        foreach ($request->input('jadwal', []) as $hari => $data) {
-            $lapangan->jadwalOperasionals()->updateOrCreate(
-                ['hari' => $hari],
-                [
-                    'jam_buka' => $data['jam_buka'] ?? null,
-                    'jam_tutup' => $data['jam_tutup'] ?? null,
-                    'is_tutup' => (bool) ($data['is_tutup'] ?? false),
-                ]
-            );
-        }
+    $request->validate([
+        'jadwal' => ['required', 'array'],
+        'jadwal.*.jam_buka' => ['nullable', 'date_format:H:i'],
+        'jadwal.*.jam_tutup' => ['nullable', 'date_format:H:i', 'after:jadwal.*.jam_buka'],
+    ]);
 
-        return back()->with('success', 'Jadwal operasional diperbarui.');
+    foreach ($request->input('jadwal', []) as $hari => $data) {
+        $lapangan->jadwalOperasionals()->updateOrCreate(
+            ['hari' => $hari],
+            [
+                'jam_buka' => $data['jam_buka'] ?? null,
+                'jam_tutup' => $data['jam_tutup'] ?? null,
+                'is_tutup' => (bool) ($data['is_tutup'] ?? false),
+            ]
+        );
     }
+
+    return back()->with('success', 'Jadwal operasional diperbarui.');
+}
 }
