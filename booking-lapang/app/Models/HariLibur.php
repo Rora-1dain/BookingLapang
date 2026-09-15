@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class HariLibur extends Model
 {
+    protected $table = 'hari_liburs';
+
     protected $fillable = ['lapangan_id', 'tanggal', 'keterangan'];
 
     protected $casts = [
