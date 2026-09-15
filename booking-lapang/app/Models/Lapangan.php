@@ -63,4 +63,22 @@ class Lapangan extends Model
     return $this->fotos()->where('is_utama', true)->first()
         ?? $this->fotos()->first();
     }
+
+    public function jadwalOperasionals()
+    {
+    return $this->hasMany(\App\Models\JadwalOperasional::class);
+    }
+
+   public function hariLiburs()
+    {
+    return $this->hasMany(\App\Models\HariLibur::class);
+    }
+
+    public function jadwalHariIni()
+    {
+    return $this->jadwalOperasionals()
+        ->where('hari', now()->dayOfWeek)
+        ->first();
+    }
+
 }
