@@ -22,16 +22,16 @@ class PlatformReportService
     }
 
     public function topPemilikBerdasarkanPendapatan(int $limit = 10)
-    {
-        return User::where('role', 'pemilik_lapangan')
-            ->withSum(['lapangans as pendapatan' => function ($q) {
-                $q->join('bookings', 'bookings.lapangan_id', '=', 'lapangans.id')
-                    ->where('bookings.status_pembayaran', 'paid');
-            }], 'bookings.pendapatan_pemilik')
-            ->orderByDesc('pendapatan')
-            ->limit($limit)
-            ->get();
-    }
+{
+    return User::where('role', 'pemilik_lapangan')
+        ->withSum(['lapangans as pendapatan' => function ($q) {
+            $q->join('bookings', 'bookings.lapangan_id', '=', 'lapangans.id')
+                ->where('bookings.status_pembayaran', 'paid');
+        }], 'bookings.pendapatan_pemilik')
+        ->orderByRaw('pendapatan DESC NULLS LAST')
+        ->limit($limit)
+        ->get();
+}
 
     public function trenGmvBulanan(int $bulanTerakhir = 12): array
 {
