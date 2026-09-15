@@ -26,6 +26,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FrontendController;
+use App\Http\Controllers\ChatController;
+
 
 Route::get('/', [FrontendController::class, 'home'])->name('home');
 Route::get('/dashboard', function () {
@@ -72,6 +74,9 @@ Route::middleware('auth')->group(function () {
         ->name('chat.kirim');
     Route::post('/chat/{percakapan}/tandai-dibaca', [\App\Http\Controllers\ChatController::class, 'tandaiDibaca'])
         ->name('chat.tandaiDibaca');
+    Route::get('/booking/chat/{lapanganId}', [ChatController::class, 'bukaChatPemesan'])->name('booking.chat');
+    Route::get('/pemilik/chat/{percakapan}', [ChatController::class, 'bukaChatPemilik'])->name('pemilik.chat');
+    Route::post('/chat/{percakapan}/kirim', [ChatController::class, 'kirim'])->name('chat.kirim');
 });
 
     Route::get('/leaderboard-referral', [ReferralController::class, 'leaderboard'])->name('referral.leaderboard');

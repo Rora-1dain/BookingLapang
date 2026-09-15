@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\PesanDikirim;
 use App\Models\Lapangan;
 use App\Models\Percakapan;
 use App\Models\Pesan;
@@ -35,6 +36,8 @@ class ChatService
             : $percakapan->user_id;
 
         \App\Models\User::find($penerimaId)?->notify(new \App\Notifications\PesanBaruDiterima($pesan));
+
+        broadcast(new PesanDikirim($pesan))->toOthers();
 
         return $pesan;
     }
