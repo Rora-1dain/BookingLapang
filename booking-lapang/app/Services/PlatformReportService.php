@@ -45,8 +45,8 @@ class PlatformReportService
             ->pluck('gmv', 'bulan');
 
         return collect([
-            'label' => $rows->keys()->toArray(),
-            'data' => $rows->values()->map(fn ($v) => (float) $v)->toArray(),
-        ]);
+    'label' => $rows->keys()->toArray(),
+    'data' => $rows->values()->map(fn ($v) => (float) $v)->toArray(),
+])->toArray();
     }
 }
