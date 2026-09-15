@@ -39,7 +39,7 @@ class PlatformReportService
 
         $rows = Booking::where('status_pembayaran', 'paid')
             ->where('tanggal_booking', '>=', $mulai)
-            ->selectRaw("DATE_FORMAT(tanggal_booking, '%Y-%m') as bulan, SUM(total_harga) as gmv")
+            ->selectRaw("TO_CHAR(tanggal_booking, 'YYYY-MM') as bulan, SUM(total_harga) as gmv")
             ->groupBy('bulan')
             ->orderBy('bulan')
             ->pluck('gmv', 'bulan');
