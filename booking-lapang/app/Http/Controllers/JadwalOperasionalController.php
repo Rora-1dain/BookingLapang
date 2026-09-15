@@ -22,8 +22,8 @@ class JadwalOperasionalController extends Controller
 
     $request->validate([
         'jadwal' => ['required', 'array'],
-        'jadwal.*.jam_buka' => ['nullable', 'date_format:H:i'],
-        'jadwal.*.jam_tutup' => ['nullable', 'date_format:H:i', 'after:jadwal.*.jam_buka'],
+        'jadwal.*.jam_buka' => ['nullable', 'date_format:H:i,H:i:s'],
+        'jadwal.*.jam_tutup' => ['nullable', 'date_format:H:i,H:i:s'],
     ]);
 
     foreach ($request->input('jadwal', []) as $hari => $data) {
@@ -36,8 +36,6 @@ class JadwalOperasionalController extends Controller
             ]
         );
     }
-
-    dd('selesai loop', $lapangan->jadwalOperasionals()->where('hari', 5)->first(['hari','is_tutup']));
 
     return back()->with('success', 'Jadwal operasional diperbarui.');
 }

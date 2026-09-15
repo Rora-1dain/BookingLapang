@@ -88,16 +88,6 @@
     </div>
 @endif
 
-@if ($errors->any())
-    <div class="p-4 rounded-xl bg-error-container border border-error text-error font-semibold">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
-
 <form method="POST" action="{{ route('pemilik.jadwal.update', $lapangan) }}" id="formJadwal">
 @csrf
 @method('PUT')
