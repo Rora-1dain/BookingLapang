@@ -66,7 +66,7 @@
     const percakapanId = {{ $percakapan->id }};
 
     window.Echo.private('percakapan.' + percakapanId)
-        .listen('PesanDikirim', (data) => {
+        .listen('.PesanDikirim', (data) => {
             const chatBox = document.getElementById('chat-box');
             const isSender = data.pengirim_id === {{ auth()->id() }};
 

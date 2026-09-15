@@ -6,6 +6,7 @@ use App\Events\PesanDikirim;
 use App\Models\Lapangan;
 use App\Models\Percakapan;
 use App\Models\Pesan;
+use Illuminate\Support\Facades\Log;
 
 class ChatService
 {
@@ -35,9 +36,20 @@ class ChatService
             ? $percakapan->pemilik_id
             : $percakapan->user_id;
 
-        \App\Models\User::find($penerimaId)?->notify(new \App\Notifications\PesanBaruDiterima($pesan));
+        // Notifikasi & broadcast bersifat "nice to have" -- kalau gagal
+        // (driver belum di-setup, tabel notifications belum ada, dsb),
+        // jangan sampai bikin pesan gagal tersimpan / request 500.
+        try {
+            \App\Models\User::find($penerimaId)?->notify(new \App\Notifications\PesanBaruDiterima($pesan));
+        } catch (\Throwable $e) {
+            Log::warning('Gagal kirim notifikasi pesan baru: ' . $e->getMessage());
+        }
 
-        broadcast(new PesanDikirim($pesan))->toOthers();
+        try {
+            broadcast(new PesanDikirim($pesan))->toOthers();
+        } catch (\Throwable $e) {
+            Log::warning('Gagal broadcast pesan baru: ' . $e->getMessage());
+        }
 
         return $pesan;
     }
