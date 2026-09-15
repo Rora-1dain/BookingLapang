@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.app')
 
 @section('title', 'Laporan Keuangan Platform - Super Admin Booking Lapang')
 
