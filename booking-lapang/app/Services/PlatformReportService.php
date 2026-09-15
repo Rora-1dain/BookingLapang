@@ -34,19 +34,21 @@ class PlatformReportService
     }
 
     public function trenGmvBulanan(int $bulanTerakhir = 12): array
-    {
-        $mulai = now()->subMonths($bulanTerakhir - 1)->startOfMonth();
+{
+    $mulai = now()->subMonths($bulanTerakhir - 1)->startOfMonth();
 
-        $rows = Booking::where('status_pembayaran', 'paid')
-            ->where('tanggal_booking', '>=', $mulai)
-            ->selectRaw("TO_CHAR(tanggal_booking, 'YYYY-MM') as bulan, SUM(total_harga) as gmv")
-            ->groupBy('bulan')
-            ->orderBy('bulan')
-            ->pluck('gmv', 'bulan');
+    $rows = Booking::where('status_pembayaran', 'paid')
+        ->where('tanggal_booking', '>=', $mulai)
+        ->selectRaw("TO_CHAR(tanggal_booking, 'YYYY-MM') as bulan, SUM(total_harga) as gmv, SUM(nominal_komisi) as komisi")
+        ->groupBy('bulan')
+        ->orderBy('bulan')
+        ->get()
+        ->keyBy('bulan');
 
-        return collect([
-    'label' => $rows->keys()->toArray(),
-    'data' => $rows->values()->map(fn ($v) => (float) $v)->toArray(),
-])->toArray();
-    }
+    return [
+        'label' => $rows->keys()->toArray(),
+        'data' => $rows->values()->map(fn ($r) => (float) $r->gmv)->toArray(),
+        'data_komisi' => $rows->values()->map(fn ($r) => (float) $r->komisi)->toArray(),
+    ];
+}
 }
