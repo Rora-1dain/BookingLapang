@@ -58,27 +58,35 @@ class Lapangan extends Model
     return $this->hasMany(\App\Models\FotoLapangan::class)->orderBy('urutan');
     }
 
-    public function fotoUtama()
+        public function fotoUtama()
     {
     return $this->fotos()->where('is_utama', true)->first()
         ?? $this->fotos()->first();
     }
 
+    /**
+     * Satu lapangan punya banyak baris jadwal operasional (satu per hari, 0-6).
+     */
     public function jadwalOperasionals()
     {
-    return $this->hasMany(\App\Models\JadwalOperasional::class);
+        return $this->hasMany(JadwalOperasional::class);
     }
 
-   public function hariLiburs()
+    /**
+     * Satu lapangan bisa punya banyak tanggal libur khusus (blackout dates).
+     */
+    public function hariLiburs()
     {
-    return $this->hasMany(\App\Models\HariLibur::class);
+        return $this->hasMany(HariLibur::class);
     }
 
+    /**
+     * Ambil jadwal operasional sesuai hari saat ini (0=Minggu, 6=Sabtu).
+     */
     public function jadwalHariIni()
     {
-    return $this->jadwalOperasionals()
-        ->where('hari', now()->dayOfWeek)
-        ->first();
+        return $this->jadwalOperasionals()
+            ->where('hari', now()->dayOfWeek)
+            ->first();
     }
-
 }
