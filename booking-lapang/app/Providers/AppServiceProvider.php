@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Models\Lapangan;
+use App\Observers\LapanganObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,5 +25,6 @@ class AppServiceProvider extends ServiceProvider
     \Midtrans\Config::$isProduction = config('midtrans.is_production');
     \Midtrans\Config::$isSanitized = true;
     \Midtrans\Config::$is3ds = true;
+    Lapangan::observe(LapanganObserver::class);
 }
 }
