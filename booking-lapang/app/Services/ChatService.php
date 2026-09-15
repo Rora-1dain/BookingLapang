@@ -36,20 +36,13 @@ class ChatService
             ? $percakapan->pemilik_id
             : $percakapan->user_id;
 
-        // Notifikasi & broadcast bersifat "nice to have" -- kalau gagal
-        // (driver belum di-setup, tabel notifications belum ada, dsb),
-        // jangan sampai bikin pesan gagal tersimpan / request 500.
         try {
             \App\Models\User::find($penerimaId)?->notify(new \App\Notifications\PesanBaruDiterima($pesan));
         } catch (\Throwable $e) {
             Log::warning('Gagal kirim notifikasi pesan baru: ' . $e->getMessage());
         }
 
-        try {
-            broadcast(new PesanDikirim($pesan))->toOthers();
-        } catch (\Throwable $e) {
-            Log::warning('Gagal broadcast pesan baru: ' . $e->getMessage());
-        }
+        broadcast(new PesanDikirim($pesan))->toOthers();
 
         return $pesan;
     }
