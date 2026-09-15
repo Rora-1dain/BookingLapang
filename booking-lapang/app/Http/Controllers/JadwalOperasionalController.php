@@ -32,7 +32,7 @@ class JadwalOperasionalController extends Controller
                 [
                     'jam_buka' => $data['jam_buka'] ?? null,
                     'jam_tutup' => $data['jam_tutup'] ?? null,
-                    'is_tutup' => isset($data['is_tutup']),
+                    'is_tutup' => (bool) ($data['is_tutup'] ?? false),
                 ]
             );
         }
