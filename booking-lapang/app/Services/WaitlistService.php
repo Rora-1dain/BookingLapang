@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Lapangan;
 use App\Models\Waitlist;
 use Exception;
 
@@ -11,6 +12,12 @@ class WaitlistService
 
     public function daftarTunggu(array $data): Waitlist
     {
+        $lapangan = Lapangan::findOrFail($data['lapangan_id']);
+
+        if ($this->bookingService->tanggalLibur($lapangan, $data['tanggal_booking'])) {
+            throw new Exception('Lapangan tutup pada tanggal ini, tidak bisa mendaftar waitlist.');
+        }
+
         $tersedia = $this->bookingService->cekKetersediaan(
             $data['lapangan_id'],
             $data['tanggal_booking'],
