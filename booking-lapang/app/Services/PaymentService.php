@@ -87,4 +87,43 @@ class PaymentService
             'status_pembayaran' => $booking->fresh()->status_pembayaran,
         ];
     }
+
+    /**
+     * Menggabungkan total harga dari beberapa booking (anak paket booking
+     * berulang) menjadi SATU transaksi Snap, satu order_id, satu popup bayar.
+     * Dipakai oleh RecurringBookingController::bayar().
+     *
+     * @param  Booking[]  $bookings  Booking-booking anak yang berhasil dijadwalkan & belum dibayar
+     * @return string Snap Token dari Midtrans
+     * @throws \Exception Jika array booking kosong
+     */
+    public function buatTransaksiGabungan(array $bookings, int $userId): string
+    {
+        if (empty($bookings)) {
+            throw new Exception('Tidak ada booking untuk digabungkan.');
+        }
+
+        $totalHarga = collect($bookings)->sum('total_harga');
+        $recurringBookingId = $bookings[0]->recurring_booking_id;
+        $orderId = 'PAKET-'.$recurringBookingId.'-'.time();
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => (int) $totalHarga,
+            ],
+            'customer_details' => [
+                'first_name' => $bookings[0]->user->name,
+                'email' => $bookings[0]->user->email,
+            ],
+        ];
+
+        $snapToken = Snap::getSnapToken($params);
+
+        foreach ($bookings as $booking) {
+            $booking->update(['payment_reference' => $orderId]);
+        }
+
+        return $snapToken;
+    }
 }
