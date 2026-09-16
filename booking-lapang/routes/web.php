@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\RecurringBookingController;
 
 
 Route::get('/', [FrontendController::class, 'home'])->name('home');
@@ -133,6 +134,13 @@ Route::get('/health', function () {
 Route::middleware(['auth'])->group(function () {
     Route::post('/poin/redeem', [\App\Http\Controllers\LoyaltyController::class, 'redeem'])
         ->name('poin.redeem');
+
+    Route::get('/lapangan/{lapangan}/booking-berulang', [RecurringBookingController::class, 'create'])
+        ->name('booking.berulang.create');
+    Route::post('/booking-berulang', [RecurringBookingController::class, 'store'])
+        ->name('booking.berulang.store');
+    Route::post('/booking-berulang/{recurringBookingId}/bayar', [RecurringBookingController::class, 'bayar'])
+        ->name('booking.berulang.bayar');
 });
 
 Route::middleware('auth')->prefix('pemilik')->name('pemilik.')->group(function () {
