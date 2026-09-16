@@ -4,15 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Lapangan;
-use App\Models\RecurringBooking;
 use App\Services\PaymentService;
 use App\Services\RecurringBookingService;
 use Illuminate\Http\Request;
-use Throwable;
 
 class RecurringBookingController extends Controller
 {
-    // Tampil form booking berulang untuk 1 lapangan tertentu
     public function create(Lapangan $lapangan)
     {
         return view('booking.berulang.create', compact('lapangan'));
@@ -37,31 +34,19 @@ class RecurringBookingController extends Controller
         return view('booking.berulang.ringkasan', array_merge($hasil, ['lapangan' => $lapangan]));
     }
 
-    // Trigger transaksi Snap gabungan untuk 1 paket
     public function bayar(Request $request, PaymentService $paymentService, $recurringBookingId)
     {
-        try {
-            // Ambil semua booking anak yang berstatus sukses & belum dibayar
-            $bookings = Booking::where('recurring_booking_id', $recurringBookingId)
-                ->where('status', 'pending')
-                ->where('status_pembayaran', '!=', 'paid')
-                ->get();
+        $bookings = Booking::where('recurring_booking_id', $recurringBookingId)
+            ->where('status', 'pending')
+            ->where('status_pembayaran', '!=', 'paid')
+            ->get();
 
-            if ($bookings->isEmpty()) {
-                return response()->json(['message' => 'Tidak ada sesi yang perlu dibayar.'], 422);
-            }
-
-            $snapToken = $paymentService->buatTransaksiGabungan($bookings->all(), auth()->id());
-
-            return response()->json(['snap_token' => $snapToken]);
-        } catch (Throwable $e) {
-            // DEBUG SEMENTARA — hapus try-catch ini kalau udah kelar debug,
-            // jangan biarkan pesan error mentah kekirim ke browser pas production beneran.
-            return response()->json([
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ], 500);
+        if ($bookings->isEmpty()) {
+            return response()->json(['message' => 'Tidak ada sesi yang perlu dibayar.'], 422);
         }
+
+        $snapToken = $paymentService->buatTransaksiGabungan($bookings->all(), auth()->id());
+
+        return response()->json(['snap_token' => $snapToken]);
     }
 }
