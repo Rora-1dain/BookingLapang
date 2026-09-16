@@ -33,11 +33,18 @@ class Booking extends Model
         'nominal_komisi',
         'pendapatan_pemilik',
         'payout_id',
+        'recurring_booking_id',
     ];
 
     protected $casts = [
         'tanggal_booking' => 'date',
     ];
+
+    public function recurringBooking()
+    {
+    return $this->belongsTo(\App\Models\RecurringBooking::class);
+    }
+
 
     public function lapangan()
     {
