@@ -59,38 +59,41 @@ class PaymentNotificationController extends Controller
                 'diterima_pada' => now(),
             ]);
 
-            $booking = Booking::where('payment_reference', $payload['order_id'])->first();
+            $bookings = Booking::where('payment_reference', $payload['order_id'])->get();
 
-            if (! $booking) {
-                Log::error('Booking tidak ditemukan untuk order_id ini', ['order_id' => $payload['order_id']]);
+        if ($bookings->isEmpty()) {
+            Log::error('Booking tidak ditemukan untuk order_id ini', ['order_id' => $payload['order_id']]);
 
-                return response()->json(['message' => 'Booking tidak ditemukan.'], 404);
+            return response()->json(['message' => 'Booking tidak ditemukan.'], 404);
             }
 
             $status = $payload['transaction_status'];
 
-            if (in_array($status, ['settlement', 'capture'])) {
-                $booking->update([
-                    'status_pembayaran' => 'paid',
-                    'status' => 'confirmed',
-                ]);
+                foreach ($bookings as $booking) {
+                if (in_array($status, ['settlement', 'capture'])) {
+                    $booking->update([
+                'status_pembayaran' => 'paid',
+                'status' => 'confirmed',
+        ]);
 
-                $poinDidapat = intdiv((int) $booking->total_harga, 10000);
-                app(LoyaltyService::class)->tambahPoin(
-                    $booking->user, $poinDidapat, "Booking #{$booking->id} berhasil dibayar"
-                );
+            $poinDidapat = intdiv((int) $booking->total_harga, 10000);
+            app(LoyaltyService::class)->tambahPoin(
+                $booking->user, $poinDidapat, "Booking #{$booking->id} berhasil dibayar"
+        );
 
-                app(ReferralService::class)->prosesRewardReferral(
-                    $booking, app(LoyaltyService::class)
-                );
+            app(ReferralService::class)->prosesRewardReferral(
+                $booking, app(LoyaltyService::class)
+        );
 
-                 app(CommissionService::class)->hitungKomisi($booking);
+            app(CommissionService::class)->hitungKomisi($booking);
+        }   elseif (in_array($status, ['expire', 'deny', 'cancel'])) {
+            $booking->update(['status_pembayaran' => 'failed']);
+        }
+        }
 
-                Cache::tags(['dashboard'])->flush();
-            } elseif (in_array($status, ['expire', 'deny', 'cancel'])) {
-                $booking->update(['status_pembayaran' => 'failed']);
-            }
-
+        if(in_array($status, ['settlement', 'capture'])) {
+            Cache::tags(['dashboard'])->flush();
+        }
             return response()->json(['message' => 'Notifikasi berhasil diproses.']);
 
         } catch (\Throwable $e) {

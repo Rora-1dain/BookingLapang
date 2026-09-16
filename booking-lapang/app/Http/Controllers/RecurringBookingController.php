@@ -1,0 +1,80 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Booking;
+use App\Models\Lapangan;
+use App\Models\RecurringBooking;
+use App\Services\PaymentService;
+use App\Services\RecurringBookingService;
+use Illuminate\Http\Request;
+
+class RecurringBookingController extends Controller
+{
+    // Tampil form booking berulang untuk 1 lapangan tertentu
+    public function create(Lapangan $lapangan)
+    {
+        return view('booking.berulang.create', compact('lapangan'));
+    }
+
+    public function store(Request $request, RecurringBookingService $recurringService)
+    {
+        $validated = $request->validate([
+            'lapangan_id'    => 'required|exists:lapangans,id',
+            'hari'           => 'required|integer|between:0,6',
+            'jam_mulai'      => 'required|date_format:H:i',
+            'jam_selesai'    => 'required|date_format:H:i|after:jam_mulai',
+            'tanggal_mulai'  => 'required|date|after_or_equal:today',
+            'jumlah_sesi'    => 'required|integer|min:2|max:12',
+        ]);
+        $validated['user_id'] = auth()->id();
+
+        // ================= DUMMY DATA (hapus blok ini pas RecurringBookingService::buatPaket() dari Bintang siap) =================
+        $hasil = [
+            'paket' => (object) ['id' => 1, 'status' => 'gagal_sebagian'],
+            'berhasil' => [
+                (object) [
+                    'id' => 101,
+                    'tanggal_booking' => now()->addWeek()->format('Y-m-d'),
+                    'jam_mulai' => $validated['jam_mulai'],
+                    'jam_selesai' => $validated['jam_selesai'],
+                    'total_harga' => 100000,
+                ],
+                (object) [
+                    'id' => 102,
+                    'tanggal_booking' => now()->addWeeks(2)->format('Y-m-d'),
+                    'jam_mulai' => $validated['jam_mulai'],
+                    'jam_selesai' => $validated['jam_selesai'],
+                    'total_harga' => 100000,
+                ],
+            ],
+            'gagal' => [
+                ['tanggal' => now()->addWeeks(3)->format('Y-m-d'), 'alasan' => 'Bentrok dengan booking lain'],
+            ],
+        ];
+        // $hasil = $recurringService->buatPaket($validated); // AKTIFKAN ini, hapus blok dummy di atas
+        // ======================================================================================================================
+
+        $lapangan = Lapangan::find($validated['lapangan_id']);
+
+        return view('booking.berulang.ringkasan', array_merge($hasil, ['lapangan' => $lapangan]));
+    }
+
+    // Trigger transaksi Snap gabungan untuk 1 paket
+    public function bayar(Request $request, PaymentService $paymentService, $recurringBookingId)
+    {
+        // Ambil semua booking anak yang berstatus sukses & belum dibayar
+        $bookings = Booking::where('recurring_booking_id', $recurringBookingId)
+            ->where('status', 'confirmed') // sesuaikan dengan nama status booking sukses di project kau
+            ->where('status_pembayaran', '!=', 'paid')
+            ->get();
+
+        if ($bookings->isEmpty()) {
+            return response()->json(['message' => 'Tidak ada sesi yang perlu dibayar.'], 422);
+        }
+
+        $snapToken = $paymentService->buatTransaksiGabungan($bookings->all(), auth()->id());
+
+        return response()->json(['snap_token' => $snapToken]);
+    }
+}
