@@ -17,12 +17,26 @@ class Percakapan extends Model
     {
         return $this->hasOne(Pesan::class)->latestOfMany();
     }
-
     public function jumlahBelumDibaca(int $userId): int
     {
         return $this->pesans()
             ->where('pengirim_id', '!=', $userId)
             ->whereNull('dibaca_pada')
             ->count();
+    }
+
+    public function lapangan()
+    {
+        return $this->belongsTo(Lapangan::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function pemilik()
+    {
+        return $this->belongsTo(User::class, 'pemilik_id');
     }
 }

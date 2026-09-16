@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Events\PesanDikirim;
 use App\Models\Lapangan;
 use App\Models\Percakapan;
 use App\Models\Pesan;
+use Illuminate\Support\Facades\Log;
 
 class ChatService
 {
@@ -34,7 +36,13 @@ class ChatService
             ? $percakapan->pemilik_id
             : $percakapan->user_id;
 
-        \App\Models\User::find($penerimaId)?->notify(new \App\Notifications\PesanBaruDiterima($pesan));
+        try {
+            \App\Models\User::find($penerimaId)?->notify(new \App\Notifications\PesanBaruDiterima($pesan));
+        } catch (\Throwable $e) {
+            Log::warning('Gagal kirim notifikasi pesan baru: ' . $e->getMessage());
+        }
+
+        broadcast(new PesanDikirim($pesan))->toOthers();
 
         return $pesan;
     }

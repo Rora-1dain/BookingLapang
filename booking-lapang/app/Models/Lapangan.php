@@ -58,7 +58,7 @@ class Lapangan extends Model
     return $this->hasMany(\App\Models\FotoLapangan::class)->orderBy('urutan');
     }
 
-    public function fotoUtama()
+        public function fotoUtama()
     {
     return $this->fotos()->where('is_utama', true)->first()
         ?? $this->fotos()->first();

@@ -8,20 +8,18 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('jadwal_operasionals', function (Blueprint $table) {
+        Schema::create('hari_liburs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('lapangan_id')->constrained()->cascadeOnDelete();
-            $table->unsignedTinyInteger('hari');
-            $table->time('jam_buka')->nullable();
-            $table->time('jam_tutup')->nullable();
-            $table->boolean('is_tutup')->default(false);
+            $table->date('tanggal');
+            $table->string('keterangan')->nullable();
             $table->timestamps();
-            $table->unique(['lapangan_id', 'hari']);
+            $table->unique(['lapangan_id', 'tanggal']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('jadwal_operasionals');
+        Schema::dropIfExists('hari_liburs');
     }
 };

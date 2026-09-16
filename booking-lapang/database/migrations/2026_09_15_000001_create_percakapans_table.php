@@ -8,6 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
+        Schema::create('percakapans', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('lapangan_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('pemilik_id')->constrained('users')->cascadeOnDelete();
+            $table->timestamps();
+            $table->unique(['lapangan_id', 'user_id']);
+        });
+
         Schema::create('pesans', function (Blueprint $table) {
             $table->id();
             $table->foreignId('percakapan_id')->constrained()->cascadeOnDelete();
@@ -21,5 +30,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('pesans');
+        Schema::dropIfExists('percakapans');
     }
 };

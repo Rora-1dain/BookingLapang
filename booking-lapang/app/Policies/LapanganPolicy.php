@@ -20,8 +20,8 @@ class LapanganPolicy
      * Determine whether the user can view the model.
      */
     public function view(User $user, Lapangan $lapangan): bool
-    {
-        return false;
+    {   
+        return $user->role === 'admin' || $user->id === $lapangan->pemilik_id;
     }
 
     /**
