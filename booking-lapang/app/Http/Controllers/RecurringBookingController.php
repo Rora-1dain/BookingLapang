@@ -29,31 +29,7 @@ class RecurringBookingController extends Controller
         ]);
         $validated['user_id'] = auth()->id();
 
-        // ================= DUMMY DATA (hapus blok ini pas RecurringBookingService::buatPaket() dari Bintang siap) =================
-        $hasil = [
-            'paket' => (object) ['id' => 1, 'status' => 'gagal_sebagian'],
-            'berhasil' => [
-                (object) [
-                    'id' => 101,
-                    'tanggal_booking' => now()->addWeek()->format('Y-m-d'),
-                    'jam_mulai' => $validated['jam_mulai'],
-                    'jam_selesai' => $validated['jam_selesai'],
-                    'total_harga' => 100000,
-                ],
-                (object) [
-                    'id' => 102,
-                    'tanggal_booking' => now()->addWeeks(2)->format('Y-m-d'),
-                    'jam_mulai' => $validated['jam_mulai'],
-                    'jam_selesai' => $validated['jam_selesai'],
-                    'total_harga' => 100000,
-                ],
-            ],
-            'gagal' => [
-                ['tanggal' => now()->addWeeks(3)->format('Y-m-d'), 'alasan' => 'Bentrok dengan booking lain'],
-            ],
-        ];
-        // $hasil = $recurringService->buatPaket($validated); // AKTIFKAN ini, hapus blok dummy di atas
-        // ======================================================================================================================
+        $hasil = $recurringService->buatPaket($validated);
 
         $lapangan = Lapangan::find($validated['lapangan_id']);
 
