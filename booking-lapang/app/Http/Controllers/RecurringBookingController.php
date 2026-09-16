@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 
 class RecurringBookingController extends Controller
 {
-    // Tampil form booking berulang untuk 1 lapangan tertentu
+   
     public function create(Lapangan $lapangan)
     {
         return view('booking.berulang.create', compact('lapangan'));
@@ -36,12 +36,12 @@ class RecurringBookingController extends Controller
         return view('booking.berulang.ringkasan', array_merge($hasil, ['lapangan' => $lapangan]));
     }
 
-    // Trigger transaksi Snap gabungan untuk 1 paket
+   
     public function bayar(Request $request, PaymentService $paymentService, $recurringBookingId)
     {
-        // Ambil semua booking anak yang berstatus sukses & belum dibayar
+        
         $bookings = Booking::where('recurring_booking_id', $recurringBookingId)
-            ->where('status', 'confirmed') // sesuaikan dengan nama status booking sukses di project kau
+            ->where('status', 'pending') 
             ->where('status_pembayaran', '!=', 'paid')
             ->get();
 
