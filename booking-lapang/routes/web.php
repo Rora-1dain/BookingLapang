@@ -16,6 +16,7 @@ use App\Http\Controllers\InvoiceVerifikasiController;
 use App\Http\Controllers\JadwalOperasionalController;
 use App\Http\Controllers\LapanganController;
 use App\Http\Controllers\LoyaltyController;
+use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\PaymentNotificationController;
 use App\Http\Controllers\PemilikBookingController;
 use App\Http\Controllers\PemilikLapanganController;
@@ -233,4 +234,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/foto/{foto}/jadikan-utama', [FotoLapanganController::class, 'jadikanUtama'])
         ->name('lapangan.foto.utama');
+});
+
+Route::middleware('auth')->prefix('membership')->name('membership.')->group(function () {
+    Route::get('/', [MembershipController::class, 'index'])->name('index');
+    Route::post('/berlangganan/{paket}', [MembershipController::class, 'berlangganan'])->name('berlangganan');
+    Route::get('/status', [MembershipController::class, 'status'])->name('status');
 });
