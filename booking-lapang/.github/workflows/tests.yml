@@ -1,0 +1,72 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          # PENTING: extensions ini ditulis eksplisit supaya pdo_sqlite pasti
+          # tersedia. Tanpa ini, driver sqlite bisa saja tidak aktif tergantung
+          # image runner yang dipakai GitHub Actions saat itu, dan migration
+          # akan gagal dengan error "could not find driver".
+          extensions: mbstring, pdo, pdo_sqlite, sqlite3, bcmath, ctype, fileinfo, tokenizer
+
+      - name: Install Dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Copy .env
+        run: cp .env.example .env
+
+      - name: Generate Key
+        run: php artisan key:generate
+
+      # PENTING: bug yang diperbaiki dari draft awal — file database SQLite
+      # HARUS dibuat secara fisik lebih dulu. Beda dengan Postgres/MySQL yang
+      # servernya sudah berjalan terpisah, driver sqlite butuh file yang benar-
+      # benar ada di disk; kalau langkah ini dilewati, migration akan gagal
+      # dengan error "unable to open database file".
+      - name: Siapkan Database SQLite
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
+
+      - name: Cek Format Kode (Pint)
+        run: ./vendor/bin/pint --test
+
+      - name: Jalankan Migration
+        run: php artisan migrate --force
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+
+      - name: Jalankan Test
+        run: php artisan test
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy ke Vercel (Production)
+        run: npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
