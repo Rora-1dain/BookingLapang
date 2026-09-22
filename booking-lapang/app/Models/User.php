@@ -38,4 +38,18 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\Lapangan::class, 'pemilik_id');
     }
+
+      public function langgananUsers()
+{
+    return $this->hasMany(LanggananUser::class);
+}
+
+      public function langgananAktif()
+{
+     return $this->langgananUsers()
+        ->where('status', 'aktif')
+        ->where('tanggal_berakhir', '>=', now())
+        ->first();
+}
+
 }
