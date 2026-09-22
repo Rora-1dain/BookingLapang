@@ -12,7 +12,7 @@ jobs:
       - name: Cek Endpoint Health
         id: healthcheck
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://booking-lapang.vercel.app/health-salah)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://booking-lapang-alpha.vercel.app/health)
           echo "status=$STATUS" >> $GITHUB_OUTPUT
 
       - name: Kirim Notifikasi jika Gagal
