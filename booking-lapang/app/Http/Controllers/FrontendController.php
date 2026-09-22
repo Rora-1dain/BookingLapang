@@ -56,7 +56,7 @@ class FrontendController extends Controller
         abort_unless(
             $booking->status === 'confirmed' &&
             $booking->tanggal_booking->isPast() &&
-            !$booking->ulasan()->exists(),
+            ! $booking->ulasan()->exists(),
             404
         );
 

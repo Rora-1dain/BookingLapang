@@ -42,9 +42,8 @@ class Booking extends Model
 
     public function recurringBooking()
     {
-    return $this->belongsTo(\App\Models\RecurringBooking::class);
+        return $this->belongsTo(RecurringBooking::class);
     }
-
 
     public function lapangan()
     {
@@ -63,7 +62,7 @@ class Booking extends Model
 
     public function ulasan()
     {
-        return $this->hasOne(\App\Models\Ulasan::class);
+        return $this->hasOne(Ulasan::class);
     }
 
     public function payout()

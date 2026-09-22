@@ -3,8 +3,8 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
 
 class VerifikasiDiterima extends Notification
 {
@@ -19,7 +19,7 @@ class VerifikasiDiterima extends Notification
     {
         return (new MailMessage)
             ->subject('Verifikasi Identitas Anda Diterima')
-            ->greeting('Selamat, ' . $notifiable->name . '!')
+            ->greeting('Selamat, '.$notifiable->name.'!')
             ->line('Dokumen identitas Anda telah diverifikasi dan disetujui.')
             ->line('Anda sekarang bisa mengajukan lapangan baru.')
             ->action('Ajukan Lapangan', url('/pemilik/lapangan/create'))

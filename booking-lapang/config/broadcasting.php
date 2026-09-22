@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Str;
-
 return [
 
     'default' => env('BROADCAST_CONNECTION', 'null'),

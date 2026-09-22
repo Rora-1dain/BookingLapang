@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Services\VerifikasiService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class AdminVerifikasiController extends Controller
 {
@@ -22,7 +21,7 @@ class AdminVerifikasiController extends Controller
     {
         abort_unless(auth()->user()->role === 'admin', 403);
 
-        return response('<img src="' . $pemilik->path_dokumen_identitas . '" style="max-width:100%">')
+        return response('<img src="'.$pemilik->path_dokumen_identitas.'" style="max-width:100%">')
             ->header('Content-Type', 'text/html');
     }
 

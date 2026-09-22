@@ -25,7 +25,7 @@ class PayoutSelesai extends Notification
             'periode_selesai' => $this->payout->periode_selesai,
             'total_nominal' => $this->payout->total_nominal,
             'pesan' => "Payout periode {$this->payout->periode_mulai} - {$this->payout->periode_selesai} sebesar Rp"
-                . number_format($this->payout->total_nominal, 0, ',', '.') . " telah selesai diproses.",
+                .number_format($this->payout->total_nominal, 0, ',', '.').' telah selesai diproses.',
         ];
     }
 }

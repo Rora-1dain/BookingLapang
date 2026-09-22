@@ -10,7 +10,7 @@ class ReferralService
     public function generateKodeReferral(): string
     {
         do {
-            $kode = 'REF' . strtoupper(substr(str_shuffle('ABCDEFGHJKLMNPQRSTUVWXYZ23456789'), 0, 6));
+            $kode = 'REF'.strtoupper(substr(str_shuffle('ABCDEFGHJKLMNPQRSTUVWXYZ23456789'), 0, 6));
         } while (User::where('kode_referral', $kode)->exists());
 
         return $kode;
@@ -38,13 +38,13 @@ class ReferralService
         $user = $booking->user;
 
         // udah pernah dikasih reward, atau emang bukan hasil referral -> skip
-        if (!$user->direferensikan_oleh || $user->reward_referral_diberikan) {
+        if (! $user->direferensikan_oleh || $user->reward_referral_diberikan) {
             return;
         }
 
         $pengundang = User::find($user->direferensikan_oleh);
 
-        if (!$pengundang) {
+        if (! $pengundang) {
             return;
         }
 
@@ -69,7 +69,7 @@ class ReferralService
     {
         return User::withCount(['referrals' => function ($q) {
             $q->where('reward_referral_diberikan', true)
-              ->whereMonth('created_at', now()->month);
+                ->whereMonth('created_at', now()->month);
         }])
             ->orderByDesc('referrals_count')
             ->limit($limit)

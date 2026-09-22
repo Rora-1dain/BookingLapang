@@ -21,6 +21,11 @@ class LanggananUser extends Model
         return $this->belongsTo(MembershipPaket::class, 'membership_paket_id');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function aktif(): bool
     {
         return $this->status === 'aktif' && $this->tanggal_berakhir->isFuture();

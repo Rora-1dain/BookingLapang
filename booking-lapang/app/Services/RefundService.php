@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\RefundLog;
-use Midtrans\Transaction;
 use Exception;
+use Midtrans\Transaction;
 
 class RefundService
 {
@@ -36,7 +36,7 @@ class RefundService
 
         try {
             Transaction::refund($booking->payment_reference, [
-                'refund_key' => 'refund-' . $booking->id . '-' . time(),
+                'refund_key' => 'refund-'.$booking->id.'-'.time(),
                 'amount' => $nominalRefund,
                 'reason' => $alasan,
             ]);
@@ -45,7 +45,7 @@ class RefundService
             $hasil = 'berhasil';
         } catch (Exception $e) {
             $booking->update(['status_refund' => 'ditolak', 'catatan_refund' => $e->getMessage()]);
-            $hasil = 'gagal: ' . $e->getMessage();
+            $hasil = 'gagal: '.$e->getMessage();
         }
 
         RefundLog::create([
