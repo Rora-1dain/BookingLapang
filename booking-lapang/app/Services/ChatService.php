@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 class ChatService
 {
     public function mulaiAtauLanjutkan(int $userId, int $lapanganId): Percakapan
-    {
+                            {
         $lapangan = Lapangan::findOrFail($lapanganId);
 
         return Percakapan::firstOrCreate(
