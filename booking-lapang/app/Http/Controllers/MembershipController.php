@@ -14,7 +14,6 @@ class MembershipController extends Controller
         return response()->json(MembershipPaket::all());
     }
 
-    
     public function berlangganan(MembershipPaket $paket, SubscriptionService $subscriptionService, Request $request)
     {
         try {
@@ -30,7 +29,6 @@ class MembershipController extends Controller
         }
     }
 
-    
     public function status(Request $request)
     {
         $langganan = $request->user()->langgananAktif();

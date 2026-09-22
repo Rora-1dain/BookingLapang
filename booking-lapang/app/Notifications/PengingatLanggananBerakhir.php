@@ -10,9 +10,7 @@ class PengingatLanggananBerakhir extends Notification
 {
     use Queueable;
 
-    public function __construct(public LanggananUser $langganan)
-    {
-    }
+    public function __construct(public LanggananUser $langganan) {}
 
     public function via($notifiable): array
     {
