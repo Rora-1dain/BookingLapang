@@ -11,7 +11,10 @@ class LanggananUser extends Model
         'tanggal_berakhir', 'status', 'sisa_kuota_gratis',
     ];
 
-    protected $casts = ['tanggal_mulai' => 'date', 'tanggal_berakhir' => 'date'];
+    protected $casts = [
+        'tanggal_mulai'    => 'date',
+        'tanggal_berakhir' => 'date',
+    ];
 
     public function paket()
     {
