@@ -22,6 +22,7 @@ use App\Http\Controllers\PemilikVerifikasiController;
 use App\Http\Controllers\JadwalOperasionalController;
 use App\Http\Controllers\HariLiburController;
 use App\Http\Controllers\Admin\LaporanPlatformController;
+use App\Http\Controllers\MembershipController;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -231,4 +232,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/foto/{foto}/jadikan-utama', [\App\Http\Controllers\FotoLapanganController::class, 'jadikanUtama'])
         ->name('lapangan.foto.utama');
+});
+
+Route::middleware('auth')->prefix('membership')->name('membership.')->group(function () {
+    Route::get('/', [MembershipController::class, 'index'])->name('index');
+    Route::post('/berlangganan/{paket}', [MembershipController::class, 'berlangganan'])->name('berlangganan');
+    Route::get('/status', [MembershipController::class, 'status'])->name('status');
 });
