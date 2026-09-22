@@ -164,3 +164,5 @@ sequenceDiagram
 | Revano | Controller, Integrasi, Otorisasi, Queue, Autentikasi API, Deployment, QA |
 
 Project PKL SMK Telkom Bandung di CV Artechmis Solution.
+ NAURA
+ 
