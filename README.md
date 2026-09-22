@@ -1,3 +1,5 @@
+![Tests](https://github.com/Rora-1dain/BookingLapang/actions/workflows/tests.yml/badge.svg)
+
 # Booking Lapang
 
 Aplikasi booking lapang olahraga (futsal, badminton, basket) dengan pembayaran online (Midtrans Snap), dibangun dengan Laravel + PostgreSQL (Supabase).
