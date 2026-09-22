@@ -6,6 +6,8 @@ use App\Events\PesanDikirim;
 use App\Models\Lapangan;
 use App\Models\Percakapan;
 use App\Models\Pesan;
+use App\Models\User;
+use App\Notifications\PesanBaruDiterima;
 use Illuminate\Support\Facades\Log;
 
 class ChatService
@@ -22,14 +24,14 @@ class ChatService
 
     public function kirimPesan(Percakapan $percakapan, int $pengirimId, string $isi): Pesan
     {
-        if (!in_array($pengirimId, [$percakapan->user_id, $percakapan->pemilik_id])) {
+        if (! in_array($pengirimId, [$percakapan->user_id, $percakapan->pemilik_id])) {
             throw new \Exception('Anda bukan bagian dari percakapan ini.');
         }
 
         $pesan = Pesan::create([
             'percakapan_id' => $percakapan->id,
-            'pengirim_id'   => $pengirimId,
-            'isi'           => $isi,
+            'pengirim_id' => $pengirimId,
+            'isi' => $isi,
         ]);
 
         $penerimaId = $pengirimId === $percakapan->user_id
@@ -37,9 +39,9 @@ class ChatService
             : $percakapan->user_id;
 
         try {
-            \App\Models\User::find($penerimaId)?->notify(new \App\Notifications\PesanBaruDiterima($pesan));
+            User::find($penerimaId)?->notify(new PesanBaruDiterima($pesan));
         } catch (\Throwable $e) {
-            Log::warning('Gagal kirim notifikasi pesan baru: ' . $e->getMessage());
+            Log::warning('Gagal kirim notifikasi pesan baru: '.$e->getMessage());
         }
 
         broadcast(new PesanDikirim($pesan))->toOthers();

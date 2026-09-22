@@ -1,35 +1,36 @@
 <?php
+
+use App\Http\Controllers\Admin\LaporanPlatformController;
 use App\Http\Controllers\AdminBookingController;
+use App\Http\Controllers\AdminLapanganController;
+use App\Http\Controllers\AdminPayoutController;
+use App\Http\Controllers\AdminUlasanController;
+use App\Http\Controllers\AdminVerifikasiController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FotoLapanganController;
+use App\Http\Controllers\FrontendController;
+use App\Http\Controllers\HariLiburController;
 use App\Http\Controllers\InvoiceVerifikasiController;
+use App\Http\Controllers\JadwalOperasionalController;
+use App\Http\Controllers\LapanganController;
+use App\Http\Controllers\LoyaltyController;
+use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\PaymentNotificationController;
+use App\Http\Controllers\PemilikBookingController;
+use App\Http\Controllers\PemilikLapanganController;
+use App\Http\Controllers\PemilikPayoutController;
+use App\Http\Controllers\PemilikVerifikasiController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RecurringBookingController;
+use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\UlasanController;
 use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\WaitlistController;
-use App\Http\Controllers\PoinController;  
-use App\Http\Controllers\ReferralController;  
-use App\Http\Controllers\AdminLapanganController;
-use App\Http\Controllers\PemilikBookingController;
-use App\Http\Controllers\PemilikLapanganController;
-use App\Http\Controllers\LapanganController;
-use App\Http\Controllers\AdminPayoutController;
-use App\Http\Controllers\AdminUlasanController;
-use App\Http\Controllers\PemilikPayoutController;
-use App\Http\Controllers\AdminVerifikasiController;
-use App\Http\Controllers\PemilikVerifikasiController;
-use App\Http\Controllers\JadwalOperasionalController;
-use App\Http\Controllers\HariLiburController;
-use App\Http\Controllers\Admin\LaporanPlatformController;
-use App\Http\Controllers\MembershipController;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\FrontendController;
-use App\Http\Controllers\ChatController;
-use App\Http\Controllers\RecurringBookingController;
-
 
 Route::get('/', [FrontendController::class, 'home'])->name('home');
 Route::get('/dashboard', function () {
@@ -61,28 +62,28 @@ Route::middleware('auth')->group(function () {
     Route::get('/booking/{booking}/invoice', [BookingController::class, 'invoice'])->name('booking.invoice');
     Route::post('/booking/{booking}/invoice/kirim-ulang', [BookingController::class, 'kirimUlangInvoice'])->name('booking.invoice.kirim-ulang');
     Route::post('/booking/cek-ketersediaan', [BookingController::class, 'cekKetersediaanAjax'])
-    ->name('booking.cekKetersediaan');
+        ->name('booking.cekKetersediaan');
     Route::post('/waitlist/daftar', [WaitlistController::class, 'daftar'])
-    ->name('waitlist.daftar');
+        ->name('waitlist.daftar');
     Route::post('/waitlist/{waitlist}/cancel', [WaitlistController::class, 'cancel'])
-    ->name('waitlist.cancel');
+        ->name('waitlist.cancel');
     Route::post('/voucher/cek', [VoucherController::class, 'cek'])->name('voucher.cek');
 });
 
-    Route::middleware('auth')->group(function () {
-    Route::get('/chat/{lapangan}', [\App\Http\Controllers\ChatController::class, 'mulai'])
+Route::middleware('auth')->group(function () {
+    Route::get('/chat/{lapangan}', [ChatController::class, 'mulai'])
         ->name('chat.mulai');
-    Route::post('/chat/{percakapan}/kirim', [\App\Http\Controllers\ChatController::class, 'kirim'])
+    Route::post('/chat/{percakapan}/kirim', [ChatController::class, 'kirim'])
         ->name('chat.kirim');
-    Route::post('/chat/{percakapan}/tandai-dibaca', [\App\Http\Controllers\ChatController::class, 'tandaiDibaca'])
+    Route::post('/chat/{percakapan}/tandai-dibaca', [ChatController::class, 'tandaiDibaca'])
         ->name('chat.tandaiDibaca');
     Route::get('/booking/chat/{lapanganId}', [ChatController::class, 'bukaChatPemesan'])->name('booking.chat');
     Route::get('/pemilik/chat/{percakapan}', [ChatController::class, 'bukaChatPemilik'])->name('pemilik.chat');
     Route::post('/chat/{percakapan}/kirim', [ChatController::class, 'kirim'])->name('chat.kirim');
 });
 
-    Route::get('/leaderboard-referral', [ReferralController::class, 'leaderboard'])->name('referral.leaderboard');
-    
+Route::get('/leaderboard-referral', [ReferralController::class, 'leaderboard'])->name('referral.leaderboard');
+
 Route::middleware(['auth', 'throttle:5,1'])->group(function () {
     Route::get('/booking/{booking}/rating', [FrontendController::class, 'rating'])->name('booking.rating');
     Route::post('/booking/{booking}/ulasan', [UlasanController::class, 'store'])
@@ -126,6 +127,7 @@ Route::get('/health', function () {
     Cache::put('health_check', 'ok', 10);
     $cacheStatus = Cache::get('health_check') === 'ok' ? 'ok' : 'error';
     $status = ($dbStatus === 'ok' && $cacheStatus === 'ok') ? 200 : 500;
+
     return response()->json([
         'database' => $dbStatus,
         'cache' => $cacheStatus,
@@ -133,7 +135,7 @@ Route::get('/health', function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::post('/poin/redeem', [\App\Http\Controllers\LoyaltyController::class, 'redeem'])
+    Route::post('/poin/redeem', [LoyaltyController::class, 'redeem'])
         ->name('poin.redeem');
 
     Route::get('/lapangan/{lapangan}/booking-berulang', [RecurringBookingController::class, 'create'])
@@ -221,16 +223,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/lapangan/{lapangan}/galeri', [\App\Http\Controllers\FotoLapanganController::class, 'index'])
+    Route::get('/lapangan/{lapangan}/galeri', [FotoLapanganController::class, 'index'])
         ->name('lapangan.foto.index');
 
-    Route::post('/lapangan/{lapangan}/foto', [\App\Http\Controllers\FotoLapanganController::class, 'store'])
+    Route::post('/lapangan/{lapangan}/foto', [FotoLapanganController::class, 'store'])
         ->name('lapangan.foto.store');
 
-    Route::delete('/foto/{foto}', [\App\Http\Controllers\FotoLapanganController::class, 'destroy'])
+    Route::delete('/foto/{foto}', [FotoLapanganController::class, 'destroy'])
         ->name('lapangan.foto.destroy');
 
-    Route::post('/foto/{foto}/jadikan-utama', [\App\Http\Controllers\FotoLapanganController::class, 'jadikanUtama'])
+    Route::post('/foto/{foto}/jadikan-utama', [FotoLapanganController::class, 'jadikanUtama'])
         ->name('lapangan.foto.utama');
 });
 

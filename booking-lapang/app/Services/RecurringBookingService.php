@@ -38,8 +38,8 @@ class RecurringBookingService
         $paket = RecurringBooking::create($data);
 
         $tanggalSesi = $this->hitungTanggalSesi(
-        Carbon::parse($data['tanggal_mulai']), (int) $data['hari'], (int) $data['jumlah_sesi']
-    );
+            Carbon::parse($data['tanggal_mulai']), (int) $data['hari'], (int) $data['jumlah_sesi']
+        );
 
         $berhasil = [];
         $gagal = [];

@@ -13,14 +13,12 @@ class PesanDikirim implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public Pesan $pesan)
-    {
-    }
+    public function __construct(public Pesan $pesan) {}
 
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('percakapan.' . $this->pesan->percakapan_id),
+            new PrivateChannel('percakapan.'.$this->pesan->percakapan_id),
         ];
     }
 
@@ -32,12 +30,12 @@ class PesanDikirim implements ShouldBroadcastNow
     public function broadcastWith(): array
     {
         return [
-            'id'             => $this->pesan->id,
-            'percakapan_id'  => $this->pesan->percakapan_id,
-            'pengirim_id'    => $this->pesan->pengirim_id,
-            'isi'            => $this->pesan->isi,
-            'dibaca_pada'    => $this->pesan->dibaca_pada,
-            'created_at'     => $this->pesan->created_at,
+            'id' => $this->pesan->id,
+            'percakapan_id' => $this->pesan->percakapan_id,
+            'pengirim_id' => $this->pesan->pengirim_id,
+            'isi' => $this->pesan->isi,
+            'dibaca_pada' => $this->pesan->dibaca_pada,
+            'created_at' => $this->pesan->created_at,
         ];
     }
 }

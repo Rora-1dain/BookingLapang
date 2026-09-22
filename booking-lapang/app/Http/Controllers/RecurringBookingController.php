@@ -18,12 +18,12 @@ class RecurringBookingController extends Controller
     public function store(Request $request, RecurringBookingService $recurringService)
     {
         $validated = $request->validate([
-            'lapangan_id'    => 'required|exists:lapangans,id',
-            'hari'           => 'required|integer|between:0,6',
-            'jam_mulai'      => 'required|date_format:H:i',
-            'jam_selesai'    => 'required|date_format:H:i|after:jam_mulai',
-            'tanggal_mulai'  => 'required|date|after_or_equal:today',
-            'jumlah_sesi'    => 'required|integer|min:2|max:12',
+            'lapangan_id' => 'required|exists:lapangans,id',
+            'hari' => 'required|integer|between:0,6',
+            'jam_mulai' => 'required|date_format:H:i',
+            'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
+            'tanggal_mulai' => 'required|date|after_or_equal:today',
+            'jumlah_sesi' => 'required|integer|min:2|max:12',
         ]);
         $validated['user_id'] = auth()->id();
 

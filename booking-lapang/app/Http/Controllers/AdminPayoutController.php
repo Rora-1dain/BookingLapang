@@ -6,8 +6,9 @@ use App\Models\Payout;
 use App\Models\User;
 use App\Notifications\PayoutSelesai;
 use App\Services\PayoutService;
-use Illuminate\Http\Request;
+use Carbon\Carbon;
 use Exception;
+use Illuminate\Http\Request;
 
 class AdminPayoutController extends Controller
 {
@@ -17,7 +18,7 @@ class AdminPayoutController extends Controller
 
         return view('admin.payout.create', compact('pemilikList'));
     }
-    
+
     public function store(Request $request, PayoutService $payoutService)
     {
         $validated = $request->validate([
@@ -28,10 +29,10 @@ class AdminPayoutController extends Controller
 
         try {
             $pemilik = User::findOrFail($validated['pemilik_id']);
-           $payoutService->buatPayout(
-            $pemilik,
-            \Carbon\Carbon::parse($validated['periode_mulai']),
-            \Carbon\Carbon::parse($validated['periode_selesai'])
+            $payoutService->buatPayout(
+                $pemilik,
+                Carbon::parse($validated['periode_mulai']),
+                Carbon::parse($validated['periode_selesai'])
             );
 
             return back()->with('success', 'Payout berhasil dibuat.');

@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Services\LoyaltyService;
 use App\Services\VoucherService;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
 
 class LoyaltyController extends Controller
 {

@@ -34,11 +34,11 @@ class ChatController extends Controller
 
     // Kirim pesan (dipake 2 sisi)
     public function kirim(Request $request, Percakapan $percakapan)
-{
-    $request->validate(['isi' => 'required|string|max:1000']);
+    {
+        $request->validate(['isi' => 'required|string|max:1000']);
 
-    $pesan = $this->chatService->kirimPesan($percakapan, auth()->id(), $request->isi);
+        $pesan = $this->chatService->kirimPesan($percakapan, auth()->id(), $request->isi);
 
-    return response()->json($pesan);
-}
+        return response()->json($pesan);
+    }
 }

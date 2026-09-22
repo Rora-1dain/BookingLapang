@@ -12,14 +12,13 @@ use Exception;
 
 class BookingService
 {
-
     /**
      * Mengecek apakah suatu lapangan tersedia pada tanggal dan rentang jam tertentu.
      */
     public function cekKetersediaan(int $lapanganId, string $tanggal, string $jamMulai, string $jamSelesai): bool
     {
         $bentrok = Booking::where('lapangan_id', $lapanganId)
-           ->whereDate('tanggal_booking', $tanggal)
+            ->whereDate('tanggal_booking', $tanggal)
             ->where('status', '!=', 'cancelled')
             ->where(function ($query) use ($jamMulai, $jamSelesai) {
                 $query->whereBetween('jam_mulai', [$jamMulai, $jamSelesai])
@@ -43,7 +42,7 @@ class BookingService
 
         $jadwal = $lapangan->jadwalOperasionals()->where('hari', $hari)->first();
 
-        if (!$jadwal || $jadwal->is_tutup) {
+        if (! $jadwal || $jadwal->is_tutup) {
             return false;
         }
 
@@ -86,7 +85,7 @@ class BookingService
             throw new Exception('Lapangan tutup pada tanggal yang dipilih.');
         }
 
-        if (!$this->dalamJamOperasional($lapangan, $data['tanggal_booking'], $data['jam_mulai'], $data['jam_selesai'])) {
+        if (! $this->dalamJamOperasional($lapangan, $data['tanggal_booking'], $data['jam_mulai'], $data['jam_selesai'])) {
             throw new Exception('Jam booking di luar jam operasional lapangan.');
         }
 

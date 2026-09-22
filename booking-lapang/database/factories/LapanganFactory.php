@@ -10,7 +10,7 @@ class LapanganFactory extends Factory
     public function definition(): array
     {
         return [
-            'nama_lapangan' => 'Lapangan ' . fake()->unique()->words(2, true),
+            'nama_lapangan' => 'Lapangan '.fake()->unique()->words(2, true),
             'jenis' => fake()->randomElement(['Futsal', 'Basket', 'Badminton', 'Tenis', 'Voli']),
             'harga_per_jam' => fake()->numberBetween(50000, 300000),
             'status' => 'aktif',

@@ -5,7 +5,6 @@ namespace App\Notifications;
 use App\Models\Lapangan;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\MailMessage;
 
 class LapanganMenungguPersetujuan extends Notification
 {

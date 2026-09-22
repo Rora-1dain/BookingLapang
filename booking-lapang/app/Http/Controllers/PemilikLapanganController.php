@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Booking;
 use App\Models\Lapangan;
+use App\Models\Ulasan;
 use Illuminate\Http\Request;
 
 class PemilikLapanganController extends Controller
@@ -71,58 +73,57 @@ class PemilikLapanganController extends Controller
             ->with('success', 'Lapangan berhasil diperbarui.');
     }
 
-     public function dashboard()
-{
-    $lapanganIds = Lapangan::where('pemilik_id', auth()->id())->pluck('id');
+    public function dashboard()
+    {
+        $lapanganIds = Lapangan::where('pemilik_id', auth()->id())->pluck('id');
 
-    $totalLapanganAktif = Lapangan::where('pemilik_id', auth()->id())
-        ->where('status_approval', 'disetujui')
-        ->count();
+        $totalLapanganAktif = Lapangan::where('pemilik_id', auth()->id())
+            ->where('status_approval', 'disetujui')
+            ->count();
 
-    $jumlahBookingBulanIni = \App\Models\Booking::whereIn('lapangan_id', $lapanganIds)
-        ->whereMonth('tanggal_booking', now()->month)
-        ->count();
+        $jumlahBookingBulanIni = Booking::whereIn('lapangan_id', $lapanganIds)
+            ->whereMonth('tanggal_booking', now()->month)
+            ->count();
 
-    $pendapatanBulanIni = \App\Models\Booking::whereIn('lapangan_id', $lapanganIds)
-        ->where('status_pembayaran', 'paid')
-        ->whereMonth('tanggal_booking', now()->month)
-        ->sum('total_harga');
+        $pendapatanBulanIni = Booking::whereIn('lapangan_id', $lapanganIds)
+            ->where('status_pembayaran', 'paid')
+            ->whereMonth('tanggal_booking', now()->month)
+            ->sum('total_harga');
 
-    // Daftar lapangan milik pemilik ini, lengkap dengan foto utama & rating,
-    // buat ditampilin sebagai card di dashboard (bukan tabel data mentah).
-    $lapangans = Lapangan::where('pemilik_id', auth()->id())
-        ->with('fotos')
-        ->latest()
-        ->get();
+        // Daftar lapangan milik pemilik ini, lengkap dengan foto utama & rating,
+        // buat ditampilin sebagai card di dashboard (bukan tabel data mentah).
+        $lapangans = Lapangan::where('pemilik_id', auth()->id())
+            ->with('fotos')
+            ->latest()
+            ->get();
 
-    // Rating gabungan dari semua lapangan pemilik ini
-    $ratingRataRata = round(
-        \App\Models\Ulasan::whereHas('booking', fn ($q) => $q->whereIn('lapangan_id', $lapanganIds))
+        // Rating gabungan dari semua lapangan pemilik ini
+        $ratingRataRata = round(
+            Ulasan::whereHas('booking', fn ($q) => $q->whereIn('lapangan_id', $lapanganIds))
+                ->where('disembunyikan', false)
+                ->avg('rating') ?? 0,
+            1
+        );
+
+        $totalUlasan = Ulasan::whereHas('booking', fn ($q) => $q->whereIn('lapangan_id', $lapanganIds))
             ->where('disembunyikan', false)
-            ->avg('rating') ?? 0,
-        1
-    );
+            ->count();
 
-    $totalUlasan = \App\Models\Ulasan::whereHas('booking', fn ($q) => $q->whereIn('lapangan_id', $lapanganIds))
-        ->where('disembunyikan', false)
-        ->count();
+        // 5 booking terbaru buat "Daftar Booking Terbaru" di dashboard
+        $bookingTerbaru = Booking::whereIn('lapangan_id', $lapanganIds)
+            ->with(['lapangan', 'user'])
+            ->latest()
+            ->limit(5)
+            ->get();
 
-    // 5 booking terbaru buat "Daftar Booking Terbaru" di dashboard
-    $bookingTerbaru = \App\Models\Booking::whereIn('lapangan_id', $lapanganIds)
-        ->with(['lapangan', 'user'])
-        ->latest()
-        ->limit(5)
-        ->get();
-
-    return view('pemilik.dashboard', compact(
-        'totalLapanganAktif',
-        'jumlahBookingBulanIni',
-        'pendapatanBulanIni',
-        'lapangans',
-        'ratingRataRata',
-        'totalUlasan',
-        'bookingTerbaru'
-    ));
-}
-
+        return view('pemilik.dashboard', compact(
+            'totalLapanganAktif',
+            'jumlahBookingBulanIni',
+            'pendapatanBulanIni',
+            'lapangans',
+            'ratingRataRata',
+            'totalUlasan',
+            'bookingTerbaru'
+        ));
+    }
 }

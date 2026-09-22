@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Services\VerifikasiService;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
 
 class PemilikVerifikasiController extends Controller
 {

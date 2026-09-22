@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Lapangan;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class LapanganPolicy
 {
@@ -20,7 +19,7 @@ class LapanganPolicy
      * Determine whether the user can view the model.
      */
     public function view(User $user, Lapangan $lapangan): bool
-    {   
+    {
         return $user->role === 'admin' || $user->id === $lapangan->pemilik_id;
     }
 

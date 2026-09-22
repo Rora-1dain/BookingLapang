@@ -1,12 +1,13 @@
 <?php
+
 // app/Http/Controllers/PoinController.php
 
 namespace App\Http\Controllers;
 
 use App\Services\LoyaltyService;
 use App\Services\VoucherService;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
 
 class PoinController extends Controller
 {
@@ -18,6 +19,7 @@ class PoinController extends Controller
 
         try {
             $voucher = $loyaltyService->redeemPoin(auth()->user(), $request->jumlah_poin, $voucherService);
+
             return back()->with('success', "Berhasil! Voucher kode {$voucher->kode} sudah bisa dipakai.");
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());

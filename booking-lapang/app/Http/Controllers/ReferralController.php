@@ -16,7 +16,7 @@ class ReferralController extends Controller
 
         return view('profile.referral', [
             'kodeReferral' => $user->kode_referral,
-            'linkReferral' => config('app.url') . '/register?ref=' . $user->kode_referral,
+            'linkReferral' => config('app.url').'/register?ref='.$user->kode_referral,
             'jumlahTemanDaftar' => $jumlahTemanDaftar,
             'jumlahRewardDiterima' => $jumlahRewardDiterima,
         ]);

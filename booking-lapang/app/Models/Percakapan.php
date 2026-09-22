@@ -17,6 +17,7 @@ class Percakapan extends Model
     {
         return $this->hasOne(Pesan::class)->latestOfMany();
     }
+
     public function jumlahBelumDibaca(int $userId): int
     {
         return $this->pesans()

@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\PoinHistory;
 use App\Models\User;
 use App\Models\Voucher;
-use App\Services\VoucherService;
 use Exception;
 
 class LoyaltyService
