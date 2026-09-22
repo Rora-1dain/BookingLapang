@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\ReferralService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Services\ReferralService;
 
 class AuthApiController extends Controller
 {
@@ -45,30 +45,29 @@ class AuthApiController extends Controller
     }
 
     public function register(Request $request, ReferralService $referralService)
-{
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|unique:users,email',
-        'password' => 'required|string|min:8|confirmed',
-        'kode_referral' => 'nullable|string|exists:users,kode_referral',
-    ]);
- 
-    $user = $referralService->daftarDenganReferral(
-        [
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-        ],
-        $validated['kode_referral'] ?? null,
-        $request->ip()
-    );
- 
-    $token = $user->createToken('api-token')->plainTextToken;
- 
-    return response()->json([
-        'user' => new UserResource($user),
-        'token' => $token,
-    ], 201);
-}
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            'kode_referral' => 'nullable|string|exists:users,kode_referral',
+        ]);
 
+        $user = $referralService->daftarDenganReferral(
+            [
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+            ],
+            $validated['kode_referral'] ?? null,
+            $request->ip()
+        );
+
+        $token = $user->createToken('api-token')->plainTextToken;
+
+        return response()->json([
+            'user' => new UserResource($user),
+            'token' => $token,
+        ], 201);
+    }
 }

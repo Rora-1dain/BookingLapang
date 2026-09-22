@@ -1,24 +1,24 @@
 <?php
 
+use App\Http\Controllers\Api\AdminBookingApiController;
+use App\Http\Controllers\Api\AdminLapanganApiController;
+use App\Http\Controllers\Api\AdminLaporanApiController;
+use App\Http\Controllers\Api\AdminPayoutApiController;
+use App\Http\Controllers\Api\AdminUlasanApiController;
+use App\Http\Controllers\Api\AdminVerifikasiApiController;
 use App\Http\Controllers\Api\AuthApiController;
 use App\Http\Controllers\Api\BookingApiController;
+use App\Http\Controllers\Api\ChatApiController;
 use App\Http\Controllers\Api\LapanganApiController;
+use App\Http\Controllers\Api\PemilikLapanganApiController;
+use App\Http\Controllers\Api\PemilikPayoutApiController;
 use App\Http\Controllers\Api\PoinApiController;
 use App\Http\Controllers\Api\ReferralApiController;
 use App\Http\Controllers\Api\UlasanApiController;
+use App\Http\Controllers\Api\VerifikasiApiController;
 use App\Http\Controllers\Api\VoucherApiController;
 use App\Http\Controllers\Api\WaitlistApiController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\ChatApiController;
-use App\Http\Controllers\Api\PemilikLapanganApiController;
-use App\Http\Controllers\Api\PemilikPayoutApiController;
-use App\Http\Controllers\Api\VerifikasiApiController;
-use App\Http\Controllers\Api\AdminBookingApiController;
-use App\Http\Controllers\Api\AdminLapanganApiController;
-use App\Http\Controllers\Api\AdminVerifikasiApiController;
-use App\Http\Controllers\Api\AdminPayoutApiController;
-use App\Http\Controllers\Api\AdminLaporanApiController;
-use App\Http\Controllers\Api\AdminUlasanApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -91,12 +91,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Pemilik lapangan
     Route::prefix('pemilik')->group(function () {
-    Route::get('/lapangan', [PemilikLapanganApiController::class, 'index']);
-    Route::post('/lapangan', [PemilikLapanganApiController::class, 'store']);
-    Route::put('/lapangan/{lapangan}', [PemilikLapanganApiController::class, 'update']);
-    Route::get('/dashboard', [PemilikLapanganApiController::class, 'dashboard']);
-    Route::get('/payout', [PemilikPayoutApiController::class, 'index']);
-    Route::post('/verifikasi', [VerifikasiApiController::class, 'ajukan']);
+        Route::get('/lapangan', [PemilikLapanganApiController::class, 'index']);
+        Route::post('/lapangan', [PemilikLapanganApiController::class, 'store']);
+        Route::put('/lapangan/{lapangan}', [PemilikLapanganApiController::class, 'update']);
+        Route::get('/dashboard', [PemilikLapanganApiController::class, 'dashboard']);
+        Route::get('/payout', [PemilikPayoutApiController::class, 'index']);
+        Route::post('/verifikasi', [VerifikasiApiController::class, 'ajukan']);
     });
 
 });
@@ -105,24 +105,24 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     // Booking & Refund
     Route::get('/booking', [AdminBookingApiController::class, 'index']);
     Route::post('/booking/{booking}/refund', [AdminBookingApiController::class, 'refund']);
- 
+
     // Approval Lapangan
     Route::get('/lapangan/approval', [AdminLapanganApiController::class, 'approval']);
     Route::post('/lapangan/{lapangan}/setujui', [AdminLapanganApiController::class, 'setujui']);
     Route::post('/lapangan/{lapangan}/tolak', [AdminLapanganApiController::class, 'tolak']);
- 
+
     // Verifikasi Pemilik (KYC)
     Route::get('/verifikasi', [AdminVerifikasiApiController::class, 'index']);
     Route::post('/verifikasi/{pemilik}/tinjau', [AdminVerifikasiApiController::class, 'tinjau']);
- 
+
     // Payout
     Route::get('/payout', [AdminPayoutApiController::class, 'index']);
     Route::post('/payout', [AdminPayoutApiController::class, 'store']);
     Route::post('/payout/{payout}/selesai', [AdminPayoutApiController::class, 'selesai']);
- 
+
     // Laporan Platform
     Route::get('/laporan-platform', [AdminLaporanApiController::class, 'platform']);
- 
+
     // Ulasan Dilaporkan
     Route::get('/ulasan/dilaporkan', [AdminUlasanApiController::class, 'dilaporkan']);
 });

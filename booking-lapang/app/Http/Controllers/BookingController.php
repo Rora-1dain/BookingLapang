@@ -8,13 +8,14 @@ use App\Http\Requests\StoreBookingRequest;
 use App\Mail\InvoiceMail;
 use App\Models\Booking;
 use App\Models\Lapangan;
+use App\Notifications\SlotWaitlistTersedia;
 use App\Services\BookingService;
 use App\Services\InvoiceService;
 use App\Services\PaymentService;
 use App\Services\VoucherService;
 use App\Services\WaitlistService;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
@@ -84,7 +85,7 @@ class BookingController extends Controller
         );
 
         if ($ditawarkan) {
-            $ditawarkan->user->notify(new \App\Notifications\SlotWaitlistTersedia($ditawarkan));
+            $ditawarkan->user->notify(new SlotWaitlistTersedia($ditawarkan));
         }
 
         return back()->with('success', 'Booking berhasil dibatalkan.');

@@ -30,31 +30,31 @@ class WaitlistService
         }
 
         return Waitlist::create([
-            'lapangan_id'     => $data['lapangan_id'],
-            'user_id'         => $data['user_id'],
+            'lapangan_id' => $data['lapangan_id'],
+            'user_id' => $data['user_id'],
             'tanggal_booking' => $data['tanggal_booking'],
-            'jam_mulai'       => $data['jam_mulai'],
-            'jam_selesai'     => $data['jam_selesai'],
-            'status'          => 'menunggu',
+            'jam_mulai' => $data['jam_mulai'],
+            'jam_selesai' => $data['jam_selesai'],
+            'status' => 'menunggu',
         ]);
     }
 
     public function prosesAntrian(int $lapanganId, string $tanggal, string $jamMulai, string $jamSelesai): ?Waitlist
     {
         $antrian = Waitlist::where('lapangan_id', $lapanganId)
-           ->whereDate('tanggal_booking', $tanggal)
+            ->whereDate('tanggal_booking', $tanggal)
             ->where('jam_mulai', $jamMulai)
             ->where('jam_selesai', $jamSelesai)
             ->where('status', 'menunggu')
             ->oldest()
             ->first();
 
-        if (!$antrian) {
+        if (! $antrian) {
             return null;
         }
 
         $antrian->update([
-            'status'          => 'ditawarkan',
+            'status' => 'ditawarkan',
             'ditawarkan_pada' => now(),
         ]);
 

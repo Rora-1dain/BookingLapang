@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
 use App\Models\Lapangan;
 use Illuminate\Http\Request;
 
@@ -72,7 +73,7 @@ class PemilikLapanganApiController extends Controller
         $totalLapanganAktif = Lapangan::where('pemilik_id', $userId)
             ->where('status_approval', 'disetujui')->count();
 
-        $pendapatanBulanIni = \App\Models\Booking::whereIn('lapangan_id', $lapanganIds)
+        $pendapatanBulanIni = Booking::whereIn('lapangan_id', $lapanganIds)
             ->where('status_pembayaran', 'paid')
             ->whereMonth('tanggal_booking', now()->month)
             ->sum('total_harga');

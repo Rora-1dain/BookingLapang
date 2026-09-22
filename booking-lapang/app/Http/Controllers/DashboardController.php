@@ -1,14 +1,19 @@
 <?php
+
 declare(strict_types=1);
+
 namespace App\Http\Controllers;
+
 use App\Models\Booking;
 use App\Models\Lapangan;
 use App\Models\User;
 use App\Services\DashboardService;
 use Illuminate\Http\Request;
+
 class DashboardController extends Controller
 {
     public function __construct(protected DashboardService $dashboardService) {}
+
     public function index(Request $request)
     {
         $dari = $request->query('dari');

@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\VerifikasiService;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
 
 class VerifikasiApiController extends Controller
 {

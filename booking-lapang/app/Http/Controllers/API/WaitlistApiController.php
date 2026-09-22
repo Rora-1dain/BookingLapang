@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\WaitlistService;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
 
 class WaitlistApiController extends Controller
 {

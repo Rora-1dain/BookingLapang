@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Broadcast;
 Broadcast::channel('percakapan.{id}', function ($user, $id) {
     $percakapan = Percakapan::find($id);
 
-    if (!$percakapan) {
+    if (! $percakapan) {
         return false;
     }
 

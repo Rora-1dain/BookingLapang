@@ -4,22 +4,22 @@ namespace App\Services;
 
 use App\Models\Booking;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Exception;
 
 class InvoiceService
 {
     public function buatNomorInvoice(): string
     {
-        $prefix = 'INV/' . now()->format('Y/m') . '/';
+        $prefix = 'INV/'.now()->format('Y/m').'/';
 
         $urutan = DB::table('bookings')
-            ->where('nomor_invoice', 'like', $prefix . '%')
+            ->where('nomor_invoice', 'like', $prefix.'%')
             ->count() + 1;
 
-        return $prefix . str_pad($urutan, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad($urutan, 4, '0', STR_PAD_LEFT);
     }
 
     public function buatPdf(Booking $booking): \Barryvdh\DomPDF\PDF
@@ -35,7 +35,7 @@ class InvoiceService
         $urlVerifikasi = route('invoice.verifikasi', $booking->nomor_invoice);
 
         $svg = QrCode::size(150)->generate($urlVerifikasi);
-        $namaFile = 'qrcodes/' . str_replace('/', '-', $booking->nomor_invoice) . '.svg';
+        $namaFile = 'qrcodes/'.str_replace('/', '-', $booking->nomor_invoice).'.svg';
         Storage::disk('public')->put($namaFile, $svg);
         $qrCodePath = Storage::disk('public')->path($namaFile);
 

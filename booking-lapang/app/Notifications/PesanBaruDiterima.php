@@ -10,9 +10,7 @@ class PesanBaruDiterima extends Notification
 {
     use Queueable;
 
-    public function __construct(public Pesan $pesan)
-    {
-    }
+    public function __construct(public Pesan $pesan) {}
 
     public function via($notifiable): array
     {
@@ -23,8 +21,8 @@ class PesanBaruDiterima extends Notification
     {
         return [
             'percakapan_id' => $this->pesan->percakapan_id,
-            'pengirim_id'   => $this->pesan->pengirim_id,
-            'isi'           => $this->pesan->isi,
+            'pengirim_id' => $this->pesan->pengirim_id,
+            'isi' => $this->pesan->isi,
         ];
     }
 }

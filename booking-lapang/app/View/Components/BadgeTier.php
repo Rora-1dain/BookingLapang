@@ -6,9 +6,7 @@ use Illuminate\View\Component;
 
 class BadgeTier extends Component
 {
-    public function __construct(public string $tier = 'Silver')
-    {
-    }
+    public function __construct(public string $tier = 'Silver') {}
 
     public function render()
     {

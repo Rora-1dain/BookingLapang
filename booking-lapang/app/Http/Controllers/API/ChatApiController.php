@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Percakapan;
 use App\Services\ChatService;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
 
 class ChatApiController extends Controller
 {

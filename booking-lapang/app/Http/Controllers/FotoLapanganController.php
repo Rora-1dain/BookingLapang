@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\FotoLapangan;
 use App\Models\Lapangan;
 use App\Services\FotoLapanganService;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
 
 class FotoLapanganController extends Controller
 {

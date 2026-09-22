@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Booking;
+use App\Models\Ulasan;
+use App\Models\VoucherUsage;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -25,15 +29,14 @@ class DashboardService
         return $query;
     }
 
-
     /**
      * Menjumlahkan seluruh pendapatan dari booking berstatus pembayaran 'paid',
      * dengan opsi filter rentang tanggal. Hasil di-cache selama 10 menit
      * di bawah tag 'dashboard' agar bisa di-flush sekaligus tanpa perlu tahu
      * kombinasi filter yang pernah dipakai.
      *
-     * @param string|null $dari Tanggal awal filter, format Y-m-d (opsional)
-     * @param string|null $sampai Tanggal akhir filter, format Y-m-d (opsional)
+     * @param  string|null  $dari  Tanggal awal filter, format Y-m-d (opsional)
+     * @param  string|null  $sampai  Tanggal akhir filter, format Y-m-d (opsional)
      * @return float Total pendapatan dalam Rupiah
      */
     public function totalPendapatan(?string $dari = null, ?string $sampai = null): float
@@ -63,12 +66,11 @@ class DashboardService
             ->toArray();
     }
 
-
     /**
      * Mengambil lapangan dengan jumlah booking terbanyak.
      *
-     * @param int $limit Jumlah lapangan yang ditampilkan, default 3
-     * @return \Illuminate\Support\Collection Koleksi booking teragregasi per lapangan, diurutkan dari yang terbanyak
+     * @param  int  $limit  Jumlah lapangan yang ditampilkan, default 3
+     * @return Collection Koleksi booking teragregasi per lapangan, diurutkan dari yang terbanyak
      */
     public function lapanganTerfavorit(int $limit = 3, ?string $dari = null, ?string $sampai = null): array
     {
@@ -94,20 +96,19 @@ class DashboardService
         });
     }
 
-
     /**
      * Mengelompokkan total pendapatan (status_pembayaran = paid) per bulan
      * dalam rentang N bulan terakhir. Cocok untuk data grafik batang.
      *
-     * @param int $bulanTerakhir Jumlah bulan ke belakang yang dihitung, default 6
+     * @param  int  $bulanTerakhir  Jumlah bulan ke belakang yang dihitung, default 6
      * @return array<string, float> Contoh: ['2026-07' => 500000, '2026-08' => 750000]
      */
     public function pendapatanPerBulan(int $bulanTerakhir = 6): array
     {
         return Booking::select(
-                DB::raw("TO_CHAR(tanggal_booking, 'YYYY-MM') as bulan"),
-                DB::raw('sum(total_harga) as total')
-            )
+            DB::raw("TO_CHAR(tanggal_booking, 'YYYY-MM') as bulan"),
+            DB::raw('sum(total_harga) as total')
+        )
             ->where('status_pembayaran', 'paid')
             ->where('tanggal_booking', '>=', now()->subMonths($bulanTerakhir))
             ->groupBy('bulan')
@@ -160,12 +161,11 @@ class DashboardService
             ->toArray();
     }
 
-
     /**
      * Mengambil user dengan jumlah booking terbanyak.
      *
-     * @param int $limit Jumlah user yang ditampilkan, default 5
-     * @return \Illuminate\Support\Collection Koleksi booking teragregasi per user, lengkap dengan nama user
+     * @param  int  $limit  Jumlah user yang ditampilkan, default 5
+     * @return Collection Koleksi booking teragregasi per user, lengkap dengan nama user
      */
     public function userPalingAktif(int $limit = 5, ?string $dari = null, ?string $sampai = null): array
     {
@@ -187,29 +187,27 @@ class DashboardService
             ->toArray();
     }
 
-
     /**
      * Menghitung berapa kali tiap voucher dipakai.
      *
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function statistikVoucher()
     {
-        return \App\Models\VoucherUsage::selectRaw('voucher_id, count(*) as total_pakai')
+        return VoucherUsage::selectRaw('voucher_id, count(*) as total_pakai')
             ->groupBy('voucher_id')
             ->with('voucher:id,kode')
             ->get();
     }
 
-
     /**
      * Mengambil daftar ulasan yang ditandai dilaporkan, menunggu tinjauan admin.
      *
-     * @return \Illuminate\Pagination\LengthAwarePaginator
+     * @return LengthAwarePaginator
      */
     public function ulasanDilaporkan()
     {
-        return \App\Models\Ulasan::where('dilaporkan', true)
+        return Ulasan::where('dilaporkan', true)
             ->with('booking.user:id,name')
             ->latest()
             ->paginate(20);

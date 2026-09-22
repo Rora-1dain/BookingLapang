@@ -3,8 +3,8 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
 
 class VerifikasiDitolak extends Notification
 {
@@ -21,11 +21,11 @@ class VerifikasiDitolak extends Notification
     {
         $message = (new MailMessage)
             ->subject('Verifikasi Identitas Anda Ditolak')
-            ->greeting('Halo, ' . $notifiable->name)
+            ->greeting('Halo, '.$notifiable->name)
             ->line('Mohon maaf, pengajuan verifikasi identitas Anda belum bisa kami setujui.');
 
         if ($this->catatan) {
-            $message->line('Alasan: ' . $this->catatan);
+            $message->line('Alasan: '.$this->catatan);
         }
 
         return $message

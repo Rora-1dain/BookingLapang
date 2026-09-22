@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Payout;
 use App\Models\Booking;
+use App\Models\Payout;
 use Illuminate\Http\Request;
 
 class PemilikPayoutController extends Controller
@@ -35,6 +35,7 @@ class PemilikPayoutController extends Controller
 
         return view('pemilik.payout.index', compact('payouts', 'filter', 'counts', 'totalDiproses', 'totalSelesaiBulanIni'));
     }
+
     public function download(Payout $payout)
     {
         abort_if($payout->pemilik_id !== auth()->id(), 403);
@@ -43,6 +44,6 @@ class PemilikPayoutController extends Controller
 
         $pdf = \PDF::loadView('pemilik.payout.pdf', compact('payout', 'bookings'));
 
-        return $pdf->download('payout-' . $payout->id . '.pdf');
+        return $pdf->download('payout-'.$payout->id.'.pdf');
     }
 }

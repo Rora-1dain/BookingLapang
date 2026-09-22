@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace App\Http\Controllers;
+
 use App\Services\WaitlistService;
 use Exception;
 use Illuminate\Http\Request;
@@ -36,6 +37,7 @@ class WaitlistController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
+
     public function cancel(Waitlist $waitlist)
     {
         abort_unless($waitlist->user_id === Auth::id(), 403);

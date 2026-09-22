@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Services\VoucherService;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
 
 class VoucherController extends Controller
 {

@@ -5,10 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Ulasan;
+use App\Models\User;
 use App\Notifications\UlasanBurukDiterima;
 use App\Services\UlasanService;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
 
 class UlasanApiController extends Controller
 {
@@ -29,7 +30,7 @@ class UlasanApiController extends Controller
             );
 
             if ($ulasan->rating <= 2) {
-                $admin = \App\Models\User::where('role', 'admin')->first();
+                $admin = User::where('role', 'admin')->first();
                 $admin?->notify(new UlasanBurukDiterima($ulasan));
             }
 

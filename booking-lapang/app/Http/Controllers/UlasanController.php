@@ -1,11 +1,15 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use App\Models\Booking;
 use App\Models\Ulasan;
+use App\Models\User;
 use App\Notifications\UlasanBurukDiterima;
 use App\Services\UlasanService;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
+
 class UlasanController extends Controller
 {
     public function store(Request $request, Booking $booking, UlasanService $ulasanService)
@@ -20,14 +24,16 @@ class UlasanController extends Controller
                 $booking, $validated['rating'], $validated['komentar'] ?? null
             );
             if ($ulasan->rating <= 2) {
-                $admin = \App\Models\User::where('role', 'admin')->first();
+                $admin = User::where('role', 'admin')->first();
                 $admin?->notify(new UlasanBurukDiterima($ulasan));
             }
+
             return back()->with('success', 'Terima kasih atas ulasan Anda.');
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
         }
     }
+
     public function update(Request $request, Ulasan $ulasan, UlasanService $ulasanService)
     {
         $validated = $request->validate([
@@ -38,14 +44,17 @@ class UlasanController extends Controller
             $ulasanService->editUlasan(
                 $ulasan, auth()->id(), $validated['rating'], $validated['komentar'] ?? null
             );
+
             return back()->with('success', 'Ulasan berhasil diperbarui.');
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
         }
     }
+
     public function laporkan(Ulasan $ulasan, UlasanService $ulasanService)
     {
         $ulasanService->laporkanUlasan($ulasan);
+
         return back()->with('success', 'Ulasan telah dilaporkan dan akan ditinjau admin.');
     }
 }
