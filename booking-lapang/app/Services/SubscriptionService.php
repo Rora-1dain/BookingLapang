@@ -16,12 +16,12 @@ class SubscriptionService
         }
 
         return LanggananUser::create([
-            'user_id'             => $user->id,
+            'user_id' => $user->id,
             'membership_paket_id' => $paket->id,
-            'tanggal_mulai'       => now(),
-            'tanggal_berakhir'    => now()->addDays(30),
-            'status'              => 'aktif',
-            'sisa_kuota_gratis'   => $paket->kuota_booking_gratis,
+            'tanggal_mulai' => now(),
+            'tanggal_berakhir' => now()->addDays(30),
+            'status' => 'aktif',
+            'sisa_kuota_gratis' => $paket->kuota_booking_gratis,
         ]);
     }
 
@@ -29,7 +29,7 @@ class SubscriptionService
     {
         $langganan = $user->langgananAktif();
 
-        if (!$langganan) {
+        if (! $langganan) {
             return ['total_harga' => $totalHarga, 'gratis' => false, 'langganan_id' => null];
         }
 
@@ -42,8 +42,8 @@ class SubscriptionService
         $diskon = $totalHarga * ($langganan->paket->persentase_diskon_booking / 100);
 
         return [
-            'total_harga'  => $totalHarga - $diskon,
-            'gratis'       => false,
+            'total_harga' => $totalHarga - $diskon,
+            'gratis' => false,
             'langganan_id' => $langganan->id,
         ];
     }

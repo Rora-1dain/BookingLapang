@@ -12,7 +12,7 @@ class LanggananUser extends Model
     ];
 
     protected $casts = [
-        'tanggal_mulai'    => 'date',
+        'tanggal_mulai' => 'date',
         'tanggal_berakhir' => 'date',
     ];
 
