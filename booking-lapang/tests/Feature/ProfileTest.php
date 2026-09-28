@@ -64,7 +64,14 @@ test('user can delete their account', function () {
         ->assertRedirect('/');
 
     $this->assertGuest();
-    $this->assertNull($user->fresh());
+
+    // Akun dianonimisasi, bukan dihapus: baris user tetap ada
+    $user = $user->fresh();
+
+    $this->assertNotNull($user);
+    $this->assertSame('Pengguna Terhapus', $user->name);
+    $this->assertStringStartsWith('terhapus-', $user->email);
+    $this->assertStringEndsWith('@invalid.local', $user->email);
 });
 
 test('correct password must be provided to delete account', function () {
