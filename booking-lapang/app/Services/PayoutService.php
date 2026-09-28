@@ -40,15 +40,34 @@ class PayoutService
         // Tandai semua booking ini sudah masuk payout ini, biar tidak dicairkan dua kali
         Booking::whereIn('id', $bookings->pluck('id'))->update(['payout_id' => $payout->id]);
 
+        // [AUDIT] pembuatan payout
+        app(AuditService::class)->catat('payout.dibuat', $payout, null, [
+            'pemilik_id' => $pemilik->id,
+            'total_nominal' => $total,
+            'jumlah_booking' => $bookings->count(),
+            'periode_mulai' => $mulai->toDateString(),
+            'periode_selesai' => $selesai->toDateString(),
+            'status' => 'menunggu',
+        ]);
+
         return $payout;
     }
 
     public function tandaiSelesai(Payout $payout, int $adminId): Payout
     {
+        $statusSebelum = $payout->status; // [AUDIT]
+
         $payout->update([
             'status' => 'selesai',
             'diproses_oleh' => $adminId,
             'selesai_pada' => now(),
+        ]);
+
+        // [AUDIT] penyelesaian payout (uang dinyatakan sudah dicairkan)
+        app(AuditService::class)->catat('payout.selesai', $payout, ['status' => $statusSebelum], [
+            'status' => 'selesai',
+            'total_nominal' => $payout->total_nominal,
+            'diproses_oleh' => $adminId,
         ]);
 
         return $payout->fresh();

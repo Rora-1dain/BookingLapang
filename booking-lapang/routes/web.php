@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\LaporanPlatformController;
+use App\Http\Controllers\AdminAuditController;
 use App\Http\Controllers\AdminBookingController;
 use App\Http\Controllers\AdminLapanganController;
 use App\Http\Controllers\AdminPayoutController;
@@ -26,6 +27,7 @@ use App\Http\Controllers\PemilikVerifikasiController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecurringBookingController;
 use App\Http\Controllers\ReferralController;
+use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\UlasanController;
 use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\WaitlistController;
@@ -203,6 +205,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/payout/{payoutId}/selesai', [AdminPayoutController::class, 'selesai'])
         ->name('payout.selesai');
 
+    // Audit log: SENGAJA hanya route GET. Tidak ada route edit/hapus — log append-only.
+    Route::get('/audit', [AdminAuditController::class, 'index'])
+        ->name('audit.index');
+
     Route::get('/ulasan', [AdminUlasanController::class, 'index'])
         ->name('ulasan.index');
     Route::post('/ulasan/{ulasan}/publikasikan', [AdminUlasanController::class, 'publikasikan'])
@@ -242,10 +248,21 @@ Route::middleware('auth')->prefix('membership')->name('membership.')->group(func
     Route::post('/berlangganan/{paket}', [MembershipController::class, 'berlangganan'])->name('berlangganan');
     Route::get('/status', [MembershipController::class, 'status'])->name('status');
 });
+
 Route::middleware(['auth'])->prefix('privasi')->name('privasi.')->group(function () {
     Route::get('/ekspor', [DataPrivasiController::class, 'ekspor'])
         ->middleware('throttle:ekspor-data')
         ->name('ekspor');
     Route::delete('/hapus-akun', [DataPrivasiController::class, 'hapusAkun'])
         ->name('hapus-akun');
+});
+
+Route::middleware('auth')->prefix('keamanan')->name('keamanan.')->group(function () {
+    Route::get('/', [TwoFactorController::class, 'pengaturan'])->name('pengaturan');
+    Route::post('/mulai', [TwoFactorController::class, 'mulai'])->name('mulai');
+    Route::post('/konfirmasi', [TwoFactorController::class, 'konfirmasi'])
+        ->middleware('throttle:5,1')->name('konfirmasi');
+    Route::get('/tantangan', [TwoFactorController::class, 'tantangan'])->name('tantangan');
+    Route::post('/tantangan', [TwoFactorController::class, 'verifikasi'])
+        ->middleware('throttle:5,1')->name('verifikasi');
 });

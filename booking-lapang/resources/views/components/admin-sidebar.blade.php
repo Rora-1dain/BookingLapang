@@ -53,6 +53,11 @@
                     <span class="material-symbols-outlined">rate_review</span>
                     <span>Moderasi Ulasan</span>
                 </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors font-label-lg {{ $active === 'audit' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface' }}"
+                   href="{{ route('admin.audit.index') }}">
+                    <span class="material-symbols-outlined">history</span>
+                    <span>Audit Log</span>
+                </a>
             </nav>
         </div>
 
