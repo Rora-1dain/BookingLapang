@@ -16,7 +16,9 @@ class BookingResource extends JsonResource
             'jam_selesai' => $this->jam_selesai,
             'total_harga' => (float) $this->total_harga,
             'status' => $this->status,
+            'status_pembayaran' => $this->status_pembayaran,
             'bisa_dibatalkan' => $this->status === 'pending',
+            'bisa_dibayar' => $this->status_pembayaran !== 'paid',
         ];
     }
 }

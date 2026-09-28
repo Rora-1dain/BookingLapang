@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\LaporanPlatformController;
+use App\Http\Controllers\AdminAuditController;
 use App\Http\Controllers\AdminBookingController;
 use App\Http\Controllers\AdminLapanganController;
 use App\Http\Controllers\AdminPayoutController;
@@ -202,6 +203,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->name('payout.store');
     Route::post('/payout/{payoutId}/selesai', [AdminPayoutController::class, 'selesai'])
         ->name('payout.selesai');
+
+    // Audit log: SENGAJA hanya route GET. Tidak ada route edit/hapus — log append-only.
+    Route::get('/audit', [AdminAuditController::class, 'index'])
+        ->name('audit.index');
 
     Route::get('/ulasan', [AdminUlasanController::class, 'index'])
         ->name('ulasan.index');

@@ -27,10 +27,21 @@ class VerifikasiService
 
     public function tinjauVerifikasi(User $pemilik, bool $disetujui, ?string $catatan): void
     {
+        $sebelum = ['status_verifikasi' => $pemilik->status_verifikasi]; // [AUDIT]
+
         $pemilik->update([
             'status_verifikasi' => $disetujui ? 'terverifikasi' : 'ditolak',
             'catatan_verifikasi' => $catatan,
         ]);
+
+        // [AUDIT] hanya status & catatan admin. JANGAN pernah menyertakan
+        // path_dokumen_identitas (isinya data URI dokumen identitas).
+        app(AuditService::class)->catat(
+            $disetujui ? 'verifikasi.disetujui' : 'verifikasi.ditolak',
+            $pemilik,
+            $sebelum,
+            ['status_verifikasi' => $pemilik->status_verifikasi, 'catatan' => $catatan]
+        );
 
         $disetujui
             ? $pemilik->notify(new VerifikasiDiterima)
