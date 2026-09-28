@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\AdminUlasanApiController;
 use App\Http\Controllers\Api\AdminVerifikasiApiController;
 use App\Http\Controllers\Api\AuthApiController;
 use App\Http\Controllers\Api\BookingApiController;
+use App\Http\Controllers\Api\FotoLapanganApiController;
 use App\Http\Controllers\Api\ChatApiController;
 use App\Http\Controllers\Api\LapanganApiController;
 use App\Http\Controllers\Api\PemilikLapanganApiController;
@@ -61,7 +62,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/booking', [BookingApiController::class, 'index']);
     Route::get('/booking/{booking}', [BookingApiController::class, 'show']);
     Route::post('/booking', [BookingApiController::class, 'store']);
+    Route::get('/lapangan/{lapangan}/foto', [FotoLapanganApiController::class, 'index']);
+    Route::post('/lapangan/{lapangan}/foto', [FotoLapanganApiController::class, 'store']);
+    Route::delete('/foto/{foto}', [FotoLapanganApiController::class, 'destroy']);
+    Route::post('/foto/{foto}/jadikan-utama', [FotoLapanganApiController::class, 'jadikanUtama']);
+
     Route::post('/booking/{booking}/cancel', [BookingApiController::class, 'cancel']);
+    Route::post('/booking/{booking}/bayar', [BookingApiController::class, 'bayar']);
+    Route::post('/booking/{booking}/cek-status', [BookingApiController::class, 'cekStatus']);
+    Route::get('/booking/{booking}/invoice', [BookingApiController::class, 'invoice']);
 
     // Voucher
     Route::post('/voucher/cek', [VoucherApiController::class, 'cek']);
@@ -110,6 +119,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('/lapangan/approval', [AdminLapanganApiController::class, 'approval']);
     Route::post('/lapangan/{lapangan}/setujui', [AdminLapanganApiController::class, 'setujui']);
     Route::post('/lapangan/{lapangan}/tolak', [AdminLapanganApiController::class, 'tolak']);
+    Route::put('/lapangan/{lapangan}/komisi', [AdminLapanganApiController::class, 'ubahKomisi']);
 
     // Verifikasi Pemilik (KYC)
     Route::get('/verifikasi', [AdminVerifikasiApiController::class, 'index']);
