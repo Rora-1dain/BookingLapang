@@ -11,8 +11,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password', 'kode_referral', 'direferensikan_oleh', 'ip_terakhir', 'status_verifikasi', 'path_dokumen_identitas', 'catatan_verifikasi'])]
-#[Hidden(['password', 'remember_token'])]
+#[Fillable(['name', 'email', 'password', 'kode_referral', 'direferensikan_oleh', 'ip_terakhir', 'status_verifikasi', 'path_dokumen_identitas', 'catatan_verifikasi', 'two_factor_secret', 'two_factor_aktif_pada', 'two_factor_recovery_codes'])]
+#[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -28,6 +28,9 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_aktif_pada' => 'datetime',
+            'two_factor_recovery_codes' => 'array',
         ];
     }
 
