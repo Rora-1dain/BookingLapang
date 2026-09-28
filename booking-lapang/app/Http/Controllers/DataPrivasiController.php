@@ -16,7 +16,7 @@ class DataPrivasiController extends Controller
     {
         $data = $this->service->eksporData($request->user());
 
-        $namaFile = 'data-pribadi-' . $request->user()->id . '-' . now()->format('Ymd-His') . '.json';
+        $namaFile = 'data-pribadi-'.$request->user()->id.'-'.now()->format('Ymd-His').'.json';
 
         return response()->streamDownload(function () use ($data) {
             echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -41,4 +41,4 @@ class DataPrivasiController extends Controller
 
         return response()->json(['message' => 'Akun berhasil dihapus.']);
     }
-}   
+}

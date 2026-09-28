@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Payout;
 use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -64,7 +65,7 @@ class DataPrivasiService
 
         // 3. Payout milik user (pemilik) yang belum selesai: menunggu / diproses.
         // User biasa tidak punya baris payout, jadi tidak perlu cek role.
-        $payoutBelumSelesai = \App\Models\Payout::where('pemilik_id', $user->id)
+        $payoutBelumSelesai = Payout::where('pemilik_id', $user->id)
             ->where('status', '!=', 'selesai')
             ->exists();
 
@@ -78,7 +79,7 @@ class DataPrivasiService
      */
     public function ajukanHapusAkun(User $user, string $password): void
     {
-        if (!Hash::check($password, $user->password)) {
+        if (! Hash::check($password, $user->password)) {
             throw new Exception('Password salah.');
         }
 
@@ -96,7 +97,7 @@ class DataPrivasiService
             // jadi update() akan diam-diam mengabaikannya
             $user->forceFill([
                 'name' => 'Pengguna Terhapus',
-                'email' => 'terhapus-' . $user->id . '-' . Str::random(8) . '@invalid.local',
+                'email' => 'terhapus-'.$user->id.'-'.Str::random(8).'@invalid.local',
                 'password' => Str::random(40), // cast 'hashed' di User yang meng-hash; tidak bisa dipakai login
                 'path_dokumen_identitas' => null,
                 'catatan_verifikasi' => null,

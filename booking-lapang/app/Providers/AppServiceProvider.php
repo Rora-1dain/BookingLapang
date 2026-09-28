@@ -31,8 +31,7 @@ class AppServiceProvider extends ServiceProvider
         Lapangan::observe(LapanganObserver::class);
 
         // Privasi data: ekspor maksimal 3x per hari per user
-        RateLimiter::for('ekspor-data', fn ($request) =>
-            Limit::perDay(3)->by($request->user()?->id ?: $request->ip())
+        RateLimiter::for('ekspor-data', fn ($request) => Limit::perDay(3)->by($request->user()?->id ?: $request->ip())
         );
     }
 }
