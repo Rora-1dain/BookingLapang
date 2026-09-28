@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\DataPrivasiService;
 use App\Services\LoyaltyService;
+use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -43,9 +45,9 @@ class ProfileController extends Controller
     }
 
     /**
-     * Delete the user's account.
+     * Hapus akun lewat anonimisasi (bukan delete()), supaya booking & transaksi tetap ada.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request, DataPrivasiService $privasi): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
@@ -53,9 +55,15 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        Auth::logout();
+        try {
+            // Service mencatat audit memakai auth()->id(), jadi logout SETELAH ini
+            $privasi->ajukanHapusAkun($user, $request->input('password'));
+        } catch (Exception $e) {
+            // Ditolak (booking aktif, refund diproses, payout belum selesai): akun tidak berubah
+            return Redirect::back()->withErrors(['password' => $e->getMessage()], 'userDeletion');
+        }
 
-        $user->delete();
+        Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

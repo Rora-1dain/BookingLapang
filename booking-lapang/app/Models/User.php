@@ -62,4 +62,22 @@ class User extends Authenticatable
             ->latest('tanggal_berakhir')
             ->first();
     }
+
+    // --- Ditambah untuk fitur privasi data (Revano) ---
+
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class); // FK default: user_id
+    }
+
+    public function ulasans()
+    {
+        // ulasans tidak punya user_id, terhubung lewat booking_id
+        return $this->hasManyThrough(Ulasan::class, Booking::class);
+    }
+
+    public function pesansDikirim()
+    {
+        return $this->hasMany(Pesan::class, 'pengirim_id');
+    }
 }

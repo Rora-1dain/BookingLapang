@@ -10,6 +10,7 @@ use App\Http\Controllers\AdminVerifikasiController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DataPrivasiController;
 use App\Http\Controllers\FotoLapanganController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\HariLiburController;
@@ -246,6 +247,14 @@ Route::middleware('auth')->prefix('membership')->name('membership.')->group(func
     Route::get('/', [MembershipController::class, 'index'])->name('index');
     Route::post('/berlangganan/{paket}', [MembershipController::class, 'berlangganan'])->name('berlangganan');
     Route::get('/status', [MembershipController::class, 'status'])->name('status');
+});
+
+Route::middleware(['auth'])->prefix('privasi')->name('privasi.')->group(function () {
+    Route::get('/ekspor', [DataPrivasiController::class, 'ekspor'])
+        ->middleware('throttle:ekspor-data')
+        ->name('ekspor');
+    Route::delete('/hapus-akun', [DataPrivasiController::class, 'hapusAkun'])
+        ->name('hapus-akun');
 });
 
 Route::middleware('auth')->prefix('keamanan')->name('keamanan.')->group(function () {
