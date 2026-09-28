@@ -26,6 +26,7 @@ use App\Http\Controllers\PemilikVerifikasiController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecurringBookingController;
 use App\Http\Controllers\ReferralController;
+use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\UlasanController;
 use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\WaitlistController;
@@ -240,10 +241,19 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/foto/{foto}/jadikan-utama', [FotoLapanganController::class, 'jadikanUtama'])
         ->name('lapangan.foto.utama');
 });
-});
 
 Route::middleware('auth')->prefix('membership')->name('membership.')->group(function () {
     Route::get('/', [MembershipController::class, 'index'])->name('index');
     Route::post('/berlangganan/{paket}', [MembershipController::class, 'berlangganan'])->name('berlangganan');
     Route::get('/status', [MembershipController::class, 'status'])->name('status');
+});
+
+Route::middleware('auth')->prefix('keamanan')->name('keamanan.')->group(function () {
+    Route::get('/', [TwoFactorController::class, 'pengaturan'])->name('pengaturan');
+    Route::post('/mulai', [TwoFactorController::class, 'mulai'])->name('mulai');
+    Route::post('/konfirmasi', [TwoFactorController::class, 'konfirmasi'])
+        ->middleware('throttle:5,1')->name('konfirmasi');
+    Route::get('/tantangan', [TwoFactorController::class, 'tantangan'])->name('tantangan');
+    Route::post('/tantangan', [TwoFactorController::class, 'verifikasi'])
+        ->middleware('throttle:5,1')->name('verifikasi');
 });
