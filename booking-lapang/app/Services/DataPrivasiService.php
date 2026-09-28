@@ -103,10 +103,9 @@ class DataPrivasiService
                 'catatan_verifikasi' => null,
                 'ip_terakhir' => null,
                 'remember_token' => null,
-                // TODO: buka komen tiga baris ini SETELAH migration 2FA Bintang ke-merge
-                // 'two_factor_secret' => null,
-                // 'two_factor_aktif_pada' => null,
-                // 'two_factor_recovery_codes' => null,
+                'two_factor_secret' => null,
+                'two_factor_aktif_pada' => null,
+                'two_factor_recovery_codes' => null,
             ])->save();
         });
 
