@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\AuditService;
 use App\Services\TwoFactorService;
 use Exception;
 use Illuminate\Http\Request;
@@ -76,9 +77,22 @@ class TwoFactorController extends Controller
             : $this->twoFactor->pakaiRecoveryCode($user, $kode);
 
         if (! $berhasil) {
+            $gagal = (int) $request->session()->get('2fa_gagal', 0) + 1;
+            $request->session()->put('2fa_gagal', $gagal);
+
+            // Mulai dicatat sejak kegagalan ke-3 berturut-turut
+            if ($gagal >= 3) {
+                app(AuditService::class)->catat(
+                    '2fa.verifikasi_gagal_berulang', $user,
+                    null,
+                    ['percobaan_gagal' => $gagal]
+                );
+            }
+
             return back()->withErrors(['kode' => 'Kode tidak valid.']);
         }
 
+        $request->session()->forget('2fa_gagal');
         $request->session()->put('2fa_terverifikasi', true);
         $request->session()->regenerate();
 

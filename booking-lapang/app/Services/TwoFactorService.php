@@ -42,6 +42,13 @@ class TwoFactorService
 
         $user->update(['two_factor_aktif_pada' => now()]);
 
+        // Hanya status yang dicatat, tidak ada secret atau recovery code di log
+        app(AuditService::class)->catat(
+            '2fa.diaktifkan', $user,
+            ['two_factor_aktif' => false],
+            ['two_factor_aktif' => true]
+        );
+
         return $this->buatRecoveryCodes($user);
     }
 
@@ -71,11 +78,18 @@ class TwoFactorService
     {
         $kode = Str::upper(trim($kode));
         $tersimpan = $user->two_factor_recovery_codes ?? [];
+        $sisaSebelum = count($tersimpan);
 
         foreach ($tersimpan as $index => $hash) {
             if (Hash::check($kode, $hash)) {
                 unset($tersimpan[$index]); // sekali pakai
                 $user->update(['two_factor_recovery_codes' => array_values($tersimpan)]);
+
+                app(AuditService::class)->catat(
+                    '2fa.recovery_code_dipakai', $user,
+                    ['sisa_recovery_code' => $sisaSebelum],
+                    ['sisa_recovery_code' => count($tersimpan)]
+                );
 
                 return true;
             }
