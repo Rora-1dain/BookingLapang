@@ -29,6 +29,9 @@ class RefundService
         $persentase = $this->hitungPersentaseRefund($booking);
         $nominalRefund = (int) ($booking->total_harga * $persentase);
 
+        // [AUDIT] keadaan sebelum refund diproses
+        $sebelum = ['status_refund' => $booking->status_refund, 'status' => $booking->status];
+
         $booking->update([
             'status_refund' => 'diproses',
             'alasan_pembatalan' => $alasan,
@@ -54,6 +57,17 @@ class RefundService
             'nominal' => $nominalRefund,
             'persentase' => $persentase * 100,
             'hasil' => $hasil,
+        ]);
+
+        // [AUDIT] dicatat sebelum exception di bawah dilempar, jadi refund yang
+        // gagal di Midtrans pun tetap meninggalkan jejak. Pesan error mentah
+        // Midtrans sengaja tidak ikut dicatat, cukup berhasil/gagal.
+        app(AuditService::class)->catat('refund.diajukan', $booking, $sebelum, [
+            'status_refund' => $booking->status_refund,
+            'status' => $booking->status,
+            'nominal' => $nominalRefund,
+            'persentase' => $persentase * 100,
+            'hasil' => str_starts_with($hasil, 'berhasil') ? 'berhasil' : 'gagal',
         ]);
 
         if ($booking->status_refund === 'ditolak') {
