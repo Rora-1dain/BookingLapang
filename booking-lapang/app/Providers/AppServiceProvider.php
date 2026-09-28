@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Models\Lapangan;
 use App\Observers\LapanganObserver;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Midtrans\Config;
 
@@ -27,5 +29,10 @@ class AppServiceProvider extends ServiceProvider
         Config::$isSanitized = true;
         Config::$is3ds = true;
         Lapangan::observe(LapanganObserver::class);
+
+        // Privasi data: ekspor maksimal 3x per hari per user
+        RateLimiter::for('ekspor-data', fn ($request) =>
+            Limit::perDay(3)->by($request->user()?->id ?: $request->ip())
+        );
     }
 }
