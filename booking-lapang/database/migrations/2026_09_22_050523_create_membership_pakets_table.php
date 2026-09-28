@@ -16,22 +16,10 @@ return new class extends Migration
             $table->unsignedInteger('kuota_booking_gratis')->default(0);
             $table->timestamps();
         });
-
-        Schema::create('langganan_users', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('membership_paket_id')->constrained()->cascadeOnDelete();
-            $table->date('tanggal_mulai');
-            $table->date('tanggal_berakhir');
-            $table->enum('status', ['aktif', 'berakhir', 'dibatalkan'])->default('aktif');
-            $table->unsignedInteger('sisa_kuota_gratis')->default(0);
-            $table->timestamps();
-        });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('langganan_users');
         Schema::dropIfExists('membership_pakets');
     }
 };
