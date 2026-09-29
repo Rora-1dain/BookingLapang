@@ -21,7 +21,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->validateCsrfTokens(except: [
             'payment/notification',
+            'api/*', // Mencegah request API terganjal token CSRF web
         ]);
+        
+        // Mengaktifkan middleware CORS manual yang baru saja Anda buat
+        $middleware->append(\App\Http\Middleware\Cors::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
