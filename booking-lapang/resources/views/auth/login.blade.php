@@ -15,7 +15,7 @@
                     <span class="material-symbols-outlined fill-icon">sports_tennis</span>
                 </div>
                 <div class="flex flex-col">
-                    <span class="text-headline-md font-headline-md text-white tracking-tight flex items-center gap-1.5">
+                    <span class="text-headline-md font-headline-md text-white flex items-center gap-1.5">
                         Booking Lapang
                         <span class="inline-block w-2 h-2 rounded-full bg-tertiary-fixed-dim"></span>
                     </span>
@@ -29,7 +29,7 @@
         </div>
 
         <div class="relative z-10 max-w-lg my-auto pt-8">
-            <h1 class="text-headline-xl font-headline-xl text-white leading-tight mb-4 tracking-tight drop-shadow-sm">
+            <h1 class="text-headline-xl font-headline-xl text-white leading-tight mb-4 drop-shadow-sm">
                 Kembali ke Lapangan.<br>
                 <span class="text-tertiary-fixed-dim">Reservasi Cepat,</span> Jadwal Akurat, Tanpa Ribet.
             </h1>
@@ -76,7 +76,7 @@
                 <div class="w-9 h-9 rounded-lg bg-primary-container text-white flex items-center justify-center">
                     <span class="material-symbols-outlined fill-icon text-[20px]">sports_tennis</span>
                 </div>
-                <span class="text-title-lg font-title-lg text-primary tracking-tight">Booking Lapang</span>
+                <span class="text-title-lg font-title-lg text-primary">Booking Lapang</span>
             </div>
             <a class="inline-flex items-center gap-1.5 text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors duration-150 group" href="{{ route('home') }}">
                 <span class="material-symbols-outlined text-[18px] group-hover:-translate-x-0.5 transition-transform duration-150">arrow_back</span>
@@ -94,7 +94,7 @@
                     <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
                     Portal Pemain &amp; Mitra
                 </div>
-                <h2 class="text-headline-lg font-headline-lg text-primary tracking-tight mb-2">Selamat Datang Kembali</h2>
+                <h2 class="text-headline-lg font-headline-lg text-primary mb-2">Selamat Datang Kembali</h2>
                 <p class="text-body-md font-body-md text-on-surface-variant">Masuk ke akun Booking Lapang untuk kelola jadwal main, e-tiket, atau arena olahraga Anda.</p>
             </div>
 
