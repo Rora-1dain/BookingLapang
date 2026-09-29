@@ -1,0 +1,78 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Payout;
+use App\Models\User;
+use App\Notifications\PayoutSelesai;
+use App\Services\PayoutService;
+use Carbon\Carbon;
+use Exception;
+use Illuminate\Http\Request;
+
+class AdminPayoutController extends Controller
+{
+    public function create()
+    {
+        $pemilikList = User::where('role', 'pemilik_lapangan')->get();
+
+        return view('admin.payout.create', compact('pemilikList'));
+    }
+
+    public function store(Request $request, PayoutService $payoutService)
+    {
+        $validated = $request->validate([
+            'pemilik_id' => 'required|exists:users,id',
+            'periode_mulai' => 'required|date',
+            'periode_selesai' => 'required|date|after_or_equal:periode_mulai',
+        ]);
+
+        try {
+            $pemilik = User::findOrFail($validated['pemilik_id']);
+            $payoutService->buatPayout(
+                $pemilik,
+                Carbon::parse($validated['periode_mulai']),
+                Carbon::parse($validated['periode_selesai'])
+            );
+
+            return back()->with('success', 'Payout berhasil dibuat.');
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function selesai($payoutId, PayoutService $payoutService)
+    {
+        $payout = Payout::findOrFail($payoutId);
+        $payoutService->tandaiSelesai($payout, auth()->id());
+        $payout->pemilik->notify(new PayoutSelesai($payout));
+
+        return back()->with('success', 'Payout ditandai selesai.');
+    }
+
+    public function index(Request $request)
+    {
+        $base = fn () => Payout::query();
+
+        $counts = [
+            'semua' => $base()->count(),
+            'menunggu' => $base()->where('status', 'menunggu')->count(),
+            'selesai' => $base()->where('status', 'selesai')->count(),
+        ];
+
+        $filter = $request->query('filter', 'semua');
+        $query = Payout::with(['pemilik', 'bookings']);
+        if ($filter !== 'semua') {
+            $query->where('status', $filter);
+        }
+
+        $payouts = $query->latest()->paginate(10)->withQueryString();
+
+        $totalMenunggu = $base()->where('status', 'menunggu')->sum('total_nominal');
+        $totalSelesaiBulanIni = $base()->where('status', 'selesai')
+            ->whereMonth('selesai_pada', now()->month)
+            ->sum('total_nominal');
+
+        return view('admin.payout.index', compact('payouts', 'filter', 'counts', 'totalMenunggu', 'totalSelesaiBulanIni'));
+    }
+}

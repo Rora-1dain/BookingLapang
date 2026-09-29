@@ -1,0 +1,102 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Lapangan extends Model
+{
+    use HasFactory;
+
+    protected $table = 'lapangans';
+
+    protected $fillable = [
+        'nama_lapangan',
+        'jenis',
+        'harga_per_jam',
+        'status',
+        'pemilik_id',
+        'status_approval',
+        'persentase_komisi',
+        'kota',
+    ];
+
+    /**
+     * Satu lapangan bisa punya banyak booking.
+     */
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    /**
+     * Lapangan dimiliki oleh satu user (sebagai pemilik).
+     */
+    public function pemilik()
+    {
+        return $this->belongsTo(User::class, 'pemilik_id');
+    }
+
+    public function scopeTampilPublik($query)
+    {
+        return $query->where('status_approval', 'disetujui')
+            ->where('status', 'aktif');
+    }
+
+    public function ulasans()
+    {
+        return $this->hasManyThrough(Ulasan::class, Booking::class);
+    }
+
+    public function rataRataRating(): float
+    {
+        return round($this->ulasans()->avg('rating') ?? 0, 1);
+    }
+
+    public function ulasanTerbaru(int $limit = 5)
+    {
+        return $this->ulasans()
+            ->with('booking.user:id,name')
+            ->latest('ulasans.created_at')
+            ->limit($limit)
+            ->get();
+    }
+
+    public function fotos()
+    {
+        return $this->hasMany(FotoLapangan::class)->orderBy('urutan');
+    }
+
+    public function fotoUtama()
+    {
+        return $this->fotos()->where('is_utama', true)->first()
+            ?? $this->fotos()->first();
+    }
+
+    /**
+     * Satu lapangan punya banyak baris jadwal operasional (satu per hari, 0-6).
+     */
+    public function jadwalOperasionals()
+    {
+        return $this->hasMany(JadwalOperasional::class);
+    }
+
+    /**
+     * Satu lapangan bisa punya banyak tanggal libur khusus (blackout dates).
+     */
+    public function hariLiburs()
+    {
+        return $this->hasMany(HariLibur::class);
+    }
+
+    /**
+     * Ambil jadwal operasional sesuai hari saat ini (0=Minggu, 6=Sabtu).
+     */
+    public function jadwalHariIni()
+    {
+        return $this->jadwalOperasionals()
+            ->where('hari', now()->dayOfWeek)
+            ->first();
+    }
+}

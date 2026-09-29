@@ -1,0 +1,206 @@
+{
+  "info": {
+    "name": "Booking Lapang API",
+    "description": "Koleksi endpoint API untuk aplikasi Booking Lapang. Gunakan variable {{base_url}} dan {{token}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000/api" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ardan@test.com\",\n  \"password\": \"password\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] }
+          },
+          "response": [
+            {
+              "name": "200 - Berhasil login",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"Ardan\",\n    \"email\": \"ardan@test.com\",\n    \"role\": \"user\"\n  },\n  \"token\": \"1|abcdef123456...\"\n}"
+            },
+            {
+              "name": "401 - Kredensial salah",
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"message\": \"Email atau password salah.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Me (Profil)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/me", "host": ["{{base_url}}"], "path": ["me"] }
+          },
+          "response": [
+            {
+              "name": "200 - Data profil",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"id\": 1,\n  \"name\": \"Ardan\",\n  \"email\": \"ardan@test.com\",\n  \"role\": \"user\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/logout", "host": ["{{base_url}}"], "path": ["logout"] }
+          },
+          "response": [
+            {
+              "name": "200 - Berhasil logout",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"message\": \"Berhasil logout.\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Booking",
+      "item": [
+        {
+          "name": "List Booking (dengan filter & pagination)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/booking?status=pending",
+              "host": ["{{base_url}}"],
+              "path": ["booking"],
+              "query": [{ "key": "status", "value": "pending" }]
+            }
+          },
+          "response": [
+            {
+              "name": "200 - Daftar booking",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"lapangan\": {\n        \"id\": 1,\n        \"nama_lapangan\": \"Lapangan Futsal A\",\n        \"jenis\": \"futsal\",\n        \"harga_per_jam\": 100000.0,\n        \"status\": \"aktif\"\n      },\n      \"tanggal_booking\": \"2026-08-20\",\n      \"jam_mulai\": \"10:00\",\n      \"jam_selesai\": \"12:00\",\n      \"total_harga\": 200000.0,\n      \"status\": \"pending\",\n      \"bisa_dibatalkan\": true\n    }\n  ],\n  \"links\": { \"first\": \"...\", \"last\": \"...\", \"prev\": null, \"next\": null },\n  \"meta\": { \"current_page\": 1, \"per_page\": 10, \"total\": 1 }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Detail Booking",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/booking/1", "host": ["{{base_url}}"], "path": ["booking", "1"] }
+          },
+          "response": [
+            {
+              "name": "403 - Bukan pemilik booking",
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\n  \"message\": \"Tidak berhak melihat booking ini.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Buat Booking Baru",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lapangan_id\": 1,\n  \"tanggal_booking\": \"2026-09-01\",\n  \"jam_mulai\": \"10:00\",\n  \"jam_selesai\": \"12:00\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/booking", "host": ["{{base_url}}"], "path": ["booking"] }
+          },
+          "response": [
+            {
+              "name": "201 - Booking berhasil dibuat",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"id\": 5,\n  \"lapangan\": { \"id\": 1, \"nama_lapangan\": \"Lapangan Futsal A\" },\n  \"tanggal_booking\": \"2026-09-01\",\n  \"total_harga\": 200000.0,\n  \"status\": \"pending\",\n  \"bisa_dibatalkan\": true\n}"
+            },
+            {
+              "name": "422 - Jadwal bentrok / lapangan nonaktif",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "body": "{\n  \"message\": \"Lapangan sudah dibooking pada jam tersebut.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Batalkan Booking",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/booking/1/cancel", "host": ["{{base_url}}"], "path": ["booking", "1", "cancel"] }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "List Semua Booking (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "http://127.0.0.1:8000/admin/booking", "host": ["http://127.0.0.1:8000"], "path": ["admin", "booking"] }
+          },
+          "response": [
+            {
+              "name": "403 - Bukan admin",
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\n  \"message\": \"Anda tidak memiliki akses ke halaman ini.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Konfirmasi Booking (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "http://127.0.0.1:8000/admin/booking/1/confirm", "host": ["http://127.0.0.1:8000"], "path": ["admin", "booking", "1", "confirm"] }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Monitoring",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "http://127.0.0.1:8000/health", "host": ["http://127.0.0.1:8000"], "path": ["health"] }
+          },
+          "response": [
+            {
+              "name": "200 - Sehat",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"database\": \"ok\",\n  \"cache\": \"ok\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
