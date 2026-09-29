@@ -19,12 +19,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => AdminOnly::class,
         ]);
+        
+        // --- INI YANG MENYELESATKAN EROR 419 ---
         $middleware->validateCsrfTokens(except: [
-            'payment/notification',
-            'api/*', // Mencegah request API terganjal token CSRF web
+            '*', // Bebaskan semua rute dari token CSRF agar Vercel tidak memblokir kiriman data
         ]);
         
-        // Mengaktifkan middleware CORS manual yang baru saja Anda buat
+        // Mengaktifkan middleware CORS terbuka yang Anda buat sebelumnya
         $middleware->append(\App\Http\Middleware\Cors::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
