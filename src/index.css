@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #F7F1E3;
+  color: #191B1F;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.diagonal-stripes {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(22, 64, 122, 0.05),
+    rgba(22, 64, 122, 0.05) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+}
+
+.clip-hero {
+  clip-path: polygon(0 0, 100% 0, 92% 100%, 0% 100%);
+}
+
+@media (max-width: 1023px) {
+  .clip-hero {
+    clip-path: none;
+  }
+}
+
+::selection {
+  background-color: #16407A;
+  color: #F7F1E3;
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  line-height: 1;
+  white-space: nowrap;
+  -webkit-font-smoothing: antialiased;
+}
