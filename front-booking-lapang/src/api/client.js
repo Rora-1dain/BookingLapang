@@ -60,6 +60,14 @@ export async function apiFetch(path, { method = 'GET', body, auth = false, param
   const isJson = res.headers.get('content-type')?.includes('application/json')
   const data = isJson ? await res.json().catch(() => null) : null
 
+  if (res.ok && !isJson) {
+    throw new ApiError(
+      'Server balas non-JSON. Cek VITE_API_URL (harus akhiran /api).',
+      res.status,
+      null
+    )
+  }
+
   if (!res.ok) {
     const message =
       data?.message ||
