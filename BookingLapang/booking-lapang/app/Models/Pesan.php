@@ -10,6 +10,10 @@ class Pesan extends Model
 
     protected $fillable = ['percakapan_id', 'pengirim_id', 'isi', 'dibaca_pada'];
 
+    // Pesan baru ikut menyentuh updated_at percakapan, supaya daftar chat
+    // terurut berdasarkan aktivitas terakhir.
+    protected $touches = ['percakapan'];
+
     protected $casts = [
         'dibaca_pada' => 'datetime',
     ];

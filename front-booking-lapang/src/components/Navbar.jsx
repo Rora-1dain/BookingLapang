@@ -5,6 +5,8 @@ import AuthModal from './AuthModal'
 import HostVenueModal from './HostVenueModal'
 import MyBookingsModal from './MyBookingsModal'
 import AdminPanel from './AdminPanel'
+import IconChat from './IconChat'
+import useChatUnread from '../lib/useChatUnread'
 
 const NAV_LINKS = [
   { label: 'Futsal', jenis: 'futsal' },
@@ -20,6 +22,7 @@ export default function Navbar() {
   const [showHost, setShowHost] = useState(false)
   const [showBookings, setShowBookings] = useState(false)
   const [showAdmin, setShowAdmin] = useState(false)
+  const belumDibaca = useChatUnread(!!user)
 
   function initials(name) {
     if (!name) return '?'
@@ -62,7 +65,13 @@ export default function Navbar() {
                   key={link.label}
                   onClick={() => {
                     setFilters((f) => ({ ...f, jenis: active ? '' : link.jenis }))
-                    document.getElementById('lapangan')?.scrollIntoView({ behavior: 'smooth' })
+                    // dari halaman chat: balik ke beranda dulu, baru scroll
+                    const dariChat = window.location.hash.startsWith('#/chat')
+                    if (dariChat) window.location.hash = ''
+                    setTimeout(
+                      () => document.getElementById('lapangan')?.scrollIntoView({ behavior: 'smooth' }),
+                      dariChat ? 80 : 0
+                    )
                   }}
                   className={
                     active
@@ -91,6 +100,21 @@ export default function Navbar() {
             >
               ADMIN
             </button>
+          )}
+          {user && (
+            <a
+              href="#/chat"
+              title="Pesan"
+              aria-label="Pesan"
+              className="relative w-9 h-9 rounded-lg border border-match-blue/25 text-match-blue hover:bg-match-blue hover:text-cream flex items-center justify-center transition-colors"
+            >
+              <IconChat className="w-[18px] h-[18px]" />
+              {belumDibaca > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 rounded-full bg-whistle-red text-cream text-[10px] font-bold flex items-center justify-center">
+                  {belumDibaca > 99 ? '99+' : belumDibaca}
+                </span>
+              )}
+            </a>
           )}
           {user ? (
             <button

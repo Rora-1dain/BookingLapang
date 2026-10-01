@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
+import useLockBodyScroll from '../lib/useLockBodyScroll'
 import { fetchLapanganDetail } from '../api/lapangan'
 import { formatRupiah, namaJenis } from '../lib/format'
 import BookingPanel from './BookingPanel'
 
 export default function VenueDetailModal({ id, onClose }) {
+  useLockBodyScroll()
   const [lapangan, setLapangan] = useState(null)
   const [error, setError] = useState(null)
 
@@ -18,8 +20,8 @@ export default function VenueDetailModal({ id, onClose }) {
   }, [id])
 
   return (
-    <div className="fixed inset-0 z-[100] bg-ink/60 flex items-center justify-center px-4 py-8 overflow-y-auto">
-      <div className="bg-white w-full max-w-lg rounded-lg border-2 border-ink shadow-tactile p-5 relative">
+    <div className="fixed inset-0 z-[100] bg-ink/60 flex justify-center px-4 py-8 overflow-y-auto overscroll-contain">
+      <div className="my-auto bg-white w-full max-w-lg rounded-lg border-2 border-ink shadow-tactile p-5 relative">
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-muted hover:text-ink font-bold z-10"

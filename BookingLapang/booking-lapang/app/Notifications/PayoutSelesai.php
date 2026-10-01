@@ -3,18 +3,19 @@
 namespace App\Notifications;
 
 use App\Models\Payout;
+use App\Notifications\Concerns\MenghormatiPreferensi;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
 class PayoutSelesai extends Notification
 {
-    use Queueable;
+    use Queueable, MenghormatiPreferensi;
 
     public function __construct(public Payout $payout) {}
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return $this->channelSesuaiPreferensi($notifiable, 'payout_selesai');
     }
 
     public function toArray(object $notifiable): array

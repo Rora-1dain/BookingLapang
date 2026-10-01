@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
+import useLockBodyScroll from '../lib/useLockBodyScroll'
 import { useAuth } from '../context/AuthContext'
 import { fetchMyBookings, cancelBooking } from '../api/booking'
 import { unduhInvoice } from '../api/payment'
+import { mulaiChat } from '../api/chat'
+import IconChat from './IconChat'
 import { bayarBooking } from '../lib/payBooking'
 import { formatRupiah } from '../lib/format'
 
@@ -13,6 +16,7 @@ const STATUS_BADGE = {
 }
 
 export default function MyBookingsModal({ onClose }) {
+  useLockBodyScroll()
   const { user, logout } = useAuth()
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
@@ -62,6 +66,22 @@ export default function MyBookingsModal({ onClose }) {
     }
   }
 
+  // Mulai (atau lanjutkan) chat dengan pemilik lapangan booking ini, lalu
+  // pindah ke halaman chat. Backend: POST /api/percakapan { lapangan_id }.
+  async function handleChat(booking) {
+    if (!booking.lapangan?.id) return
+    setBusyId(booking.id)
+    setStatusMsg(null)
+    try {
+      const percakapan = await mulaiChat(booking.lapangan.id)
+      onClose()
+      window.location.hash = `#/chat/${percakapan.id}`
+    } catch (err) {
+      setStatusMsg(err.message)
+      setBusyId(null)
+    }
+  }
+
   async function handleCancel(booking) {
     setBusyId(booking.id)
     setStatusMsg(null)
@@ -76,8 +96,8 @@ export default function MyBookingsModal({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] bg-ink/60 flex items-center justify-center px-4 py-8 overflow-y-auto">
-      <div className="bg-cream w-full max-w-lg rounded-lg border-2 border-ink shadow-tactile p-6 relative">
+    <div className="fixed inset-0 z-[100] bg-ink/60 flex justify-center px-4 py-8 overflow-y-auto overscroll-contain">
+      <div className="my-auto bg-cream w-full max-w-lg rounded-lg border-2 border-ink shadow-tactile p-6 relative">
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-muted hover:text-ink font-bold"
@@ -147,6 +167,17 @@ export default function MyBookingsModal({ onClose }) {
                     className="bg-ink hover:bg-match-blue disabled:opacity-60 text-cream text-xs font-bold px-3 py-1.5 rounded uppercase transition-colors"
                   >
                     Unduh Invoice
+                  </button>
+                )}
+                {b.lapangan?.id && (
+                  <button
+                    onClick={() => handleChat(b)}
+                    disabled={busyId === b.id}
+                    title="Chat dengan pemilik lapangan"
+                    aria-label="Chat dengan pemilik lapangan"
+                    className="w-8 h-8 inline-flex items-center justify-center rounded border border-match-blue/30 text-match-blue hover:bg-match-blue hover:text-cream disabled:opacity-60 transition-colors"
+                  >
+                    <IconChat />
                   </button>
                 )}
                 {b.bisa_dibatalkan && (

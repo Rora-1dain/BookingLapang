@@ -5,6 +5,7 @@
 namespace App\Notifications;
 
 use App\Models\Ulasan;
+use App\Notifications\Concerns\MenghormatiPreferensi;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -12,13 +13,13 @@ use Illuminate\Notifications\Notification;
 
 class UlasanBurukDiterima extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, MenghormatiPreferensi;
 
     public function __construct(public Ulasan $ulasan) {}
 
     public function via($notifiable): array
     {
-        return ['mail'];
+        return $this->channelSesuaiPreferensi($notifiable, 'ulasan_buruk');
     }
 
     public function toMail($notifiable): MailMessage
@@ -33,5 +34,13 @@ class UlasanBurukDiterima extends Notification implements ShouldQueue
             ->line('Booking ID: '.$booking->id)
             ->action('Lihat Ulasan', url('/admin/ulasans/'.$this->ulasan->id))
             ->line('Segera ditindaklanjuti.');
+    }
+
+    public function toArray($notifiable): array
+    {
+        return [
+            'ulasan_id' => $this->ulasan->id,
+            'pesan' => 'Ulasan baru dengan rating '.$this->ulasan->rating.'/5 perlu ditinjau.',
+        ];
     }
 }

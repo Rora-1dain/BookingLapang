@@ -3,18 +3,19 @@
 namespace App\Notifications;
 
 use App\Models\Lapangan;
+use App\Notifications\Concerns\MenghormatiPreferensi;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
 class LapanganMenungguPersetujuan extends Notification
 {
-    use Queueable;
+    use Queueable, MenghormatiPreferensi;
 
     public function __construct(public Lapangan $lapangan) {}
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return $this->channelSesuaiPreferensi($notifiable, 'lapangan_menunggu');
     }
 
     public function toArray(object $notifiable): array

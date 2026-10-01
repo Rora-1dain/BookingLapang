@@ -2,17 +2,18 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\MenghormatiPreferensi;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class VerifikasiDiterima extends Notification
 {
-    use Queueable;
+    use Queueable, MenghormatiPreferensi;
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return $this->channelSesuaiPreferensi($notifiable, 'verifikasi_hasil');
     }
 
     public function toMail(object $notifiable): MailMessage

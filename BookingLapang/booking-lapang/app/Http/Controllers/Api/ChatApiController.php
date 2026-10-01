@@ -14,19 +14,13 @@ class ChatApiController extends Controller
     {
         $userId = $request->user()->id;
 
-        $percakapans = Percakapan::where('user_id', $userId)
-            ->orWhere('pemilik_id', $userId)
-            ->with(['lapangan', 'pesanTerakhir'])
+        $percakapans = Percakapan::where(function ($q) use ($userId) {
+            $q->where('user_id', $userId)->orWhere('pemilik_id', $userId);
+        })
+            ->with(['lapangan:id,nama_lapangan,jenis', 'user:id,name', 'pemilik:id,name', 'pesanTerakhir'])
             ->latest('updated_at')
             ->get()
-            ->map(function (Percakapan $p) use ($userId) {
-                return [
-                    'id' => $p->id,
-                    'lapangan' => $p->lapangan?->nama_lapangan,
-                    'pesan_terakhir' => $p->pesanTerakhir?->isi,
-                    'belum_dibaca' => $p->jumlahBelumDibaca($userId),
-                ];
-            });
+            ->map(fn (Percakapan $p) => $this->ringkasan($p, $userId));
 
         return response()->json(['data' => $percakapans]);
     }
@@ -46,8 +40,13 @@ class ChatApiController extends Controller
     {
         $this->pastikanBagianDariPercakapan($request, $percakapan);
 
+        $percakapan->load(['lapangan:id,nama_lapangan,jenis', 'user:id,name', 'pemilik:id,name', 'pesans.pengirim:id,name']);
+
         return response()->json([
-            'data' => $percakapan->load('pesans.pengirim'),
+            'data' => array_merge(
+                $this->ringkasan($percakapan, $request->user()->id),
+                ['pesans' => $percakapan->pesans]
+            ),
         ]);
     }
 
@@ -75,6 +74,24 @@ class ChatApiController extends Controller
         $chatService->tandaiDibaca($percakapan, $request->user()->id);
 
         return response()->json(['message' => 'Pesan ditandai sudah dibaca.']);
+    }
+
+    /** Bentuk ringkas percakapan dari sudut pandang $userId (lawan bicara = pihak satunya). */
+    protected function ringkasan(Percakapan $p, int $userId): array
+    {
+        $lawan = $p->user_id === $userId ? $p->pemilik : $p->user;
+
+        return [
+            'id' => $p->id,
+            'lapangan_id' => $p->lapangan_id,
+            'lapangan' => $p->lapangan?->nama_lapangan,
+            'jenis' => $p->lapangan?->jenis,
+            'lawan_bicara' => $lawan?->name,
+            'peran_lawan' => $p->user_id === $userId ? 'pemilik' : 'pemesan',
+            'pesan_terakhir' => $p->pesanTerakhir?->isi,
+            'waktu' => ($p->pesanTerakhir?->created_at ?? $p->updated_at)?->toIso8601String(),
+            'belum_dibaca' => $p->jumlahBelumDibaca($userId),
+        ];
     }
 
     protected function pastikanBagianDariPercakapan(Request $request, Percakapan $percakapan): void

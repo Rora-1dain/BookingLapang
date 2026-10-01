@@ -3,18 +3,19 @@
 namespace App\Notifications;
 
 use App\Models\Pesan;
+use App\Notifications\Concerns\MenghormatiPreferensi;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
 class PesanBaruDiterima extends Notification
 {
-    use Queueable;
+    use Queueable, MenghormatiPreferensi;
 
     public function __construct(public Pesan $pesan) {}
 
     public function via($notifiable): array
     {
-        return ['database'];
+        return $this->channelSesuaiPreferensi($notifiable, 'pesan_chat_baru');
     }
 
     public function toArray($notifiable): array

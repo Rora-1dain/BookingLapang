@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import * as authApi from '../api/auth'
 import { getToken, setToken } from '../api/client'
+import { putus } from '../lib/realtime'
 
 const AuthContext = createContext(null)
 
@@ -42,6 +43,7 @@ export function AuthProvider({ children }) {
       // token sudah invalid di server, tetap bersihkan sisi client
     }
     setToken(null)
+    putus() // tutup koneksi realtime milik akun sebelumnya
     setUser(null)
   }, [])
 

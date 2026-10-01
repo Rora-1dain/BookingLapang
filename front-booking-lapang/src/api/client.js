@@ -51,11 +51,23 @@ export async function apiFetch(path, { method = 'GET', body, auth = false, param
     if (token) headers.Authorization = `Bearer ${token}`
   }
 
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
-  })
+  // fetch() hanya melempar TypeError ("Failed to fetch") kalau request tidak
+  // dapat respons sama sekali: server mati/crash, timeout, atau diblok CORS.
+  // Bungkus supaya user dapat pesan yang jelas, bukan teks bawaan browser.
+  let res
+  try {
+    res = await fetch(url, {
+      method,
+      headers,
+      body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
+    })
+  } catch (err) {
+    throw new ApiError(
+      'Server tidak bisa dihubungi. Cek koneksi internet, lalu coba lagi.',
+      0,
+      { cause: err.message }
+    )
+  }
 
   const isJson = res.headers.get('content-type')?.includes('application/json')
   const data = isJson ? await res.json().catch(() => null) : null

@@ -22,6 +22,7 @@ use App\Http\Controllers\PemilikBookingController;
 use App\Http\Controllers\PemilikLapanganController;
 use App\Http\Controllers\PemilikPayoutController;
 use App\Http\Controllers\PemilikVerifikasiController;
+use App\Http\Controllers\PengaturanNotifikasiController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecurringBookingController;
 use App\Http\Controllers\ReferralController;
@@ -48,6 +49,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/ajak-teman', [ReferralController::class, 'index'])->name('referral.index');
+
+    Route::get('/pengaturan/notifikasi', [PengaturanNotifikasiController::class, 'edit'])->name('pengaturan.notifikasi');
+    Route::put('/pengaturan/notifikasi', [PengaturanNotifikasiController::class, 'update'])->name('pengaturan.notifikasi.update');
 });
 
 require __DIR__.'/auth.php';

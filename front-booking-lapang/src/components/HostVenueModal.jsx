@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import useLockBodyScroll from '../lib/useLockBodyScroll'
 import { useAuth } from '../context/AuthContext'
 import { useVenues } from '../context/VenueContext'
 import { fetchMyLapangan, submitLapangan, ajukanVerifikasi } from '../api/pemilik'
@@ -12,6 +13,7 @@ const BADGE = {
 }
 
 export default function HostVenueModal({ onClose }) {
+  useLockBodyScroll()
   const { user } = useAuth()
   const { categories } = useVenues()
   const [showAuth, setShowAuth] = useState(false)
@@ -81,8 +83,8 @@ export default function HostVenueModal({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] bg-ink/60 flex items-center justify-center px-4 py-8 overflow-y-auto">
-      <div className="bg-cream w-full max-w-md rounded-lg border-2 border-ink shadow-tactile p-6 relative">
+    <div className="fixed inset-0 z-[100] bg-ink/60 flex justify-center px-4 py-8 overflow-y-auto overscroll-contain">
+      <div className="my-auto bg-cream w-full max-w-md rounded-lg border-2 border-ink shadow-tactile p-6 relative">
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-muted hover:text-ink font-bold"
