@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminPayoutController;
 use App\Http\Controllers\AdminUlasanController;
 use App\Http\Controllers\AdminVerifikasiController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\NotificationPreferenceController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FotoLapanganController;
@@ -48,6 +49,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/ajak-teman', [ReferralController::class, 'index'])->name('referral.index');
+
+    // Preferensi Notifikasi
+    Route::put('/notifikasi/preferensi', [NotificationPreferenceController::class, 'update'])
+        ->name('notifikasi.preferensi.update');
+    Route::get('/notifikasi/preferensi', [NotificationPreferenceController::class, 'show'])
+        ->name('notifikasi.preferensi.show');
 });
 
 require __DIR__.'/auth.php';
