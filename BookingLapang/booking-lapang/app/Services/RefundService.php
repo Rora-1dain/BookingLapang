@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\RefundLog;
+use App\Models\User;
+use App\Notifications\RefundGagal;
 use Exception;
 use Midtrans\Transaction;
 
@@ -71,6 +73,10 @@ class RefundService
         ]);
 
         if ($booking->status_refund === 'ditolak') {
+            // Notifikasi kritikal: terkirim lewat mail apa pun preferensi user.
+            $booking->user?->notify(new RefundGagal($booking));
+            User::find($adminId)?->notify(new RefundGagal($booking));
+
             throw new Exception('Refund gagal diproses.');
         }
 

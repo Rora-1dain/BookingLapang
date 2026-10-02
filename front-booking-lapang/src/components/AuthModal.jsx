@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import useLockBodyScroll from '../lib/useLockBodyScroll'
 
 export default function AuthModal({ onClose }) {
+  useLockBodyScroll()
   const { login, register } = useAuth()
   const [mode, setMode] = useState('login') // 'login' | 'register'
   const [form, setForm] = useState({ name: '', email: '', password: '', password_confirmation: '' })
@@ -31,8 +33,8 @@ export default function AuthModal({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] bg-ink/60 flex items-center justify-center px-4">
-      <div className="bg-cream w-full max-w-sm rounded-lg border-2 border-ink shadow-tactile p-6">
+    <div className="fixed inset-0 z-[100] bg-ink/60 flex justify-center px-4 py-8 overflow-y-auto overscroll-contain">
+      <div className="my-auto bg-cream w-full max-w-sm rounded-lg border-2 border-ink shadow-tactile p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-display text-2xl uppercase text-ink">
             {mode === 'login' ? 'Masuk' : 'Daftar Akun'}

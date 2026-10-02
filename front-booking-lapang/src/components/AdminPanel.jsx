@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import useLockBodyScroll from '../lib/useLockBodyScroll'
 import * as adminApi from '../api/admin'
 import { formatRupiah } from '../lib/format'
 
@@ -12,11 +13,12 @@ const TABS = [
 ]
 
 export default function AdminPanel({ onClose }) {
+  useLockBodyScroll()
   const [tab, setTab] = useState('approval')
 
   return (
-    <div className="fixed inset-0 z-[100] bg-ink/60 flex items-center justify-center px-4 py-8 overflow-y-auto">
-      <div className="bg-cream w-full max-w-2xl rounded-lg border-2 border-ink shadow-tactile p-6 relative">
+    <div className="fixed inset-0 z-[100] bg-ink/60 flex justify-center px-4 py-8 overflow-y-auto overscroll-contain">
+      <div className="my-auto bg-cream w-full max-w-2xl rounded-lg border-2 border-ink shadow-tactile p-6 relative">
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-muted hover:text-ink font-bold"

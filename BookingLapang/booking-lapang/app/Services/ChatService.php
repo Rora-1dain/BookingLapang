@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\PesanDibaca;
 use App\Events\PesanDikirim;
 use App\Models\Lapangan;
 use App\Models\Percakapan;
@@ -44,16 +45,29 @@ class ChatService
             Log::warning('Gagal kirim notifikasi pesan baru: '.$e->getMessage());
         }
 
-        broadcast(new PesanDikirim($pesan))->toOthers();
+        // Pesan sudah tersimpan; kalau Pusher bermasalah jangan sampai API balas 500.
+        try {
+            broadcast(new PesanDikirim($pesan))->toOthers();
+        } catch (\Throwable $e) {
+            Log::warning('Gagal broadcast pesan: '.$e->getMessage());
+        }
 
         return $pesan;
     }
 
     public function tandaiDibaca(Percakapan $percakapan, int $userId): void
     {
-        $percakapan->pesans()
+        $jumlah = $percakapan->pesans()
             ->where('pengirim_id', '!=', $userId)
             ->whereNull('dibaca_pada')
             ->update(['dibaca_pada' => now()]);
+
+        if ($jumlah > 0) {
+            try {
+                broadcast(new PesanDibaca($percakapan->id, $userId))->toOthers();
+            } catch (\Throwable $e) {
+                Log::warning('Gagal broadcast status dibaca: '.$e->getMessage());
+            }
+        }
     }
 }
