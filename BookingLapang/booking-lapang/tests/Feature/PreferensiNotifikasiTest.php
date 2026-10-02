@@ -1,24 +1,69 @@
 <?php
 
+use App\Models\NotificationPreference;
 use App\Models\User;
-use App\Notifications\Concerns\MenghormatiPreferensi;
+use App\Notifications\BookingDikonfirmasi;
 use App\Notifications\PesanBaruDiterima;
 use App\Notifications\RefundGagal;
-use App\Notifications\BookingDikonfirmasi;
-use App\Support\PreferensiNotifikasi;
+use App\Notifications\VerifikasiDiterima;
+use App\Traits\ChannelSesuaiPreferensi;
 
 // via() cuma membaca preferensi user, jadi constructor (butuh model) dilewati.
-function kosong(string $kelas): object
+function notifTanpaKonstruktor(string $kelas): object
 {
     return (new ReflectionClass($kelas))->newInstanceWithoutConstructor();
 }
 
-test('user baru dapat default: transaksional aktif, promo mati', function () {
-    $user = User::factory()->create();
-    $pref = PreferensiNotifikasi::untuk($user);
+function aturPreferensi(User $user, string $tipe, bool $email, bool $database): void
+{
+    NotificationPreference::create([
+        'user_id' => $user->id,
+        'tipe_notifikasi' => $tipe,
+        'email_aktif' => $email,
+        'database_aktif' => $database,
+    ]);
+}
 
-    expect($pref['booking_confirmed'])->toBe(['mail', 'database'])
-        ->and($pref['promo'])->toBe([]);
+test('user tanpa preferensi memakai default notifikasi', function () {
+    $user = User::factory()->create();
+
+    expect(notifTanpaKonstruktor(BookingDikonfirmasi::class)->via($user))->toBe(['mail', 'database'])
+        ->and(notifTanpaKonstruktor(PesanBaruDiterima::class)->via($user))->toBe(['database']);
+});
+
+test('skenario 5: matikan email chat, notifikasi chat hanya in-app', function () {
+    $user = User::factory()->create();
+    aturPreferensi($user, 'chat', false, true);
+
+    expect(notifTanpaKonstruktor(PesanBaruDiterima::class)->via($user))->toBe(['database']);
+});
+
+test('semua channel dimatikan, tetap masuk in-app', function () {
+    $user = User::factory()->create();
+    aturPreferensi($user, 'chat', false, false);
+
+    expect(notifTanpaKonstruktor(PesanBaruDiterima::class)->via($user))->toBe(['database']);
+});
+
+test('skenario 6: semua dimatikan, refund gagal tetap lewat email', function () {
+    $user = User::factory()->create();
+    foreach (['booking', 'chat', 'lapangan', 'payout', 'waitlist', 'refund', 'verifikasi', 'ulasan'] as $tipe) {
+        aturPreferensi($user, $tipe, false, false);
+    }
+
+    expect(notifTanpaKonstruktor(RefundGagal::class)->via($user))->toContain('mail')
+        ->and(notifTanpaKonstruktor(VerifikasiDiterima::class)->via($user))->toContain('mail');
+});
+
+test('skenario 7: seluruh Notification memakai ChannelSesuaiPreferensi', function () {
+    $files = glob(app_path('Notifications/*.php'));
+    expect(count($files))->toBeGreaterThanOrEqual(6);
+
+    foreach ($files as $file) {
+        $kelas = 'App\\Notifications\\'.basename($file, '.php');
+       expect(class_uses($kelas))->toHaveKey(ChannelSesuaiPreferensi::class);
+        expect(file_get_contents($file))->toContain('channelSesuaiPreferensi($notifiable)');
+    }
 });
 
 test('halaman pengaturan notifikasi tampil', function () {
@@ -28,62 +73,21 @@ test('halaman pengaturan notifikasi tampil', function () {
         ->assertSee('Pengaturan Notifikasi');
 });
 
-test('simpan preferensi: checkbox yang tidak dicentang jadi kosong', function () {
+test('simpan preferensi lewat form: yang tidak dicentang jadi false', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
-        ->put(route('pengaturan.notifikasi.update'), [
-            'notifikasi' => ['pesan_chat_baru' => ['database'], 'promo' => ['mail', 'sms']],
+        ->put(route('notifikasi.preferensi.update'), [
+            'preferensi' => [
+                'chat' => ['email' => '0', 'database' => '1'],
+            ],
         ])
-        ->assertRedirect(route('pengaturan.notifikasi'));
+        ->assertRedirect();
 
-    $pref = $user->fresh()->preferensi_notifikasi;
-    expect($pref['pesan_chat_baru'])->toBe(['database'])
-        ->and($pref['promo'])->toBe(['mail'])          // channel asing dibuang
-        ->and($pref['slot_waitlist'])->toBe([]);        // tidak dicentang = mati
-});
-
-test('skenario 5: matikan email chat, notifikasi chat hanya in-app', function () {
-    $user = User::factory()->create(['preferensi_notifikasi' => ['pesan_chat_baru' => ['database']]]);
-
-    expect(kosong(PesanBaruDiterima::class)->via($user))->toBe(['database']);
-});
-
-test('transaksional dimatikan semua tetap masuk in-app', function () {
-    $user = User::factory()->create(['preferensi_notifikasi' => ['booking_confirmed' => []]]);
-
-    expect(kosong(BookingDikonfirmasi::class)->via($user))->toBe(['database']);
-});
-
-test('non-transaksional boleh dimatikan total', function () {
-    $user = User::factory()->create(['preferensi_notifikasi' => ['pesan_chat_baru' => []]]);
-
-    expect(kosong(PesanBaruDiterima::class)->via($user))->toBe([]);
-});
-
-test('skenario 6: semua dimatikan, refund gagal tetap lewat mail', function () {
-    $semuaMati = array_map(fn () => [], PreferensiNotifikasi::JENIS);
-    $semuaMati['refund_gagal'] = [];
-    $user = User::factory()->create(['preferensi_notifikasi' => $semuaMati]);
-
-    expect(kosong(RefundGagal::class)->via($user))->toBe(['mail']);
-});
-
-test('skenario 7: seluruh Notification memakai MenghormatiPreferensi dan tidak hardcode channel', function () {
-    $files = glob(app_path('Notifications/*.php'));
-    expect(count($files))->toBeGreaterThanOrEqual(6);
-
-    foreach ($files as $file) {
-        $kelas = 'App\\Notifications\\'.basename($file, '.php');
-        expect(class_uses($kelas))->toHaveKey(MenghormatiPreferensi::class, "$kelas belum pakai trait");
-        expect(file_get_contents($file))->toContain('channelSesuaiPreferensi');
-    }
-});
-
-test('API simpan preferensi menolak channel tidak dikenal', function () {
-    $user = User::factory()->create();
-
-    $this->actingAs($user, 'sanctum')
-        ->putJson('/api/pengaturan/notifikasi', ['preferensi' => ['promo' => ['sms']]])
-        ->assertStatus(422);
+    $this->assertDatabaseHas('notification_preferences', [
+        'user_id' => $user->id,
+        'tipe_notifikasi' => 'chat',
+        'email_aktif' => false,
+        'database_aktif' => true,
+    ]);
 });
