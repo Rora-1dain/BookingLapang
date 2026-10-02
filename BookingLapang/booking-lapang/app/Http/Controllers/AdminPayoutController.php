@@ -21,33 +21,35 @@ class AdminPayoutController extends Controller
 
     public function store(Request $request, PayoutService $payoutService)
     {
-        $validated = $request->validate([
-            'pemilik_id' => 'required|exists:users,id',
-            'periode_mulai' => 'required|date',
-            'periode_selesai' => 'required|date|after_or_equal:periode_mulai',
-        ]);
-
-        try {
-            $pemilik = User::findOrFail($validated['pemilik_id']);
-            $payoutService->buatPayout(
-                $pemilik,
-                Carbon::parse($validated['periode_mulai']),
-                Carbon::parse($validated['periode_selesai'])
-            );
-
-            return back()->with('success', 'Payout berhasil dibuat.');
-        } catch (Exception $e) {
-            return back()->with('error', $e->getMessage());
-        }
+       $this->authorize('payout.buat');
+ 
+    $validated = $request->validate([
+        'pemilik_id' => 'required|exists:users,id',
+        'periode_mulai' => 'required|date',
+        'periode_selesai' => 'required|date|after_or_equal:periode_mulai',
+    ]);
+ 
+    try {
+        $pemilik = User::findOrFail($validated['pemilik_id']);
+        $payoutService->buatPayout(
+            $pemilik, $validated['periode_mulai'], $validated['periode_selesai']
+        );
+ 
+        return back()->with('success', 'Payout berhasil dibuat.');
+      } catch (Exception $e) {
+        return back()->with('error', $e->getMessage());
+      }
     }
 
     public function selesai($payoutId, PayoutService $payoutService)
     {
-        $payout = Payout::findOrFail($payoutId);
-        $payoutService->tandaiSelesai($payout, auth()->id());
-        $payout->pemilik->notify(new PayoutSelesai($payout));
-
-        return back()->with('success', 'Payout ditandai selesai.');
+       $this->authorize('payout.selesaikan');
+ 
+       $payout = \App\Models\Payout::findOrFail($payoutId);
+       $payoutService->tandaiSelesai($payout, auth()->id());
+       $payout->pemilik->notify(new PayoutSelesai($payout));
+ 
+       return back()->with('success', 'Payout ditandai selesai.');
     }
 
     public function index(Request $request)

@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminPayoutController;
 use App\Http\Controllers\AdminUlasanController;
 use App\Http\Controllers\AdminVerifikasiController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\NotificationPreferenceController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FotoLapanganController;
@@ -22,7 +23,6 @@ use App\Http\Controllers\PemilikBookingController;
 use App\Http\Controllers\PemilikLapanganController;
 use App\Http\Controllers\PemilikPayoutController;
 use App\Http\Controllers\PemilikVerifikasiController;
-use App\Http\Controllers\PengaturanNotifikasiController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecurringBookingController;
 use App\Http\Controllers\ReferralController;
@@ -50,8 +50,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/ajak-teman', [ReferralController::class, 'index'])->name('referral.index');
 
-    Route::get('/pengaturan/notifikasi', [PengaturanNotifikasiController::class, 'edit'])->name('pengaturan.notifikasi');
-    Route::put('/pengaturan/notifikasi', [PengaturanNotifikasiController::class, 'update'])->name('pengaturan.notifikasi.update');
+    // Preferensi Notifikasi
+    Route::put('/notifikasi/preferensi', [NotificationPreferenceController::class, 'update'])
+        ->name('notifikasi.preferensi.update');
+    Route::get('/notifikasi/preferensi', [NotificationPreferenceController::class, 'show'])
+        ->name('notifikasi.preferensi.show');
 });
 
 require __DIR__.'/auth.php';

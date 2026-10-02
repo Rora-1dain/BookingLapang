@@ -3,7 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Booking;
-use App\Notifications\Concerns\MenghormatiPreferensi;
+use App\Traits\ChannelSesuaiPreferensi;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -11,13 +11,16 @@ use Illuminate\Notifications\Notification;
 
 class BookingDikonfirmasi extends Notification implements ShouldQueue
 {
-    use Queueable, MenghormatiPreferensi;
+    use Queueable, ChannelSesuaiPreferensi;
+
+    protected string $tipeNotifikasi = 'booking';
+    protected bool $adalahKritikal = false;
 
     public function __construct(protected Booking $booking) {}
 
     public function via($notifiable): array
     {
-        return $this->channelSesuaiPreferensi($notifiable, 'booking_confirmed');
+        return $this->channelSesuaiPreferensi($notifiable);
     }
 
     public function toMail($notifiable): MailMessage
@@ -37,8 +40,7 @@ class BookingDikonfirmasi extends Notification implements ShouldQueue
     {
         return [
             'booking_id' => $this->booking->id,
-            'pesan' => 'Booking '.$this->booking->lapangan->nama_lapangan.' tanggal '
-                .$this->booking->tanggal_booking->format('d-m-Y').' telah dikonfirmasi.',
+            'pesan' => "Booking lapangan {$this->booking->lapangan->nama_lapangan} telah dikonfirmasi.",
         ];
     }
 }

@@ -5,7 +5,7 @@
 namespace App\Notifications;
 
 use App\Models\Waitlist;
-use App\Notifications\Concerns\MenghormatiPreferensi;
+use App\Traits\ChannelSesuaiPreferensi;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -13,13 +13,16 @@ use Illuminate\Notifications\Notification;
 
 class SlotWaitlistTersedia extends Notification implements ShouldQueue
 {
-    use Queueable, MenghormatiPreferensi;
+    use Queueable, ChannelSesuaiPreferensi;
+
+    protected string $tipeNotifikasi = 'waitlist';
+    protected bool $adalahKritikal = false;
 
     public function __construct(public Waitlist $waitlist) {}
 
     public function via($notifiable): array
     {
-        return $this->channelSesuaiPreferensi($notifiable, 'slot_waitlist');
+        return $this->channelSesuaiPreferensi($notifiable);
     }
 
     public function toMail($notifiable): MailMessage
@@ -38,8 +41,7 @@ class SlotWaitlistTersedia extends Notification implements ShouldQueue
     {
         return [
             'waitlist_id' => $this->waitlist->id,
-            'pesan' => 'Slot yang Anda tunggu ('.$this->waitlist->tanggal_booking.', '
-                .$this->waitlist->jam_mulai.' - '.$this->waitlist->jam_selesai.') sekarang tersedia.',
+            'pesan' => "Slot lapangan yang Anda tunggu tersedia! Tanggal: {$this->waitlist->tanggal_booking}, Jam: {$this->waitlist->jam_mulai} - {$this->waitlist->jam_selesai}",
         ];
     }
 }

@@ -3,19 +3,37 @@
 namespace App\Notifications;
 
 use App\Models\Pesan;
-use App\Notifications\Concerns\MenghormatiPreferensi;
+use App\Traits\ChannelSesuaiPreferensi;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
 class PesanBaruDiterima extends Notification
 {
-    use Queueable, MenghormatiPreferensi;
+    use Queueable, ChannelSesuaiPreferensi;
+
+    protected string $tipeNotifikasi = 'chat';
+    protected bool $adalahKritikal = false;
 
     public function __construct(public Pesan $pesan) {}
 
     public function via($notifiable): array
     {
-        return $this->channelSesuaiPreferensi($notifiable, 'pesan_chat_baru');
+        return $this->channelSesuaiPreferensi($notifiable);
+    }
+
+    protected function defaultChannels(): array
+    {
+        return ['database'];
+    }
+
+    public function toMail($notifiable): \Illuminate\Notifications\Messages\MailMessage
+    {
+        return (new \Illuminate\Notifications\Messages\MailMessage)
+            ->subject('Anda Menerima Pesan Baru')
+            ->greeting('Halo '.$notifiable->name.',')
+            ->line('Anda mendapat pesan baru di chat.')
+            ->line('Isi: '.\Illuminate\Support\Str::limit($this->pesan->isi, 100))
+            ->action('Buka Chat', url('/chat/'.$this->pesan->percakapan_id));
     }
 
     public function toArray($notifiable): array

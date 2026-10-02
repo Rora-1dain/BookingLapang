@@ -2,20 +2,28 @@
 
 namespace App\Notifications;
 
-use App\Notifications\Concerns\MenghormatiPreferensi;
+use App\Traits\ChannelSesuaiPreferensi;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class VerifikasiDitolak extends Notification
 {
-    use Queueable, MenghormatiPreferensi;
+    use Queueable, ChannelSesuaiPreferensi;
+
+    protected string $tipeNotifikasi = 'verifikasi';
+
+    /**
+     * Verifikasi ditolak dianggap KRITIKAL — user harus tahu
+     * agar bisa memperbaiki dan mengajukan ulang.
+     */
+    protected bool $adalahKritikal = true;
 
     public function __construct(public ?string $catatan) {}
 
     public function via(object $notifiable): array
     {
-        return $this->channelSesuaiPreferensi($notifiable, 'verifikasi_hasil');
+        return $this->channelSesuaiPreferensi($notifiable);
     }
 
     public function toMail(object $notifiable): MailMessage

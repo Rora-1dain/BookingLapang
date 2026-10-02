@@ -10,32 +10,35 @@ class AdminVerifikasiController extends Controller
 {
     public function index()
     {
-        $menunggu = User::where('status_verifikasi', 'menunggu')
-            ->latest()
-            ->get(['id', 'name', 'email', 'updated_at']);
-
-        return view('admin.verifikasi.index', compact('menunggu'));
+       $this->authorize('verifikasi.tinjau');
+ 
+       $menunggu = User::where('status_verifikasi', 'menunggu')->latest()->get();
+ 
+       return view('admin.verifikasi.index', compact('menunggu'));
     }
 
     public function lihatDokumen(User $pemilik)
     {
-        abort_unless(auth()->user()->role === 'admin', 403);
+    // Diganti dari: abort_unless(auth()->user()->role === 'admin', 403);
+        $this->authorize('verifikasi.tinjau');
+ 
+        return Storage::disk('local')->response($pemilik->path_dokumen_identitas);
+    }  
 
-        return response('<img src="'.$pemilik->path_dokumen_identitas.'" style="max-width:100%">')
-            ->header('Content-Type', 'text/html');
-    }
 
     public function tinjau(Request $request, User $pemilik, VerifikasiService $verifikasiService)
     {
+        $this->authorize('verifikasi.tinjau');
+ 
         $validated = $request->validate([
             'keputusan' => 'required|in:setuju,tolak',
             'catatan' => 'nullable|string',
-        ]);
-
+    ]);
+ 
         $verifikasiService->tinjauVerifikasi(
             $pemilik, $validated['keputusan'] === 'setuju', $validated['catatan'] ?? null
-        );
-
+    );
+ 
         return back()->with('success', 'Keputusan verifikasi tersimpan.');
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Lapangan;
 use App\Observers\LapanganObserver;
 use Illuminate\Support\ServiceProvider;
 use Midtrans\Config;
+use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,5 +28,9 @@ class AppServiceProvider extends ServiceProvider
         Config::$isSanitized = true;
         Config::$is3ds = true;
         Lapangan::observe(LapanganObserver::class);
+
+         Gate::before(function ($user, $ability) {
+        return $user->hasRole('admin') ? true : null;
+    });
     }
 }
