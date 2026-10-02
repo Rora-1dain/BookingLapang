@@ -111,6 +111,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+    Route::get('laporan/ledger/export', [\App\Http\Controllers\Api\AdminLedgerExportController::class, 'export']);
     // Booking & Refund
     Route::get('/booking', [AdminBookingApiController::class, 'index']);
     Route::post('/booking/{booking}/refund', [AdminBookingApiController::class, 'refund']);
