@@ -2,17 +2,26 @@
 
 namespace App\Notifications;
 
+use App\Traits\ChannelSesuaiPreferensi;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class VerifikasiDiterima extends Notification
 {
-    use Queueable;
+    use Queueable, ChannelSesuaiPreferensi;
+
+    protected string $tipeNotifikasi = 'verifikasi';
+
+    /**
+     * Verifikasi diterima dianggap KRITIKAL — user harus tahu
+     * bahwa akun mereka sekarang bisa mengajukan lapangan.
+     */
+    protected bool $adalahKritikal = true;
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return $this->channelSesuaiPreferensi($notifiable);
     }
 
     public function toMail(object $notifiable): MailMessage

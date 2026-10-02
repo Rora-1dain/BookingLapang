@@ -57,9 +57,7 @@ class AdminBookingController extends Controller
 
     public function refund(Request $request, Booking $booking, RefundService $refundService)
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403, 'Hanya admin yang dapat mengajukan refund.');
-        }
+        $this->authorize('refund.proses');
 
         $validated = $request->validate(['alasan' => 'required|string|max:255']);
 
@@ -72,11 +70,9 @@ class AdminBookingController extends Controller
         }
     }
 
-    public function refundIndex(Request $request)
+    public function refundIndex(Request $request, Booking $booking, RefundService $refundservice )
     {
-        if (auth()->user()->role !== 'admin') {
-            abort(403);
-        }
+        $this->authorize('refund.proses');
 
         $baseQuery = Booking::where('status_refund', '!=', 'belum_refund');
 

@@ -1,0 +1,665 @@
+<title>Laporan Uji Coba Booking Lapang</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* Layout: single-column report with status cards, max 880px centered */
+:root {
+  --bg: #FAFAF8;
+  --surface: #FFFFFF;
+  --surface-dim: #F3F2EE;
+  --fg: #1A1A1A;
+  --fg-muted: #5C5C5C;
+  --accent: #1E5631;
+  --accent-light: #E8F5EC;
+  --danger: #C62828;
+  --danger-light: #FFEBEE;
+  --warning: #E65100;
+  --warning-light: #FFF3E0;
+  --success: #2E7D32;
+  --success-light: #E8F5E9;
+  --info: #1565C0;
+  --info-light: #E3F2FD;
+  --border: #E0DDD6;
+  --code-bg: #F5F3EE;
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111110;
+    --surface: #1C1C1A;
+    --surface-dim: #232320;
+    --fg: #E8E6E1;
+    --fg-muted: #9C9A94;
+    --accent: #6ABF7B;
+    --accent-light: #1B2E1F;
+    --danger: #EF5350;
+    --danger-light: #2C1515;
+    --warning: #FF9800;
+    --warning-light: #2C1E0A;
+    --success: #66BB6A;
+    --success-light: #1B2E1F;
+    --info: #42A5F5;
+    --info-light: #0D1F2E;
+    --border: #333330;
+    --code-bg: #1E1E1C;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111110;
+  --surface: #1C1C1A;
+  --surface-dim: #232320;
+  --fg: #E8E6E1;
+  --fg-muted: #9C9A94;
+  --accent: #6ABF7B;
+  --accent-light: #1B2E1F;
+  --danger: #EF5350;
+  --danger-light: #2C1515;
+  --warning: #FF9800;
+  --warning-light: #2C1E0A;
+  --success: #66BB6A;
+  --success-light: #1B2E1F;
+  --info: #42A5F5;
+  --info-light: #0D1F2E;
+  --border: #333330;
+  --code-bg: #1E1E1C;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-display);
+  line-height: 1.65;
+  padding-inline: 20px;
+}
+
+.wrap {
+  max-width: 880px;
+  margin: 0 auto;
+  padding-block: 2rem 4rem;
+}
+
+/* Header */
+.header {
+  margin-bottom: 2.5rem;
+}
+.header .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+.header h1 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+  text-wrap: balance;
+}
+.header .meta {
+  color: var(--fg-muted);
+  font-size: 0.85rem;
+}
+.header .meta strong {
+  color: var(--fg);
+}
+
+/* Summary strip */
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 2rem;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+.stat-card .num {
+  font-size: 1.8rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-card .label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fg-muted);
+}
+.stat-card.pass .num { color: var(--success); }
+.stat-card.fail .num { color: var(--danger); }
+.stat-card.warn .num { color: var(--warning); }
+.stat-card.total .num { color: var(--accent); }
+
+/* Scenario cards */
+.scenario {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.scenario-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px 20px 0;
+}
+.scenario-num {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.scenario.pass .scenario-num { background: var(--success-light); color: var(--success); }
+.scenario.fail .scenario-num { background: var(--danger-light); color: var(--danger); }
+.scenario.warn .scenario-num { background: var(--warning-light); color: var(--warning); }
+
+.scenario-title {
+  flex: 1;
+  min-width: 0;
+}
+.scenario-title h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0 0 2px;
+  line-height: 1.3;
+}
+.scenario-title .owner {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.verdict {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.verdict.pass { background: var(--success-light); color: var(--success); }
+.verdict.fail { background: var(--danger-light); color: var(--danger); }
+.verdict.warn { background: var(--warning-light); color: var(--warning); }
+
+.scenario-body {
+  padding: 12px 20px 20px;
+}
+.expected, .actual {
+  font-size: 0.84rem;
+  margin-bottom: 8px;
+}
+.expected strong, .actual strong {
+  font-weight: 600;
+}
+
+.evidence {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  line-height: 1.7;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.evidence .file {
+  color: var(--info);
+  font-weight: 500;
+}
+.evidence .line-num {
+  color: var(--fg-muted);
+  user-select: none;
+}
+.evidence .highlight {
+  color: var(--danger);
+  font-weight: 600;
+}
+.evidence .ok {
+  color: var(--success);
+  font-weight: 600;
+}
+
+/* Alert boxes */
+.alert {
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  font-size: 0.84rem;
+  line-height: 1.6;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.alert .icon {
+  flex-shrink: 0;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+.alert-danger {
+  background: var(--danger-light);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+}
+.alert-warning {
+  background: var(--warning-light);
+  border: 1px solid var(--warning);
+  color: var(--warning);
+}
+.alert-info {
+  background: var(--info-light);
+  border: 1px solid var(--info);
+  color: var(--info);
+}
+.alert-success {
+  background: var(--success-light);
+  border: 1px solid var(--success);
+  color: var(--success);
+}
+
+/* Section headings */
+.section-heading {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 2.5rem 0 1rem;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+  letter-spacing: -0.01em;
+}
+
+/* Checklist */
+.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+}
+.checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 0.84rem;
+  border-bottom: 1px solid var(--border);
+}
+.checklist li:last-child { border-bottom: none; }
+.checklist .icon { flex-shrink: 0; font-size: 1rem; }
+
+/* Footer */
+.footer {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+  text-align: center;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  background: var(--code-bg);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+@media (max-width: 500px) {
+  .scenario-header { flex-wrap: wrap; }
+  .verdict { margin-left: 44px; }
+}
+</style>
+
+<div class="wrap">
+  <div class="header">
+    <div class="badge">⚙ Static Code Analysis — 7 Skenario</div>
+    <h1>Laporan Uji Coba PKL — Booking Lapang</h1>
+    <p class="meta">
+      Tanggal audit: <strong>2 Oktober 2026</strong> &middot;
+      Tim: <strong>Ardan, Bintang, Revano</strong> &middot;
+      Branch: <strong>master</strong>
+    </p>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-strip">
+    <div class="stat-card total"><div class="num">7</div><div class="label">Total Skenario</div></div>
+    <div class="stat-card pass"><div class="num">1</div><div class="label">Lolos</div></div>
+    <div class="stat-card fail"><div class="num">4</div><div class="label">Gagal</div></div>
+    <div class="stat-card warn"><div class="num">2</div><div class="label">Belum Diimplementasi</div></div>
+  </div>
+
+  <!-- CRITICAL ALERT -->
+  <div class="alert alert-danger">
+    <span class="icon">🚨</span>
+    <div>
+      <strong>Bug Kritis Ditemukan:</strong> Dua masalah utama memblokir seluruh skenario role granular (1–3).
+      Middleware <code>AdminOnly</code> masih mengecek <code>role&nbsp;===&nbsp;'admin'</code> sehingga staf_approval dan staf_keuangan ditolak sebelum sampai controller.
+      User model meng-import <code>HasRoles</code> tapi <strong>tidak meng-use trait-nya</strong> di class body — <code>$user->hasRole()</code> akan error.
+    </div>
+  </div>
+
+  <!-- ====== SKENARIO 1 ====== -->
+  <h2 class="section-heading">Skenario 1–3 — Role Granular (Ardan)</h2>
+
+  <div class="scenario fail">
+    <div class="scenario-header">
+      <div class="scenario-num">1</div>
+      <div class="scenario-title">
+        <h3>Staf approval coba proses refund → ditolak 403</h3>
+        <span class="owner">Ardan</span>
+      </div>
+      <span class="verdict fail">❌ GAGAL</span>
+    </div>
+    <div class="scenario-body">
+      <p class="expected"><strong>Diharapkan:</strong> Ditolak (403) karena staf_approval tidak punya permission <code>refund.proses</code>.</p>
+      <p class="actual"><strong>Hasil aktual:</strong> Ditolak 403, tetapi <strong>penyebabnya salah</strong> — bukan karena pengecekan permission di controller, melainkan karena middleware <code>AdminOnly</code> sudah memblokir di level route.</p>
+
+      <div class="evidence"><span class="file">app/Http/Middleware/AdminOnly.php:16</span>
+<span class="line-num">16 |</span> if (! auth()->check() || <span class="highlight">auth()->user()->role !== 'admin'</span>) {
+<span class="line-num">17 |</span>     abort(403, 'Anda tidak memiliki akses ke halaman ini.');
+
+<span class="file">routes/web.php:99</span>
+<span class="line-num">99 |</span> Route::middleware([<span class="highlight">'auth', 'admin'</span>])
+
+<span class="file">routes/web.php:182</span>
+<span class="line-num">182|</span> Route::middleware([<span class="highlight">'auth', 'admin'</span>])->prefix('admin')...</div>
+
+      <div class="alert alert-warning" style="margin-top:12px">
+        <span class="icon">⚠️</span>
+        <div>
+          <strong>False positive!</strong> Skenario "kelihatan lolos" karena memang 403, tapi penyebabnya middleware level route, BUKAN <code>$this->authorize('refund.proses')</code> di controller. Ini adalah bug yang disebutkan di peringatan soal.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SKENARIO 2 ====== -->
+  <div class="scenario fail">
+    <div class="scenario-header">
+      <div class="scenario-num">2</div>
+      <div class="scenario-title">
+        <h3>Staf keuangan proses refund → berhasil</h3>
+        <span class="owner">Ardan</span>
+      </div>
+      <span class="verdict fail">❌ GAGAL</span>
+    </div>
+    <div class="scenario-body">
+      <p class="expected"><strong>Diharapkan:</strong> Berhasil, karena staf_keuangan punya permission <code>refund.proses</code>.</p>
+      <p class="actual"><strong>Hasil aktual:</strong> Akan GAGAL (403) — middleware <code>AdminOnly</code> mengecek <code>role === 'admin'</code> di level route. staf_keuangan punya <code>role = 'staf_keuangan'</code> → tidak lolos middleware → tidak pernah sampai ke controller.</p>
+
+      <div class="evidence"><span class="file">AdminOnly.php:16</span>
+<span class="line-num">16 |</span> auth()->user()-><span class="highlight">role !== 'admin'</span>
+→ staf_keuangan ditolak di sini, <span class="highlight">sebelum controller</span>
+
+<span class="file">AdminBookingController.php:60</span> (method <code>refund</code>)
+<span class="line-num">60 |</span> if (auth()->user()-><span class="highlight">role !== 'admin'</span>) {
+<span class="line-num">61 |</span>     abort(403, 'Hanya admin yang dapat mengajukan refund.');
+→ Method refund() JUGA masih pakai cek lama, bukan <code>$this->authorize()</code>
+
+<span class="file">AdminBookingController.php:77</span> (method <code>refundIndex</code>)
+<span class="line-num">77 |</span> <span class="ok">$this->authorize('refund.proses');</span>
+→ refundIndex() sudah benar pakai Spatie, tapi refund() belum</div>
+
+      <div class="alert alert-danger" style="margin-top:12px">
+        <span class="icon">🚨</span>
+        <div>
+          <strong>Dua lapis masalah:</strong>
+          <br>1. Middleware <code>AdminOnly</code> belum diubah — memblokir semua non-admin di level route.
+          <br>2. Method <code>refund()</code> (baris 60) masih pakai <code>role !== 'admin'</code>, bukan <code>$this->authorize('refund.proses')</code>.
+          <br>Hanya <code>refundIndex()</code> (baris 77) yang sudah diperbarui ke Spatie permission.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SKENARIO 3 ====== -->
+  <div class="scenario fail">
+    <div class="scenario-header">
+      <div class="scenario-num">3</div>
+      <div class="scenario-title">
+        <h3>Super admin akses semua fitur via Gate::before()</h3>
+        <span class="owner">Ardan</span>
+      </div>
+      <span class="verdict fail">❌ GAGAL</span>
+    </div>
+    <div class="scenario-body">
+      <p class="expected"><strong>Diharapkan:</strong> Semua berhasil lewat <code>Gate::before()</code> yang mengembalikan <code>true</code> untuk role admin.</p>
+      <p class="actual"><strong>Hasil aktual:</strong> <code>Gate::before()</code> di AppServiceProvider SUDAH benar, tapi <code>$user->hasRole('admin')</code> akan CRASH karena User model tidak meng-use trait <code>HasRoles</code>.</p>
+
+      <div class="evidence"><span class="file">app/Providers/AppServiceProvider.php:32-34</span>
+<span class="line-num">32 |</span> Gate::before(function ($user, $ability) {
+<span class="line-num">33 |</span>     return <span class="highlight">$user->hasRole('admin')</span> ? true : null;
+<span class="line-num">34 |</span> });
+
+<span class="file">app/Models/User.php:13</span>
+<span class="line-num">13 |</span> use Spatie\Permission\Traits\HasRoles; <span class="ok">← imported</span>
+
+<span class="file">app/Models/User.php:21</span>
+<span class="line-num">21 |</span> use HasApiTokens, HasFactory, Notifiable; <span class="highlight">← HasRoles TIDAK ADA!</span></div>
+
+      <div class="alert alert-danger" style="margin-top:12px">
+        <span class="icon">🚨</span>
+        <div>
+          <strong>Trait tidak di-use!</strong> Baris 13 meng-import <code>HasRoles</code> dengan <code>use Spatie\Permission\Traits\HasRoles;</code>, tapi baris 21 hanya <code>use HasApiTokens, HasFactory, Notifiable;</code> — trait <code>HasRoles</code> tidak ditambahkan ke statement use di dalam class body. Akibatnya <code>$user->hasRole()</code>, <code>$user->assignRole()</code>, <code>$user->can()</code> via Spatie semuanya akan <strong>error method not found</strong>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pra-syarat checklist -->
+  <div class="alert alert-info">
+    <span class="icon">📋</span>
+    <div>
+      <strong>Checklist pra-syarat skenario 1–3:</strong>
+      <ul class="checklist" style="margin-top:8px">
+        <li><span class="icon" style="color:var(--success)">✅</span> <code>spatie/laravel-permission ^8.3</code> sudah di <code>composer.json</code></li>
+        <li><span class="icon" style="color:var(--success)">✅</span> <code>config/permission.php</code> ada dan benar</li>
+        <li><span class="icon" style="color:var(--success)">✅</span> Migration <code>create_permission_tables</code> ada dan benar</li>
+        <li><span class="icon" style="color:var(--success)">✅</span> <code>PermissionSeeder</code> membuat 7 permissions + 3 roles dengan mapping benar</li>
+        <li><span class="icon" style="color:var(--success)">✅</span> <code>AssignAdminRoleSeeder</code> assign role admin ke user lama</li>
+        <li><span class="icon" style="color:var(--success)">✅</span> <code>Gate::before()</code> di AppServiceProvider sudah benar secara logika</li>
+        <li><span class="icon" style="color:var(--success)">✅</span> Controller AdminVerifikasi, AdminLapangan, AdminPayout sudah pakai <code>$this->authorize()</code></li>
+        <li><span class="icon" style="color:var(--danger)">❌</span> <strong>User model: trait <code>HasRoles</code> di-import tapi TIDAK di-use</strong></li>
+        <li><span class="icon" style="color:var(--danger)">❌</span> <strong>Middleware <code>AdminOnly</code>: masih cek <code>role === 'admin'</code></strong></li>
+        <li><span class="icon" style="color:var(--danger)">❌</span> <strong><code>refund()</code> method masih pakai cek lama, hanya <code>refundIndex()</code> yang sudah Spatie</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ====== SKENARIO 4 ====== -->
+  <h2 class="section-heading">Skenario 4 — Laporan Akuntansi (Bintang)</h2>
+
+  <div class="scenario pass">
+    <div class="scenario-header">
+      <div class="scenario-num">4</div>
+      <div class="scenario-title">
+        <h3>Export ledger 1 bulan — total GMV vs komisi + pemilik cocok</h3>
+        <span class="owner">Bintang</span>
+      </div>
+      <span class="verdict pass">✅ LOLOS</span>
+    </div>
+    <div class="scenario-body">
+      <p class="expected"><strong>Diharapkan:</strong> Angka total_gmv === total_komisi_platform + total_ke_pemilik.</p>
+      <p class="actual"><strong>Hasil aktual:</strong> Secara kode, logikanya sudah benar. <code>PlatformReportService</code> mengambil dari kolom yang tepat di tabel <code>bookings</code>.</p>
+
+      <div class="evidence"><span class="file">app/Services/PlatformReportService.php:11-22</span>
+<span class="line-num">17 |</span> 'total_gmv'              => $query->sum('<span class="ok">total_harga</span>'),
+<span class="line-num">18 |</span> 'total_komisi_platform'  => $query->sum('<span class="ok">nominal_komisi</span>'),
+<span class="line-num">19 |</span> 'total_ke_pemilik'       => $query->sum('<span class="ok">pendapatan_pemilik</span>'),
+
+Identitas akuntansi:
+<span class="ok">total_harga = nominal_komisi + pendapatan_pemilik</span>
+→ Jika data INSERT di BookingService memenuhi ini, maka GMV selalu cocok.
+
+Catatan: validasi ini bergantung pada data. Perlu verifikasi bahwa setiap
+row booking memenuhi total_harga = nominal_komisi + pendapatan_pemilik.
+Migration <code>add_komisi_columns</code> mengonfirmasi kolom ini ada.</div>
+    </div>
+  </div>
+
+  <!-- ====== SKENARIO 5 ====== -->
+  <h2 class="section-heading">Skenario 5–7 — Preferensi Notifikasi (Revano)</h2>
+
+  <div class="scenario warn">
+    <div class="scenario-header">
+      <div class="scenario-num">5</div>
+      <div class="scenario-title">
+        <h3>User matikan notifikasi email untuk pesan chat → hanya in-app</h3>
+        <span class="owner">Revano</span>
+      </div>
+      <span class="verdict warn">⚠ BELUM ADA</span>
+    </div>
+    <div class="scenario-body">
+      <p class="expected"><strong>Diharapkan:</strong> Notifikasi chat selanjutnya hanya masuk in-app (database) saat user matikan email.</p>
+      <p class="actual"><strong>Hasil aktual:</strong> Fitur preferensi notifikasi <strong>belum diimplementasi</strong>. Tidak ditemukan:</p>
+
+      <div class="evidence">❌ Tidak ada model <code>NotificationPreference</code>
+❌ Tidak ada migration <code>notification_preferences</code>
+❌ Tidak ada method <code>channelSesuaiPreferensi()</code>
+❌ Tidak ada controller untuk mengatur preferensi notifikasi
+
+<span class="file">PesanBaruDiterima.php:16</span> — channel masih hardcoded:
+<span class="line-num">16 |</span> return [<span class="highlight">'database'</span>]; <span class="fg-muted">← tidak ada logika preferensi</span></div>
+
+      <div class="alert alert-warning" style="margin-top:12px">
+        <span class="icon">⚠️</span>
+        <div>
+          <strong>Belum diimplementasi.</strong> UI preferensi notifikasi ada di <code>profile/edit.blade.php</code> (section 4), tapi hanya berupa <strong>HTML statis</strong> — checkbox tanpa name attribute, tidak terbungkus form POST, dan tidak ada backend handler. Perlu dibuat: model, migration, controller, dan integrasi ke notification classes.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SKENARIO 6 ====== -->
+  <div class="scenario warn">
+    <div class="scenario-header">
+      <div class="scenario-num">6</div>
+      <div class="scenario-title">
+        <h3>User matikan semua notifikasi → refund gagal tetap kirim email (kritikal)</h3>
+        <span class="owner">Revano</span>
+      </div>
+      <span class="verdict warn">⚠ BELUM ADA</span>
+    </div>
+    <div class="scenario-body">
+      <p class="expected"><strong>Diharapkan:</strong> Notifikasi kritikal (refund gagal) tetap dikirim via email meskipun semua notifikasi dimatikan.</p>
+      <p class="actual"><strong>Hasil aktual:</strong> Tidak ada sistem preferensi notifikasi, jadi tidak ada logika "kritikal bypass".</p>
+
+      <div class="evidence">❌ Tidak ada mekanisme flag <code>is_critical</code> di notification classes
+❌ Tidak ada logika bypass preferensi untuk notifikasi penting
+❌ Tidak ada <code>channelSesuaiPreferensi()</code> yang memeriksa tipe kritikal
+
+Semua 10 notification classes menggunakan channel hardcoded:
+• BookingDikonfirmasi → <span class="highlight">['mail']</span>
+• LapanganDisetujui → ['database']
+• LapanganDitolak → ['database']
+• LapanganMenungguPersetujuan → ['database']
+• PayoutSelesai → ['database']
+• PesanBaruDiterima → ['database']
+• SlotWaitlistTersedia → <span class="highlight">['mail']</span>
+• UlasanBurukDiterima → <span class="highlight">['mail']</span>
+• VerifikasiDiterima → ['mail', 'database']
+• VerifikasiDitolak → ['mail', 'database']</div>
+    </div>
+  </div>
+
+  <!-- ====== SKENARIO 7 ====== -->
+  <div class="scenario fail">
+    <div class="scenario-header">
+      <div class="scenario-num">7</div>
+      <div class="scenario-title">
+        <h3>Cek seluruh Notification (6 jenis min.) pakai channelSesuaiPreferensi</h3>
+        <span class="owner">Revano</span>
+      </div>
+      <span class="verdict fail">❌ GAGAL</span>
+    </div>
+    <div class="scenario-body">
+      <p class="expected"><strong>Diharapkan:</strong> Semua notification classes sudah menggunakan method <code>channelSesuaiPreferensi()</code>.</p>
+      <p class="actual"><strong>Hasil aktual:</strong> 0 dari 10 notification classes menggunakan <code>channelSesuaiPreferensi()</code>. Tidak ditemukan method/trait tersebut di seluruh codebase.</p>
+
+      <div class="evidence">Hasil pencarian <code>grep -r "channelSesuaiPreferensi"</code>:
+<span class="highlight">No files found</span>
+
+Semua 10 notification classes masih hardcode channel di method <code>via()</code>.
+Tidak ada trait, helper, atau base class yang menangani preferensi channel.</div>
+    </div>
+  </div>
+
+  <!-- ====== RINGKASAN PERBAIKAN ====== -->
+  <h2 class="section-heading">Ringkasan Perbaikan yang Diperlukan</h2>
+
+  <div class="alert alert-danger">
+    <span class="icon">🔴</span>
+    <div>
+      <strong>Prioritas 1 — Blocker (harus diperbaiki agar skenario 1–3 bisa dites):</strong>
+      <ol style="margin:8px 0 0 16px;padding:0;font-size:0.84rem;line-height:1.8">
+        <li><strong>User.php baris 21:</strong> Tambahkan <code>HasRoles</code> ke statement use → <code>use HasApiTokens, HasFactory, HasRoles, Notifiable;</code></li>
+        <li><strong>AdminOnly middleware:</strong> Ubah cek <code>role === 'admin'</code> menjadi cek Spatie role (misal cek apakah user punya salah satu role admin/staf_approval/staf_keuangan), atau ganti middleware dengan <code>role:admin|staf_approval|staf_keuangan</code> bawaan Spatie</li>
+        <li><strong>AdminBookingController::refund() baris 60:</strong> Ganti <code>if (auth()->user()->role !== 'admin')</code> dengan <code>$this->authorize('refund.proses')</code></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="alert alert-warning">
+    <span class="icon">🟡</span>
+    <div>
+      <strong>Prioritas 2 — Implementasi baru (skenario 5–7):</strong>
+      <ol style="margin:8px 0 0 16px;padding:0;font-size:0.84rem;line-height:1.8">
+        <li>Buat model <code>NotificationPreference</code> + migration tabel <code>notification_preferences</code></li>
+        <li>Buat method/trait <code>channelSesuaiPreferensi()</code> yang menentukan channel berdasar preferensi user</li>
+        <li>Tambahkan logika "kritikal bypass" untuk notifikasi penting (refund gagal, pembayaran)</li>
+        <li>Update semua 10 notification classes untuk pakai <code>channelSesuaiPreferensi()</code></li>
+        <li>Hubungkan UI preferensi di <code>profile/edit.blade.php</code> ke backend (form action + controller)</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="alert alert-success">
+    <span class="icon">🟢</span>
+    <div>
+      <strong>Yang sudah benar:</strong>
+      <ul style="margin:8px 0 0 16px;padding:0;font-size:0.84rem;line-height:1.8;list-style:disc">
+        <li><code>PermissionSeeder</code> — 7 permissions + 3 roles dengan mapping yang tepat</li>
+        <li><code>AssignAdminRoleSeeder</code> — logika migrasi user admin lama benar</li>
+        <li><code>Gate::before()</code> — logika super-admin bypass benar</li>
+        <li>Controller AdminVerifikasi, AdminLapangan, AdminPayout — sudah pakai <code>$this->authorize()</code></li>
+        <li><code>PlatformReportService</code> — query GMV/komisi/pemilik secara logika benar</li>
+        <li>UI preferensi notifikasi — desain sudah ada di profile view</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    Laporan dihasilkan dari static code analysis pada 2 Oktober 2026 &middot; Branch: master &middot; Commit: 6efcc32e
+  </div>
+</div>
