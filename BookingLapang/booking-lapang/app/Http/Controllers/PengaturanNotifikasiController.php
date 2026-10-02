@@ -2,37 +2,47 @@
 
 namespace App\Http\Controllers;
 
-use App\Support\PreferensiNotifikasi;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use App\Models\NotificationPreference;
 use Illuminate\View\View;
 
+/**
+ * Halaman pengaturan notifikasi. Hanya menampilkan form (GET).
+ * Penyimpanan memakai route master: PUT notifikasi.preferensi.update
+ * (NotificationPreferenceController@update).
+ */
 class PengaturanNotifikasiController extends Controller
 {
-    public function edit(Request $request): View
-    {
-        return view('pengaturan.notifikasi', [
-            'jenis' => PreferensiNotifikasi::JENIS,
-            'preferensi' => PreferensiNotifikasi::untuk($request->user()),
-        ]);
-    }
+    /**
+     * Tipe yang boleh diatur user: [label, deskripsi, default email, default in-app].
+     * Default HARUS sama dengan defaultChannels() di Notification terkait.
+     * Tipe kritikal (verifikasi, ulasan buruk, refund gagal) sengaja tidak ada di sini.
+     */
+    public const TIPE = [
+        'booking' => ['Booking', 'Konfirmasi booking kamu', true, true],
+        'lapangan' => ['Lapangan', 'Lapangan disetujui/ditolak (pemilik), lapangan baru menunggu persetujuan (admin)', false, true],
+        'chat' => ['Chat', 'Pesan baru dari pemilik lapangan atau pemesan', false, true],
+        'payout' => ['Payout', 'Payout selesai diproses (pemilik)', false, true],
+        'waitlist' => ['Waitlist', 'Slot yang kamu tunggu sudah tersedia', true, true],
+    ];
 
-    public function update(Request $request): RedirectResponse
+    public function edit(): View
     {
-        $request->user()->preferensi_notifikasi = $this->petaDariRequest($request);
-        $request->user()->save();
+        $tersimpan = NotificationPreference::where('user_id', auth()->id())
+            ->get()
+            ->keyBy('tipe_notifikasi');
 
-        return redirect()->route('pengaturan.notifikasi')->with('status', 'preferensi-disimpan');
-    }
-
-    /** Checkbox yang tidak dicentang tidak terkirim, jadi bangun peta dari daftar jenis. */
-    private function petaDariRequest(Request $request): array
-    {
-        $peta = [];
-        foreach (array_keys(PreferensiNotifikasi::JENIS) as $kunci) {
-            $peta[$kunci] = PreferensiNotifikasi::bersihkan($request->input("notifikasi.$kunci", []));
+        $preferensi = [];
+        foreach (self::TIPE as $kunci => [, , $emailDefault, $databaseDefault]) {
+            $baris = $tersimpan->get($kunci);
+            $preferensi[$kunci] = [
+                'email' => $baris ? $baris->email_aktif : $emailDefault,
+                'database' => $baris ? $baris->database_aktif : $databaseDefault,
+            ];
         }
 
-        return $peta;
+        return view('pengaturan.notifikasi', [
+            'tipe' => self::TIPE,
+            'preferensi' => $preferensi,
+        ]);
     }
 }

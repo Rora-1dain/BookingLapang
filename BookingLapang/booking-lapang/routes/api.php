@@ -13,7 +13,6 @@ use App\Http\Controllers\Api\ChatApiController;
 use App\Http\Controllers\Api\LapanganApiController;
 use App\Http\Controllers\Api\PemilikLapanganApiController;
 use App\Http\Controllers\Api\PemilikPayoutApiController;
-use App\Http\Controllers\Api\PengaturanNotifikasiApiController;
 use App\Http\Controllers\Api\PoinApiController;
 use App\Http\Controllers\Api\ReferralApiController;
 use App\Http\Controllers\Api\UlasanApiController;
@@ -93,8 +92,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Waitlist
     Route::post('/waitlist/daftar', [WaitlistApiController::class, 'daftar']);
 
-    Route::get('/pengaturan/notifikasi', [PengaturanNotifikasiApiController::class, 'show']);
-    Route::put('/pengaturan/notifikasi', [PengaturanNotifikasiApiController::class, 'update']);
 
     Route::post('/broadcasting/auth', [\Illuminate\Broadcasting\BroadcastController::class, 'authenticate']);
 

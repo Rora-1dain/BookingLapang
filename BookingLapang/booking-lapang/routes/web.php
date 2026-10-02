@@ -23,6 +23,7 @@ use App\Http\Controllers\PemilikBookingController;
 use App\Http\Controllers\PemilikLapanganController;
 use App\Http\Controllers\PemilikPayoutController;
 use App\Http\Controllers\PemilikVerifikasiController;
+use App\Http\Controllers\PengaturanNotifikasiController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecurringBookingController;
 use App\Http\Controllers\ReferralController;
@@ -55,6 +56,10 @@ Route::middleware('auth')->group(function () {
         ->name('notifikasi.preferensi.update');
     Route::get('/notifikasi/preferensi', [NotificationPreferenceController::class, 'show'])
         ->name('notifikasi.preferensi.show');
+
+     // Halaman pengaturan notifikasi (form-nya submit ke rute update di atas)
+    Route::get('/pengaturan/notifikasi', [PengaturanNotifikasiController::class, 'edit'])
+        ->name('pengaturan.notifikasi');
 });
 
 require __DIR__.'/auth.php';
