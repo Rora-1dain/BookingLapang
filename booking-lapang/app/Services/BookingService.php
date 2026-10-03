@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\Lapangan;
+use App\Models\User;
 use App\Notifications\BookingDikonfirmasi;
 use Carbon\Carbon;
 use Exception;
@@ -77,7 +78,7 @@ class BookingService
      * Membuat booking baru setelah memvalidasi jadwal operasional, hari libur,
      * status lapangan, dan ketersediaan jadwal.
      */
-    public function buatBooking(array $data, ?VoucherService $voucherService = null): Booking
+    public function buatBooking(array $data, ?VoucherService $voucherService = null, ?SubscriptionService $subscriptionService = null): Booking
     {
         $lapangan = Lapangan::findOrFail($data['lapangan_id']);
 
@@ -116,13 +117,25 @@ class BookingService
             $voucherId = $voucher->id;
         }
 
+        $hargaSetelahVoucher = $totalHarga - $totalDiskon;
+
+        // Terapkan benefit membership (gratis pakai kuota, atau diskon persen)
+        // di atas harga yang sudah dipotong voucher.
+        $subscriptionService ??= app(SubscriptionService::class);
+        $benefit = $subscriptionService->terapkanBenefit(
+            User::findOrFail($data['user_id']),
+            $hargaSetelahVoucher
+        );
+
+        $totalHargaFinal = $benefit['total_harga'];
+
         return Booking::create([
             'user_id' => $data['user_id'],
             'lapangan_id' => $lapangan->id,
             'tanggal_booking' => $data['tanggal_booking'],
             'jam_mulai' => $data['jam_mulai'],
             'jam_selesai' => $data['jam_selesai'],
-            'total_harga' => $totalHarga - $totalDiskon,
+            'total_harga' => $totalHargaFinal,
             'total_diskon' => $totalDiskon,
             'voucher_id' => $voucherId,
             'status' => 'pending',
