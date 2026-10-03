@@ -12,9 +12,9 @@ const TABS = [
   { key: 'ulasan', label: 'Ulasan Dilaporkan' },
 ]
 
-export default function AdminPanel({ onClose }) {
+export default function AdminPanel({ onClose, initialTab = 'approval' }) {
   useLockBodyScroll()
-  const [tab, setTab] = useState('approval')
+  const [tab, setTab] = useState(initialTab)
 
   return (
     <div className="fixed inset-0 z-[100] bg-ink/60 flex justify-center px-4 py-8 overflow-y-auto overscroll-contain">

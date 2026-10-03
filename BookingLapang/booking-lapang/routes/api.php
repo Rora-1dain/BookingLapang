@@ -20,6 +20,9 @@ use App\Http\Controllers\Api\VerifikasiApiController;
 use App\Http\Controllers\Api\VoucherApiController;
 use App\Http\Controllers\Api\WaitlistApiController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AdminDashboardApiController;
+use App\Http\Controllers\Api\MembershipApiController;
+use App\Http\Controllers\Api\PemilikDashboardApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +49,9 @@ Route::get('/lapangan/{lapangan}', [LapanganApiController::class, 'show']);
 |--------------------------------------------------------------------------
 */
 Route::get('/referral/leaderboard', [ReferralApiController::class, 'leaderboard']);
+
+
+Route::get('/membership/paket', [MembershipApiController::class, 'paket']);
 
 /*
 |--------------------------------------------------------------------------
@@ -106,14 +112,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/lapangan', [PemilikLapanganApiController::class, 'index']);
         Route::post('/lapangan', [PemilikLapanganApiController::class, 'store']);
         Route::put('/lapangan/{lapangan}', [PemilikLapanganApiController::class, 'update']);
-        Route::get('/dashboard', [PemilikLapanganApiController::class, 'dashboard']);
+        Route::get('/dashboard', [PemilikDashboardApiController::class, 'index']);
         Route::get('/payout', [PemilikPayoutApiController::class, 'index']);
         Route::post('/verifikasi', [VerifikasiApiController::class, 'ajukan']);
     });
 
+    Route::get('/membership', [MembershipApiController::class, 'saya']);
+    Route::post('/membership/berlangganan', [MembershipApiController::class, 'berlangganan']);
+
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+    Route::get('/dashboard', [AdminDashboardApiController::class, 'index']);
+
     Route::get('laporan/ledger/export', [\App\Http\Controllers\Api\AdminLedgerExportController::class, 'export']);
     // Booking & Refund
     Route::get('/booking', [AdminBookingApiController::class, 'index']);

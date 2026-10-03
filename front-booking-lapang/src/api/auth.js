@@ -4,10 +4,11 @@ export function login(email, password) {
   return apiFetch('/login', { method: 'POST', body: { email, password } })
 }
 
-export function register({ name, email, password, password_confirmation, kode_referral }) {
+// role: 'user' (pemesan lapangan) | 'pemilik_lapangan'
+export function register({ name, email, password, password_confirmation, kode_referral, role }) {
   return apiFetch('/register', {
     method: 'POST',
-    body: { name, email, password, password_confirmation, kode_referral },
+    body: { name, email, password, password_confirmation, kode_referral, role },
   })
 }
 

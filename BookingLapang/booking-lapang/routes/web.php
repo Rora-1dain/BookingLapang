@@ -36,7 +36,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [FrontendController::class, 'home'])->name('home');
 Route::get('/dashboard', function () {
-    return redirect()->route('home');
+    return match (auth()->user()->role) {
+        'admin' => redirect()->route('admin.dashboard'),
+        'pemilik_lapangan' => redirect()->route('pemilik.dashboard'),
+        default => redirect()->route('home'),
+    };
 })->middleware(['auth'])->name('dashboard');
 
 Route::get('/lapangan', [LapanganController::class, 'index'])->name('lapangan.publik.index');

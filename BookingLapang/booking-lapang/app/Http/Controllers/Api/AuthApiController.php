@@ -51,6 +51,7 @@ class AuthApiController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             'kode_referral' => 'nullable|string|exists:users,kode_referral',
+            'role' => 'nullable|in:user,pemilik_lapangan',
         ]);
 
         $user = $referralService->daftarDenganReferral(
@@ -62,6 +63,11 @@ class AuthApiController extends Controller
             $validated['kode_referral'] ?? null,
             $request->ip()
         );
+
+        $user->refresh();
+        if (($validated['role'] ?? 'user') === 'pemilik_lapangan') {
+            $user->forceFill(['role' => 'pemilik_lapangan'])->save();
+        }
 
         $token = $user->createToken('api-token')->plainTextToken;
 

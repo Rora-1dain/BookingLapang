@@ -116,6 +116,12 @@ class BookingService
             $voucherId = $voucher->id;
         }
 
+        $membership = app(MembershipService::class)->diskonBooking(
+                (int) $data['user_id'],
+                max($totalHarga - $totalDiskon, 0)
+            );
+                $totalDiskon += $membership['nominal'];
+
         return Booking::create([
             'user_id' => $data['user_id'],
             'lapangan_id' => $lapangan->id,

@@ -4,15 +4,15 @@ import { useVenues } from '../context/VenueContext'
 import AuthModal from './AuthModal'
 import HostVenueModal from './HostVenueModal'
 import MyBookingsModal from './MyBookingsModal'
-import AdminPanel from './AdminPanel'
 import IconChat from './IconChat'
 import useChatUnread from '../lib/useChatUnread'
+import useHash from '../lib/useHash'
 
 const NAV_LINKS = [
   { label: 'Futsal', jenis: 'futsal' },
   { label: 'Badminton', jenis: 'badminton' },
   { label: 'Basketball', jenis: 'basket' },
-  { label: 'Community Matches', href: '#community' },
+  { label: 'Membership', href: '#/membership' },
 ]
 
 export default function Navbar() {
@@ -21,8 +21,8 @@ export default function Navbar() {
   const [showAuth, setShowAuth] = useState(false)
   const [showHost, setShowHost] = useState(false)
   const [showBookings, setShowBookings] = useState(false)
-  const [showAdmin, setShowAdmin] = useState(false)
   const belumDibaca = useChatUnread(!!user)
+  const hash = useHash()
 
   function initials(name) {
     if (!name) return '?'
@@ -50,11 +50,16 @@ export default function Navbar() {
             {NAV_LINKS.map((link) => {
               const active = link.jenis && filters.jenis === link.jenis
               if (link.href) {
+                const aktifHalaman = hash === link.href
                 return (
                   <a
                     key={link.label}
                     href={link.href}
-                    className="text-muted hover:text-ink transition-colors font-bold text-sm"
+                    className={
+                      aktifHalaman
+                        ? 'border-b-2 border-match-blue text-match-blue pb-1 font-bold text-sm'
+                        : 'text-muted hover:text-ink transition-colors font-bold text-sm'
+                    }
                   >
                     {link.label.toUpperCase()}
                   </a>
@@ -65,8 +70,8 @@ export default function Navbar() {
                   key={link.label}
                   onClick={() => {
                     setFilters((f) => ({ ...f, jenis: active ? '' : link.jenis }))
-                    // dari halaman chat: balik ke beranda dulu, baru scroll
-                    const dariChat = window.location.hash.startsWith('#/chat')
+                    // dari halaman lain (chat, membership, dashboard): balik ke beranda dulu, baru scroll
+                    const dariChat = window.location.hash.startsWith('#/')
                     if (dariChat) window.location.hash = ''
                     setTimeout(
                       () => document.getElementById('lapangan')?.scrollIntoView({ behavior: 'smooth' }),
@@ -87,18 +92,44 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowHost(true)}
-            className="hidden sm:inline-flex items-center gap-1.5 bg-ink text-cream font-bold text-[13px] px-3.5 py-2 rounded-lg hover:bg-match-blue transition-colors"
-          >
-            HOST VENUE
-          </button>
-          {user?.role === 'admin' && (
+          {user?.role === 'admin' ? (
+            hash === '#/admin' ? (
+              <a
+                href="#"
+                className="hidden sm:inline-flex items-center bg-ink text-cream font-bold text-[13px] px-3.5 py-2 rounded-lg hover:bg-match-blue transition-colors"
+              >
+                BERANDA USER
+              </a>
+            ) : (
+              <a
+                href="#/admin"
+                className="hidden sm:inline-flex items-center bg-whistle-red text-cream font-bold text-[13px] px-3.5 py-2 rounded-lg hover:opacity-90 transition-opacity"
+              >
+                DASHBOARD ADMIN
+              </a>
+            )
+          ) : user?.role === 'pemilik_lapangan' ? (
+            hash === '#/pemilik' ? (
+              <a
+                href="#"
+                className="hidden sm:inline-flex items-center bg-ink text-cream font-bold text-[13px] px-3.5 py-2 rounded-lg hover:bg-match-blue transition-colors"
+              >
+                BERANDA
+              </a>
+            ) : (
+              <a
+                href="#/pemilik"
+                className="hidden sm:inline-flex items-center bg-ink text-cream font-bold text-[13px] px-3.5 py-2 rounded-lg hover:bg-match-blue transition-colors"
+              >
+                DASHBOARD PEMILIK
+              </a>
+            )
+          ) : (
             <button
-              onClick={() => setShowAdmin(true)}
-              className="hidden sm:inline-flex bg-whistle-red text-cream font-bold text-[13px] px-3.5 py-2 rounded-lg hover:opacity-90 transition-opacity"
+              onClick={() => setShowHost(true)}
+              className="hidden sm:inline-flex items-center gap-1.5 bg-ink text-cream font-bold text-[13px] px-3.5 py-2 rounded-lg hover:bg-match-blue transition-colors"
             >
-              ADMIN
+              HOST VENUE
             </button>
           )}
           {user && (
@@ -138,7 +169,6 @@ export default function Navbar() {
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
       {showHost && <HostVenueModal onClose={() => setShowHost(false)} />}
       {showBookings && <MyBookingsModal onClose={() => setShowBookings(false)} />}
-      {showAdmin && <AdminPanel onClose={() => setShowAdmin(false)} />}
     </header>
   )
 }
