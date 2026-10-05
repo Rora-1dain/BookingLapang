@@ -46,3 +46,16 @@ export function formatPersen(n) {
   const v = Number(n) || 0
   return Number.isInteger(v) ? String(v) : v.toFixed(1).replace('.', ',')
 }
+
+// Nomor WA Indonesia -> link wa.me. Menerima '08xx', '+628xx', '628xx',
+// spasi/tanda hubung. Mengembalikan null kalau nomor kosong/tidak valid
+// supaya pemanggil bisa menyembunyikan tombolnya.
+export function waLink(no, pesan) {
+  if (!no) return null
+  let digit = String(no).replace(/[^\d]/g, '')
+  if (!digit) return null
+  if (digit.startsWith('0')) digit = `62${digit.slice(1)}`
+  else if (!digit.startsWith('62')) digit = `62${digit}`
+  const teks = pesan ? `?text=${encodeURIComponent(pesan)}` : ''
+  return `https://wa.me/${digit}${teks}`
+}

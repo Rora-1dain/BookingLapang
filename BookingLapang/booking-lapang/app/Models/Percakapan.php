@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Percakapan extends Model
 {
-    protected $fillable = ['lapangan_id', 'user_id', 'pemilik_id'];
+    protected $fillable = ['lapangan_id', 'tipe', 'user_id', 'pemilik_id'];
 
     public function pesans()
     {

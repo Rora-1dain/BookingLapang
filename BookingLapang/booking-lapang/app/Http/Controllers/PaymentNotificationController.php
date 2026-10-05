@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\MembershipTransaction;
 use App\Models\PaymentLog;
 use App\Services\CommissionService;
 use App\Services\LoyaltyService;
+use App\Services\PaymentService;
 use App\Services\ReferralService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -58,6 +60,21 @@ class PaymentNotificationController extends Controller
                 'payload' => $payload,
                 'diterima_pada' => now(),
             ]);
+
+            // ---- Membership: order_id berawalan MEMBERSHIP- ----
+            if (str_starts_with($payload['order_id'], 'MEMBERSHIP-')) {
+                $trx = MembershipTransaction::where('order_id', $payload['order_id'])->first();
+
+                if (! $trx) {
+                    Log::error('MembershipTransaction tidak ditemukan', ['order_id' => $payload['order_id']]);
+
+                    return response()->json(['message' => 'Transaksi membership tidak ditemukan.'], 404);
+                }
+
+                app(PaymentService::class)->sinkronStatusMembership($trx, $payload['transaction_status']);
+
+                return response()->json(['message' => 'Notifikasi membership berhasil diproses.']);
+            }
 
             $bookings = Booking::where('payment_reference', $payload['order_id'])->get();
 

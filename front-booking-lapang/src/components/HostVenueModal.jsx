@@ -21,7 +21,14 @@ export default function HostVenueModal({ onClose }) {
   // 'form' -> isi data lapangan | 'verifikasi' -> upload dokumen KYC | 'done' -> sukses
   const [step, setStep] = useState('form')
   const [myLapangan, setMyLapangan] = useState([])
-  const [form, setForm] = useState({ nama_lapangan: '', jenis: '', harga_per_jam: '', kota: '' })
+  const [form, setForm] = useState({
+    nama_lapangan: '',
+    jenis: '',
+    harga_per_jam: '',
+    alamat: '',
+    no_wa: '',
+    kota: '',
+  })
   const [dokumen, setDokumen] = useState(null)
   const [error, setError] = useState(null)
   const [info, setInfo] = useState(null)
@@ -141,7 +148,27 @@ export default function HostVenueModal({ onClose }) {
               onChange={update('harga_per_jam')}
               required
             />
-            <Field label="KOTA (OPSIONAL)" value={form.kota} onChange={update('kota')} />
+            <Field
+              label="ALAMAT LAPANGAN (WAJIB)"
+              value={form.alamat}
+              onChange={update('alamat')}
+              placeholder="mis. Jl. Merdeka No. 10, Bandung"
+              required
+            />
+            <Field
+              label="NOMOR WHATSAPP (WAJIB)"
+              type="tel"
+              value={form.no_wa}
+              onChange={update('no_wa')}
+              placeholder="mis. 081234567890"
+              required
+            />
+            <Field
+              label="KOTA (OPSIONAL — untuk filter)"
+              value={form.kota}
+              onChange={update('kota')}
+              placeholder="mis. Bandung"
+            />
 
             {error && <p className="text-[12px] font-bold text-whistle-red">{error}</p>}
 

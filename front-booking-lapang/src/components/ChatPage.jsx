@@ -407,7 +407,8 @@ export default function ChatPage({ activeId }) {
                       <span className="text-[11px] text-muted shrink-0">{waktuSingkat(p.waktu)}</span>
                     </div>
                     <p className="text-[12px] text-muted truncate">
-                      {p.lawan_bicara} · {p.peran_lawan === 'pemilik' ? 'Pemilik' : 'Pemesan'}
+                      {p.lawan_bicara} ·{' '}
+                      {p.peran_lawan === 'admin' ? 'Admin' : p.peran_lawan === 'pemilik' ? 'Pemilik' : 'Pemesan'}
                     </p>
                     <div className="flex items-center justify-between gap-2 mt-1">
                       <p className="text-[12px] text-ink/70 truncate">
@@ -468,7 +469,8 @@ export default function ChatPage({ activeId }) {
                     )}
                   </div>
                   <p className="text-[12px] text-muted truncate">
-                    {info?.peran_lawan === 'pemilik' ? 'Pemilik' : 'Pemesan'}: <strong>{info?.lawan_bicara}</strong>
+                    {info?.peran_lawan === 'admin' ? 'Admin' : info?.peran_lawan === 'pemilik' ? 'Pemilik' : 'Pemesan'}:{' '}
+                    <strong>{info?.lawan_bicara}</strong>
                     {' · '}Chat #{info?.id}
                     {labelRt && (
                       <span className={rt === 'connected' ? 'text-court-green font-bold' : 'text-muted'}>

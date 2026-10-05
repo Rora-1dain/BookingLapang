@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { berlangganan, fetchMembershipSaya, fetchPaket } from '../api/membership'
+import { fetchMembershipSaya, fetchPaket } from '../api/membership'
+import { mulaiChatAdmin } from '../api/chat'
+import { bayarMembership } from '../lib/payMembership'
+import { dengarUser } from '../lib/realtime'
 import { formatPersen, formatRupiah, formatTanggal } from '../lib/format'
 import useLockBodyScroll from '../lib/useLockBodyScroll'
 import AuthModal from './AuthModal'
@@ -21,6 +24,8 @@ export default function MembershipPage() {
   const [showAuth, setShowAuth] = useState(false)
   const [sukses, setSukses] = useState(null)
   const [belanja, setBelanja] = useState(500000)
+  const [chatBusy, setChatBusy] = useState(false)
+  const [chatError, setChatError] = useState(null)
 
   const muat = useCallback(async () => {
     try {
@@ -45,6 +50,20 @@ export default function MembershipPage() {
     muat()
   }, [muat])
 
+  // Realtime: begitu webhook Midtrans mengaktifkan membership, segarkan status
+  // tanpa perlu user reload (channel pribadi user.{id}).
+  useEffect(() => {
+    if (!user?.id) return undefined
+    return dengarUser(user.id, {
+      onMembershipAktif: (data) => {
+        muat()
+        if (data?.paket?.nama) {
+          setSukses(`Pembayaran berhasil! Membership ${data.paket.nama} sudah aktif.`)
+        }
+      },
+    })
+  }, [user?.id, muat])
+
   function pilih(paket) {
     setSukses(null)
     if (!user) {
@@ -52,6 +71,22 @@ export default function MembershipPage() {
       return
     }
     setPilihan(paket)
+  }
+
+  async function hubungiAdmin() {
+    if (!user) {
+      setShowAuth(true)
+      return
+    }
+    setChatBusy(true)
+    setChatError(null)
+    try {
+      const percakapan = await mulaiChatAdmin()
+      window.location.hash = `#/chat/${percakapan.id}`
+    } catch (err) {
+      setChatError(err.message)
+      setChatBusy(false)
+    }
   }
 
   function labelTombol(paket) {
@@ -203,6 +238,21 @@ export default function MembershipPage() {
                 </div>
               ))}
             </dl>
+
+            <div className="mt-5 pt-4 border-t border-black/5">
+              <h3 className="font-display text-lg uppercase text-ink">Ada pertanyaan lain?</h3>
+              <p className="text-[13px] text-muted mt-1">
+                Tim admin siap membantu soal membership, pembayaran, atau diskon booking. Mulai chat langsung dari sini.
+              </p>
+              {chatError && <p className="text-[12px] font-bold text-whistle-red mt-2">{chatError}</p>}
+              <button
+                onClick={hubungiAdmin}
+                disabled={chatBusy}
+                className="mt-3 w-full bg-court-green hover:bg-court-green-dark disabled:opacity-60 text-cream font-bold text-sm uppercase py-2.5 rounded-lg shadow-tactile-sm transition-colors"
+              >
+                {chatBusy ? 'Membuka chat...' : 'Hubungi Admin'}
+              </button>
+            </div>
           </Panel>
         </div>
       )}
@@ -229,6 +279,7 @@ export default function MembershipPage() {
 function KonfirmasiModal({ paket, saya, onClose, onSelesai }) {
   useLockBodyScroll()
   const [mengirim, setMengirim] = useState(false)
+  const [status, setStatus] = useState(null)
   const [error, setError] = useState(null)
   const perpanjang = saya?.paket.id === paket.id
   const ganti = saya && !perpanjang
@@ -236,12 +287,22 @@ function KonfirmasiModal({ paket, saya, onClose, onSelesai }) {
   async function konfirmasi() {
     setMengirim(true)
     setError(null)
+    setStatus('Menyiapkan pembayaran...')
     try {
-      const res = await berlangganan(paket.id)
-      onSelesai(res.data)
+      const hasil = await bayarMembership(paket.id, { onStatus: setStatus })
+      if (hasil?.aktif && hasil?.data) {
+        onSelesai(hasil.data)
+      } else {
+        setStatus(null)
+        setError(
+          `Status pembayaran: ${hasil?.transaction_status ?? 'belum selesai'}. Kalau sudah dibayar, tunggu beberapa saat lalu cek lagi di halaman ini.`
+        )
+        setMengirim(false)
+      }
     } catch (err) {
       setError(err.message)
       setMengirim(false)
+      setStatus(null)
     }
   }
 
@@ -278,9 +339,10 @@ function KonfirmasiModal({ paket, saya, onClose, onSelesai }) {
         )}
 
         <p className="text-[12px] text-muted mt-3">
-          Mode uji: pembayaran belum tersambung, jadi tidak ada tagihan yang dibuat.
+          Pembayaran diproses lewat Midtrans. Membership aktif otomatis setelah pembayaran berhasil.
         </p>
 
+        {status && !error && <p className="text-[12px] font-bold text-match-blue mt-3">{status}</p>}
         {error && <p className="text-[12px] font-bold text-whistle-red mt-3">{error}</p>}
 
         <button
@@ -288,7 +350,7 @@ function KonfirmasiModal({ paket, saya, onClose, onSelesai }) {
           disabled={mengirim}
           className="mt-5 w-full bg-match-blue hover:bg-match-blue-dark disabled:opacity-60 text-cream font-bold text-sm uppercase py-2.5 rounded-lg shadow-tactile-sm transition-colors"
         >
-          {mengirim ? 'Memproses...' : 'Konfirmasi'}
+          {mengirim ? 'Memproses...' : `Bayar ${formatRupiah(paket.harga_bulanan)}`}
         </button>
       </div>
     </div>

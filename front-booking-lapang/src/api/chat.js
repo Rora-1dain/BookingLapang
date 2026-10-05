@@ -17,6 +17,17 @@ export async function mulaiChat(lapanganId) {
   return json.data
 }
 
+// POST /api/percakapan { tujuan: 'admin' } — mulai/lanjutkan chat dengan admin
+// platform (dipakai tombol "Hubungi Admin" di halaman membership).
+export async function mulaiChatAdmin() {
+  const json = await apiFetch('/percakapan', {
+    method: 'POST',
+    auth: true,
+    body: { tujuan: 'admin' },
+  })
+  return json.data
+}
+
 // GET /api/percakapan/{id} — detail + seluruh pesan
 export async function fetchDetailPercakapan(id) {
   const json = await apiFetch(`/percakapan/${id}`, { auth: true })

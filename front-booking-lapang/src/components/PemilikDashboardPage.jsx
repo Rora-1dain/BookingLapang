@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { fetchDashboardPemilik } from '../api/dashboard'
+import { fetchPayoutPemilik } from '../api/pemilik'
 import { formatRupiah, formatTanggal, namaJenis } from '../lib/format'
 import HostVenueModal from './HostVenueModal'
+import EditLapanganModal from './EditLapanganModal'
 import { BarChart, BookingStatusPill, Gate, PageHeader, PageShell, Panel, Pill, Skeleton, Stat } from './ui'
 
 const APPROVAL = {
@@ -18,25 +20,41 @@ export default function PemilikDashboardPage() {
   const [forbidden, setForbidden] = useState(false)
   const [loading, setLoading] = useState(true)
   const [showHost, setShowHost] = useState(false)
+  const [editingLapangan, setEditingLapangan] = useState(null)
 
-  useEffect(() => {
-    if (!user) return undefined
-    let batal = false
+  const [payoutList, setPayoutList] = useState([])
+  const [payoutLoading, setPayoutLoading] = useState(false)
+  const [payoutError, setPayoutError] = useState(null)
+
+  function loadDashboard() {
+    if (!user) return
     setLoading(true)
     setError(null)
     fetchDashboardPemilik()
-      .then((res) => !batal && setData(res))
+      .then((res) => setData(res))
       .catch((err) => {
-        if (batal) return
         if (err.status === 403) setForbidden(true)
         else setError(err.message)
       })
-      .finally(() => !batal && setLoading(false))
-    return () => {
-      batal = true
-    }
-    // muat ulang setelah modal ajukan lapangan ditutup
-  }, [user, showHost])
+      .finally(() => setLoading(false))
+  }
+
+  function loadPayout() {
+    if (!user) return
+    setPayoutLoading(true)
+    setPayoutError(null)
+    fetchPayoutPemilik()
+      .then((res) => {
+        setPayoutList(res.data ?? res ?? [])
+      })
+      .catch((err) => setPayoutError(err.message))
+      .finally(() => setPayoutLoading(false))
+  }
+
+  useEffect(() => {
+    loadDashboard()
+    loadPayout()
+  }, [user, showHost]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (checking) return <PageShell><Skeleton className="h-40" /></PageShell>
   if (!user) return <Gate title="Dashboard Pemilik" showLogin>Masuk dengan akun pemilik lapangan untuk melihat halaman ini.</Gate>
@@ -166,29 +184,84 @@ export default function PemilikDashboardPage() {
                 {data.lapangan.map((l) => {
                   const a = APPROVAL[l.status_approval] || APPROVAL.pending
                   return (
-                    <div key={l.id} className="border border-match-blue/15 rounded-lg p-4">
-                      <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="bg-match-blue text-cream text-[11px] font-bold px-2 py-0.5 rounded uppercase">
-                          {namaJenis(l.jenis)}
-                        </span>
-                        <Pill tone={a.tone}>{a.label}</Pill>
+                    <div key={l.id} className="border border-match-blue/15 rounded-lg p-4 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <span className="bg-match-blue text-cream text-[11px] font-bold px-2 py-0.5 rounded uppercase">
+                            {namaJenis(l.jenis)}
+                          </span>
+                          <Pill tone={a.tone}>{a.label}</Pill>
+                        </div>
+                        <h3 className="font-display text-xl uppercase text-ink leading-tight">{l.nama_lapangan}</h3>
+                        <p className="text-[13px] text-muted">{l.alamat || l.kota || 'Alamat belum diisi'}</p>
+                        {l.no_wa && <p className="text-[11px] text-muted mt-0.5">WA: {l.no_wa}</p>}
+                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-black/5 text-sm">
+                          <span className="font-bold text-ink tabular-nums">{formatRupiah(l.harga_per_jam)} / jam</span>
+                          <span className="text-muted font-bold">
+                            {l.rating > 0 ? `★ ${String(l.rating).replace('.', ',')}` : 'Belum ada rating'}
+                          </span>
+                        </div>
+                        {l.status_approval === 'disetujui' && (
+                          <p className="text-[12px] mt-1.5 font-bold text-muted">
+                            {l.status === 'aktif' ? 'Tampil di pencarian' : 'Nonaktif'}
+                          </p>
+                        )}
                       </div>
-                      <h3 className="font-display text-xl uppercase text-ink leading-tight">{l.nama_lapangan}</h3>
-                      <p className="text-[13px] text-muted">{l.kota || 'Kota belum diisi'}</p>
-                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-black/5 text-sm">
-                        <span className="font-bold text-ink tabular-nums">{formatRupiah(l.harga_per_jam)} / jam</span>
-                        <span className="text-muted font-bold">
-                          {l.rating > 0 ? `★ ${String(l.rating).replace('.', ',')}` : 'Belum ada rating'}
-                        </span>
+                      <div className="mt-3 pt-3 border-t border-black/5 flex justify-end">
+                        <button
+                          onClick={() => setEditingLapangan(l)}
+                          className="bg-cream-dim hover:bg-match-blue hover:text-cream text-ink border border-black/15 text-xs font-bold px-3 py-1.5 rounded uppercase transition-colors"
+                        >
+                          ✎ Edit
+                        </button>
                       </div>
-                      {l.status_approval === 'disetujui' && (
-                        <p className="text-[12px] mt-1.5 font-bold text-muted">
-                          {l.status === 'aktif' ? 'Tampil di pencarian' : 'Nonaktif'}
-                        </p>
-                      )}
                     </div>
                   )
                 })}
+              </div>
+            )}
+          </Panel>
+
+          <Panel title="Riwayat Payout" className="mt-6">
+            {payoutError && <p className="text-xs font-bold text-whistle-red mb-2">{payoutError}</p>}
+            {payoutLoading && payoutList.length === 0 ? (
+              <p className="text-sm text-muted py-4 text-center">Memuat riwayat payout...</p>
+            ) : payoutList.length === 0 ? (
+              <p className="text-sm text-muted py-4 text-center">Belum ada riwayat payout.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-[11px] font-bold tracking-wider text-muted uppercase">
+                      <th className="pb-2 pr-3">Periode</th>
+                      <th className="pb-2 pr-3 text-right">Nominal</th>
+                      <th className="pb-2 pr-3">Status</th>
+                      <th className="pb-2">Tanggal Dicairkan</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-black/5">
+                    {payoutList.map((p) => (
+                      <tr key={p.id}>
+                        <td className="py-2.5 pr-3 whitespace-nowrap">
+                          <div className="font-bold text-ink">
+                            {p.periode_mulai} – {p.periode_selesai}
+                          </div>
+                        </td>
+                        <td className="py-2.5 pr-3 text-right font-bold tabular-nums whitespace-nowrap">
+                          {formatRupiah(p.total_nominal)}
+                        </td>
+                        <td className="py-2.5 pr-3">
+                          <Pill tone={p.status === 'selesai' ? 'green' : 'neutral'}>
+                            {p.status}
+                          </Pill>
+                        </td>
+                        <td className="py-2.5 text-xs text-muted">
+                          {p.dicairkan_pada ? formatTanggal(p.dicairkan_pada.slice(0, 10)) : '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </Panel>
@@ -236,6 +309,15 @@ export default function PemilikDashboardPage() {
       )}
 
       {showHost && <HostVenueModal onClose={() => setShowHost(false)} />}
+      {editingLapangan && (
+        <EditLapanganModal
+          lapangan={editingLapangan}
+          onClose={() => setEditingLapangan(null)}
+          onUpdated={() => {
+            loadDashboard()
+          }}
+        />
+      )}
     </PageShell>
   )
 }

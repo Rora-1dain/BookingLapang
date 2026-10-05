@@ -27,6 +27,17 @@ class ChatApiController extends Controller
 
     public function store(Request $request, ChatService $chatService)
     {
+        // Percakapan dengan admin (tombol "Hubungi Admin" di halaman membership).
+        if ($request->input('tujuan') === 'admin') {
+            try {
+                $percakapan = $chatService->mulaiAtauLanjutkanAdmin($request->user()->id);
+            } catch (\Exception $e) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
+
+            return response()->json(['data' => $percakapan], 201);
+        }
+
         $validated = $request->validate([
             'lapangan_id' => 'required|exists:lapangans,id',
         ]);
@@ -80,14 +91,17 @@ class ChatApiController extends Controller
     protected function ringkasan(Percakapan $p, int $userId): array
     {
         $lawan = $p->user_id === $userId ? $p->pemilik : $p->user;
+        $admin = $p->tipe === 'admin';
 
         return [
             'id' => $p->id,
+            'tipe' => $p->tipe,
             'lapangan_id' => $p->lapangan_id,
-            'lapangan' => $p->lapangan?->nama_lapangan,
+            // Percakapan admin tidak punya lapangan — pakai label khusus sebagai judul.
+            'lapangan' => $admin ? 'Admin Booking Lapang' : $p->lapangan?->nama_lapangan,
             'jenis' => $p->lapangan?->jenis,
             'lawan_bicara' => $lawan?->name,
-            'peran_lawan' => $p->user_id === $userId ? 'pemilik' : 'pemesan',
+            'peran_lawan' => $admin ? 'admin' : ($p->user_id === $userId ? 'pemilik' : 'pemesan'),
             'pesan_terakhir' => $p->pesanTerakhir?->isi,
             'waktu' => ($p->pesanTerakhir?->created_at ?? $p->updated_at)?->toIso8601String(),
             'belum_dibaca' => $p->jumlahBelumDibaca($userId),

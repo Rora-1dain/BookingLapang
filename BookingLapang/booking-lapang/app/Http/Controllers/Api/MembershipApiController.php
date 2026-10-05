@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\LanggananUser;
 use App\Models\MembershipPaket;
+use App\Models\MembershipTransaction;
 use App\Services\MembershipService;
+use App\Services\PaymentService;
+use Exception;
 use Illuminate\Http\Request;
 
 class MembershipApiController extends Controller
@@ -27,20 +30,56 @@ class MembershipApiController extends Controller
         return response()->json(['data' => $langganan ? $this->formatLangganan($langganan) : null]);
     }
 
-    // POST /api/membership/berlangganan { membership_paket_id }
-    public function berlangganan(Request $request, MembershipService $service)
+    /**
+     * POST /api/membership/berlangganan { membership_paket_id }
+     * Membuat transaksi Midtrans & mengembalikan snap_token. Membership BARU
+     * aktif setelah pembayaran settlement (webhook / cek-status).
+     */
+    public function berlangganan(Request $request, PaymentService $paymentService)
     {
         $validated = $request->validate([
             'membership_paket_id' => 'required|integer|exists:membership_pakets,id',
         ]);
 
         $paket = MembershipPaket::findOrFail($validated['membership_paket_id']);
-        $langganan = $service->berlangganan($request->user(), $paket);
+
+        try {
+            $hasil = $paymentService->buatTransaksiMembership($request->user(), $paket);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         return response()->json([
-            'message' => "Membership {$paket->nama} aktif sampai {$langganan->tanggal_berakhir->toDateString()}.",
-            'data' => $this->formatLangganan($langganan),
+            'snap_token' => $hasil['snap_token'],
+            'client_key' => config('services.midtrans.client_key'),
+            'is_production' => (bool) config('services.midtrans.is_production'),
+            'order_id' => $hasil['trx']->order_id,
+            'transaction_id' => $hasil['trx']->id,
         ], 201);
+    }
+
+    /**
+     * POST /api/membership/cek-status/{trx}
+     * Cek status langsung ke Midtrans sebagai fallback webhook, lalu sinkronkan.
+     */
+    public function cekStatus(Request $request, MembershipTransaction $trx, PaymentService $paymentService)
+    {
+        if ($trx->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Tidak berhak melihat transaksi ini.'], 403);
+        }
+
+        try {
+            $hasil = $paymentService->cekStatusTransaksiMembership($trx);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        $langganan = app(MembershipService::class)->langgananAktif($request->user()->id);
+
+        return response()->json([
+            ...$hasil,
+            'data' => $langganan ? $this->formatLangganan($langganan) : null,
+        ]);
     }
 
     private function formatPaket(MembershipPaket $p): array

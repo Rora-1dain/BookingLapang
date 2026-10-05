@@ -33,6 +33,8 @@ class PemilikLapanganApiController extends Controller
             'nama_lapangan' => 'required|string|max:255',
             'jenis' => 'required|string',
             'harga_per_jam' => 'required|numeric|min:0',
+            'alamat' => 'required|string|max:255',
+            'no_wa' => 'required|string|max:30',
             'kota' => 'nullable|string|max:255',
         ]);
 
@@ -57,6 +59,8 @@ class PemilikLapanganApiController extends Controller
             'nama_lapangan' => 'sometimes|required|string|max:255',
             'jenis' => 'sometimes|required|string',
             'harga_per_jam' => 'sometimes|required|numeric|min:0',
+            'alamat' => 'sometimes|required|string|max:255',
+            'no_wa' => 'sometimes|required|string|max:30',
             'kota' => 'nullable|string|max:255',
         ]);
 

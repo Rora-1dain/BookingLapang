@@ -31,6 +31,8 @@ class PemilikLapanganController extends Controller
             'nama_lapangan' => 'required|string|max:255',
             'jenis' => 'required|string',
             'harga_per_jam' => 'required|numeric|min:0',
+            'alamat' => 'required|string|max:255',
+            'no_wa' => 'required|string|max:30',
             'kota' => 'nullable|string|max:255',
         ]);
 
@@ -64,6 +66,8 @@ class PemilikLapanganController extends Controller
             'nama_lapangan' => 'required|string|max:255',
             'jenis' => 'required|string',
             'harga_per_jam' => 'required|numeric|min:0',
+            'alamat' => 'required|string|max:255',
+            'no_wa' => 'required|string|max:30',
             'kota' => 'nullable|string|max:255',
         ]);
 

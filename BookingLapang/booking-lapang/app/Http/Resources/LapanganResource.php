@@ -15,6 +15,8 @@ class LapanganResource extends JsonResource
             'harga_per_jam' => (float) $this->harga_per_jam,
             'status' => $this->status,
             'kota' => $this->kota,
+            'alamat' => $this->alamat,
+            'no_wa' => $this->no_wa,
             'rating' => $this->rataRataRating(),
             'foto_utama' => $this->fotoUtama()
                 ? asset('storage/'.$this->fotoUtama()->path_file)

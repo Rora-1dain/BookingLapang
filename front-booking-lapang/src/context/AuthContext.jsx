@@ -1,24 +1,43 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import * as authApi from '../api/auth'
-import { getToken, setToken } from '../api/client'
+import { getToken, getUser, setToken, setUser as simpanUser } from '../api/client'
 import { putus } from '../lib/realtime'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
+  // Hydrate langsung dari localStorage supaya saat hard refresh UI tidak
+  // "kosong" sekejap dan tidak sempat dianggap logout.
+  const [user, setUser] = useState(() => getUser())
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
     const token = getToken()
     if (!token) {
+      // Tidak ada token: pastikan sisa data user lama dibersihkan.
+      setUser(null)
+      simpanUser(null)
       setChecking(false)
       return
     }
     authApi
       .me()
-      .then(setUser)
-      .catch(() => setToken(null))
+      .then((u) => {
+        setUser(u)
+        simpanUser(u)
+      })
+      .catch((err) => {
+        // HANYA hapus token kalau server benar-benar menolak (401/403) —
+        // artinya token memang invalid. Kalau error jaringan/CORS (status 0),
+        // server 5xx, atau balasan non-JSON, JANGAN logout: pertahankan token
+        // & user yang sudah di-hydrate, supaya hard refresh tidak memaksa
+        // login ulang.
+        if (err?.status === 401 || err?.status === 403) {
+          setToken(null)
+          setUser(null)
+          simpanUser(null)
+        }
+      })
       .finally(() => setChecking(false))
   }, [])
 
@@ -26,6 +45,7 @@ export function AuthProvider({ children }) {
     const res = await authApi.login(email, password)
     setToken(res.token)
     setUser(res.user)
+    simpanUser(res.user)
     return res.user
   }, [])
 
@@ -33,6 +53,7 @@ export function AuthProvider({ children }) {
     const res = await authApi.register(payload)
     setToken(res.token)
     setUser(res.user)
+    simpanUser(res.user)
     return res.user
   }, [])
 
@@ -43,8 +64,9 @@ export function AuthProvider({ children }) {
       // token sudah invalid di server, tetap bersihkan sisi client
     }
     setToken(null)
-    putus() // tutup koneksi realtime milik akun sebelumnya
     setUser(null)
+    simpanUser(null)
+    putus() // tutup koneksi realtime milik akun sebelumnya
   }, [])
 
   return (

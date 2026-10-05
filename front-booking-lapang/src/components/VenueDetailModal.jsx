@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import useLockBodyScroll from '../lib/useLockBodyScroll'
 import { fetchLapanganDetail } from '../api/lapangan'
-import { formatRupiah, namaJenis } from '../lib/format'
+import { formatRupiah, namaJenis, waLink } from '../lib/format'
 import BookingPanel from './BookingPanel'
 
 export default function VenueDetailModal({ id, onClose }) {
@@ -48,14 +48,29 @@ export default function VenueDetailModal({ id, onClose }) {
               {namaJenis(lapangan.jenis).toUpperCase()}
             </span>
             <h3 className="font-display text-2xl uppercase text-ink mt-1">{lapangan.nama_lapangan}</h3>
-            <div className="flex items-center gap-3 text-sm text-muted mt-1">
-              {lapangan.kota && <span>{lapangan.kota}</span>}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted mt-1">
+              {(lapangan.alamat || lapangan.kota) && (
+                <span className="flex items-center gap-1">
+                  <span aria-hidden>📍</span>
+                  {lapangan.alamat || lapangan.kota}
+                </span>
+              )}
               {lapangan.rating != null && (
                 <span className="flex items-center gap-1 font-bold text-ink">
                   ★ {Number(lapangan.rating).toFixed(2)}
                 </span>
               )}
             </div>
+            {waLink(lapangan.no_wa, `Halo, saya ingin bertanya tentang ${lapangan.nama_lapangan}.`) && (
+              <a
+                href={waLink(lapangan.no_wa, `Halo, saya ingin bertanya tentang ${lapangan.nama_lapangan}.`)}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-flex items-center gap-1.5 bg-[#25D366] hover:brightness-95 text-white text-[13px] font-bold px-3.5 py-2 rounded-lg transition"
+              >
+                Chat via WhatsApp
+              </a>
+            )}
             <div className="mt-2 font-display text-xl text-match-blue">
               {formatRupiah(lapangan.harga_per_jam)} <span className="text-xs text-muted">/JAM</span>
             </div>

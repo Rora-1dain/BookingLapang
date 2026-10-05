@@ -19,7 +19,35 @@ class ChatService
 
         return Percakapan::firstOrCreate(
             ['lapangan_id' => $lapanganId, 'user_id' => $userId],
-            ['pemilik_id' => $lapangan->pemilik_id]
+            ['pemilik_id' => $lapangan->pemilik_id, 'tipe' => 'lapangan']
+        );
+    }
+
+    /**
+     * Mulai (atau lanjutkan) percakapan user dengan admin platform.
+     * Dipakai tombol "Hubungi Admin" di halaman membership. Admin penerima
+     * ditentukan config('services.admin_chat_user_id'); kalau kosong, fallback
+     * ke user dengan role 'admin' pertama.
+     */
+    public function mulaiAtauLanjutkanAdmin(int $userId): Percakapan
+    {
+        $adminId = config('services.admin_chat_user_id');
+
+        if (! $adminId) {
+            $adminId = User::where('role', 'admin')->orderBy('id')->value('id');
+        }
+
+        if (! $adminId) {
+            throw new \Exception('Belum ada admin yang bisa dihubungi.');
+        }
+
+        if ((int) $adminId === $userId) {
+            throw new \Exception('Admin tidak bisa memulai percakapan dengan dirinya sendiri.');
+        }
+
+        return Percakapan::firstOrCreate(
+            ['tipe' => 'admin', 'user_id' => $userId],
+            ['pemilik_id' => (int) $adminId, 'lapangan_id' => null]
         );
     }
 

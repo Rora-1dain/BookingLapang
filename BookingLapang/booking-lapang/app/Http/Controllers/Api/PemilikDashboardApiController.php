@@ -86,6 +86,8 @@ class PemilikDashboardApiController extends Controller
                 'nama_lapangan' => $l->nama_lapangan,
                 'jenis' => $l->jenis,
                 'kota' => $l->kota,
+                'alamat' => $l->alamat,
+                'no_wa' => $l->no_wa,
                 'harga_per_jam' => (float) $l->harga_per_jam,
                 'status' => $l->status,
                 'status_approval' => $l->status_approval,

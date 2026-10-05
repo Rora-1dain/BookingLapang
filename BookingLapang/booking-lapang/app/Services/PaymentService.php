@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Events\MembershipAktif;
 use App\Models\Booking;
+use App\Models\MembershipPaket;
+use App\Models\MembershipTransaction;
+use App\Models\User;
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Midtrans\Config;
 use Midtrans\Snap;
 use Midtrans\Transaction;
@@ -124,5 +129,97 @@ class PaymentService
         }
 
         return $snapToken;
+    }
+
+    /**
+     * Membuat transaksi pembayaran membership baru & mengembalikan Snap Token.
+     * Membership BELUM aktif di sini — baru aktif setelah settlement.
+     *
+     * @return array{trx: MembershipTransaction, snap_token: string}
+     */
+    public function buatTransaksiMembership(User $user, MembershipPaket $paket): array
+    {
+        $trx = MembershipTransaction::create([
+            'user_id' => $user->id,
+            'membership_paket_id' => $paket->id,
+            'order_id' => 'MEMBERSHIP-PENDING-'.uniqid(),
+            'gross_amount' => (float) $paket->harga_bulanan,
+            'status' => 'pending',
+        ]);
+
+        $orderId = 'MEMBERSHIP-'.$trx->id.'-'.time();
+        $trx->update(['order_id' => $orderId]);
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => (int) $paket->harga_bulanan,
+            ],
+            'customer_details' => [
+                'first_name' => $user->name,
+                'email' => $user->email,
+            ],
+            'item_details' => [[
+                'id' => 'MEMBERSHIP-'.$paket->id,
+                'price' => (int) $paket->harga_bulanan,
+                'quantity' => 1,
+                'name' => 'Membership '.$paket->nama.' (30 hari)',
+            ]],
+        ];
+
+        return [
+            'trx' => $trx,
+            'snap_token' => Snap::getSnapToken($params),
+        ];
+    }
+
+    /**
+     * Cek status transaksi membership langsung ke Midtrans (fallback webhook),
+     * lalu aktifkan membership kalau sudah settlement/capture. Idempoten:
+     * aktivasi dikunci pada kolom paid_at.
+     */
+    public function cekStatusTransaksiMembership(MembershipTransaction $trx): array
+    {
+        $status = Transaction::status($trx->order_id);
+        $transactionStatus = $status->transaction_status;
+
+        $trx = $this->sinkronStatusMembership($trx, $transactionStatus);
+
+        return [
+            'transaction_status' => $transactionStatus,
+            'status' => $trx->status,
+            'aktif' => $trx->sudahDibayar(),
+        ];
+    }
+
+    /**
+     * Sinkronkan status MembershipTransaction dengan status dari Midtrans.
+     * Kalau settlement/capture & belum pernah diaktifkan -> aktifkan langganan
+     * + broadcast event realtime. Mengembalikan trx yang sudah di-refresh.
+     */
+    public function sinkronStatusMembership(MembershipTransaction $trx, string $transactionStatus): MembershipTransaction
+    {
+        if (in_array($transactionStatus, ['settlement', 'capture'], true)) {
+            $trx->update(['status' => 'settlement']);
+
+            if (! $trx->paid_at) {
+                $trx->update(['paid_at' => now()]);
+
+                $langganan = app(MembershipService::class)
+                    ->berlangganan($trx->user, $trx->paket);
+
+                $trx->setRelation('langganan', $langganan);
+
+                try {
+                    broadcast(new MembershipAktif($langganan));
+                } catch (\Throwable $e) {
+                    Log::warning('Gagal broadcast MembershipAktif: '.$e->getMessage());
+                }
+            }
+        } elseif (in_array($transactionStatus, ['expire', 'deny', 'cancel'], true)) {
+            $trx->update(['status' => $transactionStatus]);
+        }
+
+        return $trx->fresh();
     }
 }

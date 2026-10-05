@@ -1,8 +1,19 @@
-import { apiFetch } from './client'
+import { apiFetch, getToken } from './client'
+
+const BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
 // -- Approval Lapangan --------------------------------------------------
 export function fetchApprovalLapangan() {
   return apiFetch('/admin/lapangan/approval', { auth: true })
+}
+
+// PUT /api/admin/lapangan/{id}/komisi — ubah persentase komisi platform
+export function ubahKomisi(id, persentaseKomisi) {
+  return apiFetch(`/admin/lapangan/${id}/komisi`, {
+    method: 'PUT',
+    auth: true,
+    body: { persentase_komisi: persentaseKomisi },
+  })
 }
 export function setujuiLapangan(id) {
   return apiFetch(`/admin/lapangan/${id}/setujui`, { method: 'POST', auth: true })
@@ -49,6 +60,30 @@ export function selesaikanPayout(id) {
 // -- Laporan Platform ---------------------------------------------------
 export function fetchLaporanPlatform(params = {}) {
   return apiFetch('/admin/laporan-platform', { auth: true, params })
+}
+
+// GET /api/admin/laporan/ledger/export — respons .xlsx mentah (bukan JSON),
+// jadi tidak lewat apiFetch. Diunduh sebagai blob lalu di-trigger via <a>
+// karena butuh header Authorization yang tidak bisa dikirim lewat <a href>.
+export async function exportLedger(mulai, selesai) {
+  const token = getToken()
+  const params = new URLSearchParams({ mulai, selesai }).toString()
+  const res = await fetch(`${BASE_URL}/admin/laporan/ledger/export?${params}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    throw new Error(data?.message || 'Gagal mengekspor ledger.')
+  }
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `ledger_${mulai}_${selesai}.xlsx`
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
 }
 
 // -- Ulasan Dilaporkan (read-only, backend belum punya aksi moderasi) ---

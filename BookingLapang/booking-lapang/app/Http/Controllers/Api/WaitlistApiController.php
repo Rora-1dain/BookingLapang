@@ -9,6 +9,29 @@ use Illuminate\Http\Request;
 
 class WaitlistApiController extends Controller
 {
+    // GET /api/waitlist — daftar waitlist milik user yang sedang login.
+    public function index(Request $request)
+    {
+        $waitlists = \App\Models\Waitlist::with('lapangan:id,nama_lapangan,jenis,alamat,kota')
+            ->where('user_id', $request->user()->id)
+            ->latest()
+            ->get()
+            ->map(fn (\App\Models\Waitlist $w) => [
+                'id' => $w->id,
+                'lapangan_id' => $w->lapangan_id,
+                'lapangan' => $w->lapangan?->nama_lapangan,
+                'jenis' => $w->lapangan?->jenis,
+                'alamat' => $w->lapangan?->alamat ?? $w->lapangan?->kota,
+                'tanggal_booking' => $w->tanggal_booking?->toDateString(),
+                'jam_mulai' => substr((string) $w->jam_mulai, 0, 5),
+                'jam_selesai' => substr((string) $w->jam_selesai, 0, 5),
+                'status' => $w->status,
+                'ditawarkan_pada' => $w->ditawarkan_pada?->toIso8601String(),
+            ]);
+
+        return response()->json(['data' => $waitlists]);
+    }
+
     public function daftar(Request $request, WaitlistService $waitlistService)
     {
         $validated = $request->validate([

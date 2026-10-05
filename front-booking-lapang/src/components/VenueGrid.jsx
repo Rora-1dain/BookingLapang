@@ -90,8 +90,12 @@ function VenueCard({ venue, onLihatSlot }) {
 
       <div className="p-4 flex flex-col flex-1">
         <div className="flex items-start justify-between mb-1.5">
-          <div>
-            {venue.kota && <span className="text-[11px] font-bold text-match-blue">{venue.kota.toUpperCase()}</span>}
+          <div className="min-w-0">
+            {(venue.alamat || venue.kota) && (
+              <span className="block text-[11px] font-bold text-match-blue truncate">
+                {(venue.alamat || venue.kota).toUpperCase()}
+              </span>
+            )}
             <h3 className="font-display text-lg text-ink uppercase leading-tight mt-0.5">
               {venue.nama_lapangan}
             </h3>

@@ -20,6 +20,8 @@ class Lapangan extends Model
         'status_approval',
         'persentase_komisi',
         'kota',
+        'alamat',
+        'no_wa',
     ];
 
     /**

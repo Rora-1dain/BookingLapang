@@ -8,6 +8,7 @@
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api'
 const TOKEN_KEY = 'bookinglapang_token'
+const USER_KEY = 'bookinglapang_user'
 
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY)
@@ -18,6 +19,26 @@ export function setToken(token) {
     localStorage.setItem(TOKEN_KEY, token)
   } else {
     localStorage.removeItem(TOKEN_KEY)
+  }
+}
+
+// Simpan user terakhir di localStorage supaya saat hard refresh UI bisa
+// langsung hydrate (tidak "kosong" sekejap). Ini juga jadi fallback kalau
+// /me gagal karena jaringan/CORS — user tetap dianggap login.
+export function getUser() {
+  try {
+    const raw = localStorage.getItem(USER_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+export function setUser(user) {
+  if (user) {
+    localStorage.setItem(USER_KEY, JSON.stringify(user))
+  } else {
+    localStorage.removeItem(USER_KEY)
   }
 }
 

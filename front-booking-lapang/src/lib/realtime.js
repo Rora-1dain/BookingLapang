@@ -94,6 +94,35 @@ export function dengarPercakapan(id, { onPesan, onDibaca } = {}) {
   }
 }
 
+// Dengarkan channel pribadi user.{id} — dipakai untuk notifikasi realtime
+// seperti membership aktif setelah pembayaran Midtrans settlement.
+// handlers: { onMembershipAktif(data) }. Mengembalikan fungsi berhenti.
+export function dengarUser(userId, { onMembershipAktif } = {}) {
+  let batal = false
+  let bersihkan = () => {}
+
+  getEcho().then((echo) => {
+    if (!echo || batal || !userId) return
+    const nama = `user.${userId}`
+    const channel = echo.private(nama)
+    if (onMembershipAktif) channel.listen('.MembershipAktif', onMembershipAktif)
+
+    bersihkan = () => {
+      try {
+        if (onMembershipAktif) channel.stopListening('.MembershipAktif', onMembershipAktif)
+        echo.leave(nama)
+      } catch {
+        // koneksi sudah ditutup, abaikan
+      }
+    }
+  })
+
+  return () => {
+    batal = true
+    bersihkan()
+  }
+}
+
 // Pantau status koneksi: 'connected' | 'connecting' | 'unavailable' | 'disconnected' | ...
 // cb dipanggil langsung dengan status sekarang, lalu tiap berubah. Return: fungsi berhenti.
 export function ikutiStatus(cb) {

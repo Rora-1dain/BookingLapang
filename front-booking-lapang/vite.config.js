@@ -32,6 +32,13 @@ export default defineConfig({
         // bikin app kebuka cepat & tetap bisa dibuka offline.
         globPatterns: ['**/*.{js,css,html,png,svg,woff2}'],
         runtimeCaching: [
+          // Auth, chat, membership & notifikasi: JANGAN pernah dicache.
+          // Respons basi/non-JSON untuk /api/me adalah salah satu penyebab
+          // hard refresh terlihat "logout" (token dihapus karena parse gagal).
+          {
+            urlPattern: /\/(api)\/(me|logout|membership|percakapan|notifikasi)(\/|$|\?)/,
+            handler: 'NetworkOnly',
+          },
           // Booking & pembayaran: JANGAN pernah dicache. Status booking,
           // snap_token Midtrans, dan cek status pembayaran wajib selalu fresh
           // dari server — kalau ke-cache bisa fatal (token expired kepakai,

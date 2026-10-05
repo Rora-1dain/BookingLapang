@@ -96,7 +96,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/ulasan/{ulasan}/laporkan', [UlasanApiController::class, 'laporkan']);
 
     // Waitlist
+    Route::get('/waitlist', [WaitlistApiController::class, 'index']);
     Route::post('/waitlist/daftar', [WaitlistApiController::class, 'daftar']);
+
+    // Preferensi notifikasi
+    Route::get('/notifikasi/preferensi', [\App\Http\Controllers\Api\NotificationPreferenceApiController::class, 'show']);
+    Route::put('/notifikasi/preferensi', [\App\Http\Controllers\Api\NotificationPreferenceApiController::class, 'update']);
 
 
     Route::post('/broadcasting/auth', [\Illuminate\Broadcasting\BroadcastController::class, 'authenticate']);
@@ -119,6 +124,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/membership', [MembershipApiController::class, 'saya']);
     Route::post('/membership/berlangganan', [MembershipApiController::class, 'berlangganan']);
+    Route::post('/membership/cek-status/{trx}', [MembershipApiController::class, 'cekStatus']);
 
 });
 
@@ -150,4 +156,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 
     // Ulasan Dilaporkan
     Route::get('/ulasan/dilaporkan', [AdminUlasanApiController::class, 'dilaporkan']);
+
+    // Audit Log (append-only, baca saja)
+    Route::get('/audit', [\App\Http\Controllers\Api\AdminAuditApiController::class, 'index']);
 });

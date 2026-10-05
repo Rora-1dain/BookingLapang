@@ -41,4 +41,8 @@ return [
         'is_production' => env('MIDTRANS_IS_PRODUCTION', false),
     ],
 
+    // ID user admin yang menerima chat "Hubungi Admin" dari halaman membership.
+    // Kalau kosong, ChatService akan fallback ke user role 'admin' pertama.
+    'admin_chat_user_id' => env('ADMIN_CHAT_USER_ID'),
+
 ];
