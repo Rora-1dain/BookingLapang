@@ -15,12 +15,36 @@ class AdminLapanganApiController extends Controller
 {
     public function approval()
     {
-        $menunggu = Lapangan::with('pemilik')
-            ->where('status_approval', 'pending')
-            ->latest()
-            ->get();
+        try {
+            $menunggu = Lapangan::with(['pemilik:id,name,email'])
+                ->where('status_approval', 'pending')
+                ->latest()
+                ->get()
+                ->map(fn (Lapangan $l) => [
+                    'id' => $l->id,
+                    'nama_lapangan' => $l->nama_lapangan,
+                    'jenis' => $l->jenis,
+                    'harga_per_jam' => (float) $l->harga_per_jam,
+                    'alamat' => $l->alamat,
+                    'no_wa' => $l->no_wa,
+                    'kota' => $l->kota,
+                    'status_approval' => $l->status_approval,
+                    'persentase_komisi' => (float) ($l->persentase_komisi ?? 10),
+                    'pemilik' => $l->pemilik ? [
+                        'id' => $l->pemilik->id,
+                        'name' => $l->pemilik->name,
+                        'email' => $l->pemilik->email,
+                    ] : null,
+                ]);
 
-        return response()->json(['data' => $menunggu]);
+            return response()->json(['data' => $menunggu]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 500);
+        }
     }
 
     public function setujui(Lapangan $lapangan)
