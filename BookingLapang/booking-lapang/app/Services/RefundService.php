@@ -9,10 +9,53 @@ use App\Notifications\RefundDiminta;
 use App\Notifications\RefundDitolak;
 use App\Notifications\RefundGagal;
 use Exception;
+use Illuminate\Notifications\Notification;
 use Midtrans\Transaction;
 
 class RefundService
 {
+    /**
+     * Kirim notifikasi tanpa pernah menggagalkan alur refund. Kegagalan
+     * pengiriman (mis. SMTP menolak kredensial) hanya dicatat ke log —
+     * perubahan status refund di database tetap dianggap berhasil dan pesan
+     * error infrastruktur tidak boleh bocor ke respons API/panel admin.
+     */
+    private function kirimNotifikasi(?object $penerima, Notification $notifikasi): void
+    {
+        if (! $penerima) {
+            return;
+        }
+
+        try {
+            $penerima->notify($notifikasi);
+        } catch (Exception $e) {
+            report($e);
+        }
+    }
+
+    /**
+     * Terjemahkan pesan error mentah Midtrans menjadi pesan yang ramah untuk
+     * panel admin. Midtrans menolak refund otomatis dengan HTTP 418 untuk
+     * transaksi yang belum boleh direfund ("Payment Provider doesn't allow
+     * refund within this time") — untuk kasus ini admin harus memakai jalur
+     * refund manual, jadi pesannya diarahkan ke sana.
+     */
+    private function pesanRefundGagal(string $pesanMentah): string
+    {
+        if (str_contains($pesanMentah, '418')
+            || stripos($pesanMentah, 'doesn\'t allow refund') !== false
+            || stripos($pesanMentah, 'does not allow refund') !== false) {
+            return 'Midtrans menolak refund otomatis untuk transaksi ini (belum memenuhi syarat waktu refund). '
+                .'Lakukan refund manual (transfer langsung ke user), lalu tandai selesai.';
+        }
+
+        if (stripos($pesanMentah, 'already refund') !== false || stripos($pesanMentah, 'duplicate') !== false) {
+            return 'Transaksi ini sudah pernah direfund di Midtrans.';
+        }
+
+        return 'Refund otomatis gagal diproses lewat Midtrans. Coba lagi atau lakukan refund manual.';
+    }
+
     public function hitungPersentaseRefund(Booking $booking): float
     {
         $jamSebelumJadwal = now()->diffInHours($booking->tanggal_booking, false);
@@ -64,11 +107,7 @@ class RefundService
         // kirim notifikasi tidak boleh membatalkan pengajuan user (DB sudah
         // ter-update), jadi ditelan per-admin.
         foreach (User::where('role', 'admin')->get() as $admin) {
-            try {
-                $admin->notify(new RefundDiminta($booking));
-            } catch (Exception $e) {
-                report($e);
-            }
+            $this->kirimNotifikasi($admin, new RefundDiminta($booking));
         }
 
         return $booking->fresh();
@@ -95,7 +134,7 @@ class RefundService
             'catatan' => $catatan,
         ]);
 
-        $booking->user?->notify(new RefundDitolak($booking));
+        $this->kirimNotifikasi($booking->user, new RefundDitolak($booking));
 
         return $booking->fresh();
     }
@@ -123,6 +162,8 @@ class RefundService
             'alasan_pembatalan' => $alasan,
         ]);
 
+        $pesanGagal = null;
+
         try {
             Transaction::refund($booking->payment_reference, [
                 'refund_key' => 'refund-'.$booking->id.'-'.time(),
@@ -133,7 +174,15 @@ class RefundService
             $booking->update(['status_refund' => 'selesai', 'status' => 'cancelled']);
             $hasil = 'berhasil';
         } catch (Exception $e) {
-            $booking->update(['status_refund' => 'ditolak', 'catatan_refund' => $e->getMessage()]);
+            // Midtrans menolak refund otomatis untuk sebagian transaksi
+            // (mis. HTTP 418 "Payment Provider doesn't allow refund within
+            // this time"). Simpan pesan yang ramah untuk panel admin, tapi
+            // detail mentahnya tetap dicatat ke log untuk penelusuran.
+            $pesanGagal = $this->pesanRefundGagal($e->getMessage());
+
+            report($e);
+
+            $booking->update(['status_refund' => 'ditolak', 'catatan_refund' => $pesanGagal]);
             $hasil = 'gagal: '.$e->getMessage();
         }
 
@@ -158,10 +207,11 @@ class RefundService
 
         if ($booking->status_refund === 'ditolak') {
             // Notifikasi kritikal: terkirim lewat mail apa pun preferensi user.
-            $booking->user?->notify(new RefundGagal($booking));
-            User::find($adminId)?->notify(new RefundGagal($booking));
+            // Kegagalan kirim TIDAK boleh menutupi pesan asli "refund gagal".
+            $this->kirimNotifikasi($booking->user, new RefundGagal($booking));
+            $this->kirimNotifikasi(User::find($adminId), new RefundGagal($booking));
 
-            throw new Exception('Refund gagal diproses.');
+            throw new Exception($pesanGagal ?? 'Refund gagal diproses.');
         }
 
         return $booking->fresh();

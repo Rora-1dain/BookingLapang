@@ -287,10 +287,12 @@ function RefundTab() {
     try {
       await adminApi.refundBooking(b.id, alasan)
       setMsg('Refund berhasil diproses lewat Midtrans.')
-      reload()
     } catch (err) {
       setMsg(err.message)
     } finally {
+      // Refund yang ditolak Midtrans tetap mengubah status_refund di backend,
+      // jadi muat ulang agar baris menampilkan status terbaru (bukan "Menunggu").
+      reload()
       setBusyId(null)
     }
   }
