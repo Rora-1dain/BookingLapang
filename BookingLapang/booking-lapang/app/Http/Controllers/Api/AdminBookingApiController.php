@@ -44,8 +44,19 @@ class AdminBookingApiController extends Controller
             $query->where('status_refund', $request->query('status'));
         }
 
+        // Terjemahkan catatan_refund lama yang masih berupa pesan mentah
+        // Midtrans (tersimpan sebelum perbaikan) supaya panel admin tidak
+        // menampilkan teks teknis. Catatan yang sudah ramah/manual dibiarkan.
+        $data = $query->latest()->paginate(20)->through(function (Booking $booking) {
+            if ($booking->catatan_refund) {
+                $booking->catatan_refund = RefundService::pesanRefundGagalRamah($booking->catatan_refund);
+            }
+
+            return $booking;
+        });
+
         return response()->json([
-            'data' => $query->latest()->paginate(20),
+            'data' => $data,
             'counts' => $counts,
         ]);
     }

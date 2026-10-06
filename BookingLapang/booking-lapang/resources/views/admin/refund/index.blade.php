@@ -187,7 +187,7 @@
                                 @if ($booking->catatan_refund)
                                     <div class="p-3 rounded-xl bg-error-container text-error text-body-sm">
                                         <span class="font-bold block mb-1">Catatan Kegagalan</span>
-                                        {{ $booking->catatan_refund }}
+                                        {{ \App\Services\RefundService::pesanRefundGagalRamah($booking->catatan_refund) }}
                                     </div>
                                 @endif
                             </div>

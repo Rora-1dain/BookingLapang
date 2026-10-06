@@ -39,9 +39,23 @@ class RefundService
      * transaksi yang belum boleh direfund ("Payment Provider doesn't allow
      * refund within this time") — untuk kasus ini admin harus memakai jalur
      * refund manual, jadi pesannya diarahkan ke sana.
+     *
+     * Idempoten: kalau teksnya bukan error mentah (mis. sudah pesan ramah,
+     * atau catatan manual), dikembalikan apa adanya. Ini supaya aman dipakai
+     * untuk merapikan catatan_refund lama yang sudah terlanjur tersimpan.
      */
-    private function pesanRefundGagal(string $pesanMentah): string
+    public static function pesanRefundGagalRamah(string $pesanMentah): string
     {
+        $tampakMentah = stripos($pesanMentah, 'status_code') !== false
+            || stripos($pesanMentah, 'API error') !== false
+            || stripos($pesanMentah, 'HTTP status code') !== false
+            || stripos($pesanMentah, 'refund within this time') !== false
+            || str_contains($pesanMentah, '418');
+
+        if (! $tampakMentah) {
+            return $pesanMentah;
+        }
+
         if (str_contains($pesanMentah, '418')
             || stripos($pesanMentah, 'doesn\'t allow refund') !== false
             || stripos($pesanMentah, 'does not allow refund') !== false) {
@@ -178,7 +192,7 @@ class RefundService
             // (mis. HTTP 418 "Payment Provider doesn't allow refund within
             // this time"). Simpan pesan yang ramah untuk panel admin, tapi
             // detail mentahnya tetap dicatat ke log untuk penelusuran.
-            $pesanGagal = $this->pesanRefundGagal($e->getMessage());
+            $pesanGagal = self::pesanRefundGagalRamah($e->getMessage());
 
             report($e);
 
