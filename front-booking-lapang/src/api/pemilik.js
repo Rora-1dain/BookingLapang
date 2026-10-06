@@ -14,7 +14,7 @@ export function submitLapangan({ nama_lapangan, jenis, harga_per_jam, alamat, no
   return apiFetch('/pemilik/lapangan', {
     method: 'POST',
     auth: true,
-    body: { nama_lapangan, jenis, harga_per_jam, alamat, no_wa, kota: kota || null },
+    body: { nama_lapangan, jenis, harga_per_jam, alamat, no_wa, kota },
   })
 }
 
@@ -23,7 +23,7 @@ export function updateLapangan(id, { nama_lapangan, jenis, harga_per_jam, alamat
   return apiFetch(`/pemilik/lapangan/${id}`, {
     method: 'PUT',
     auth: true,
-    body: { nama_lapangan, jenis, harga_per_jam, alamat, no_wa, kota: kota || null },
+    body: { nama_lapangan, jenis, harga_per_jam, alamat, no_wa, kota },
   })
 }
 

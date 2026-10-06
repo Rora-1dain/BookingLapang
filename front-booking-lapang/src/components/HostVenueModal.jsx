@@ -3,8 +3,10 @@ import useLockBodyScroll from '../lib/useLockBodyScroll'
 import { useAuth } from '../context/AuthContext'
 import { useVenues } from '../context/VenueContext'
 import { fetchMyLapangan, submitLapangan, ajukanVerifikasi } from '../api/pemilik'
+import { unggahFotoLapangan } from '../api/foto'
 import { formatRupiah, namaJenis } from '../lib/format'
 import AuthModal from './AuthModal'
+import FotoLapanganManager from './FotoLapanganManager'
 
 const BADGE = {
   pending: 'bg-cream text-ink border border-black/20',
@@ -30,6 +32,7 @@ export default function HostVenueModal({ onClose }) {
     kota: '',
   })
   const [dokumen, setDokumen] = useState(null)
+  const [fotoFiles, setFotoFiles] = useState([])
   const [error, setError] = useState(null)
   const [info, setInfo] = useState(null)
   const [submitting, setSubmitting] = useState(false)
@@ -50,10 +53,21 @@ export default function HostVenueModal({ onClose }) {
     setSubmitting(true)
     setError(null)
     try {
-      await submitLapangan({
+      const res = await submitLapangan({
         ...form,
         harga_per_jam: Number(form.harga_per_jam),
       })
+      // Lapangan berhasil dibuat -> unggah foto (kalau ada) ke lapangan baru.
+      const lapanganBaru = res?.data ?? res
+      if (lapanganBaru?.id && fotoFiles.length > 0) {
+        try {
+          await unggahFotoLapangan(lapanganBaru.id, fotoFiles)
+        } catch (err) {
+          // Lapangan sudah terbuat; foto bisa ditambahkan lewat tombol Edit.
+          setError(`Lapangan diajukan, tapi foto gagal diunggah: ${err.message}`)
+        }
+      }
+      setFotoFiles([])
       setStep('done')
       setInfo('Lapangan diajukan, menunggu persetujuan admin.')
     } catch (err) {
@@ -149,14 +163,14 @@ export default function HostVenueModal({ onClose }) {
               required
             />
             <Field
-              label="ALAMAT LAPANGAN (WAJIB)"
+              label="ALAMAT LAPANGAN"
               value={form.alamat}
               onChange={update('alamat')}
               placeholder="mis. Jl. Merdeka No. 10, Bandung"
               required
             />
             <Field
-              label="NOMOR WHATSAPP (WAJIB)"
+              label="NOMOR WHATSAPP"
               type="tel"
               value={form.no_wa}
               onChange={update('no_wa')}
@@ -164,10 +178,17 @@ export default function HostVenueModal({ onClose }) {
               required
             />
             <Field
-              label="KOTA (OPSIONAL — untuk filter)"
+              label="KOTA"
               value={form.kota}
               onChange={update('kota')}
               placeholder="mis. Bandung"
+              required
+            />
+
+            <FotoLapanganManager
+              files={fotoFiles}
+              onChangeFiles={setFotoFiles}
+              disabled={submitting}
             />
 
             {error && <p className="text-[12px] font-bold text-whistle-red">{error}</p>}
@@ -213,6 +234,7 @@ export default function HostVenueModal({ onClose }) {
         {user && step === 'done' && (
           <div>
             <p className="text-sm font-bold text-court-green mb-3">{info}</p>
+            {error && <p className="text-[12px] font-bold text-whistle-red mb-3">{error}</p>}
             <button
               onClick={() => setStep('form')}
               className="text-[13px] font-bold text-match-blue underline"

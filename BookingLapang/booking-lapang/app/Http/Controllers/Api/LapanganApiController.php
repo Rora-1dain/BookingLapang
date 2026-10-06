@@ -7,6 +7,7 @@ use App\Http\Resources\LapanganResource;
 use App\Models\Lapangan;
 use App\Services\LapanganSearchService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class LapanganApiController extends Controller
 {
@@ -34,7 +35,7 @@ class LapanganApiController extends Controller
         $data = (new LapanganResource($lapangan))->toArray(request());
         $data['galeri'] = $lapangan->fotos->map(fn ($foto) => [
             'id' => $foto->id,
-            'url' => asset('storage/'.$foto->path_file),
+            'url' => Storage::disk('public')->url($foto->path_file),
             'is_utama' => $foto->is_utama,
         ]);
 

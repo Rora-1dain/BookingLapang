@@ -76,6 +76,13 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
       },
+      // Foto lapangan & invoice disimpan di disk 'public' backend (root:
+      // storage/app/public, URL '/storage'). Di dev, teruskan ke Laravel
+      // supaya <img src="/storage/..."> tetap termuat.
+      '/storage': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
     },
   },
   // `server.proxy` di atas cuma berlaku pas `npm run dev` — `vite preview`
@@ -85,6 +92,10 @@ export default defineConfig({
   preview: {
     proxy: {
       '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+      '/storage': {
         target: 'http://localhost:8000',
         changeOrigin: true,
       },

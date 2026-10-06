@@ -3,6 +3,7 @@ import useLockBodyScroll from '../lib/useLockBodyScroll'
 import { updateLapangan } from '../api/pemilik'
 import { useVenues } from '../context/VenueContext'
 import { namaJenis } from '../lib/format'
+import FotoLapanganManager from './FotoLapanganManager'
 
 export default function EditLapanganModal({ lapangan, onClose, onUpdated }) {
   useLockBodyScroll()
@@ -96,7 +97,7 @@ export default function EditLapanganModal({ lapangan, onClose, onUpdated }) {
           />
 
           <Field
-            label="ALAMAT LAPANGAN (WAJIB)"
+            label="ALAMAT LAPANGAN"
             value={form.alamat}
             onChange={update('alamat')}
             placeholder="mis. Jl. Merdeka No. 10, Bandung"
@@ -104,7 +105,7 @@ export default function EditLapanganModal({ lapangan, onClose, onUpdated }) {
           />
 
           <Field
-            label="NOMOR WHATSAPP (WAJIB)"
+            label="NOMOR WHATSAPP"
             type="tel"
             value={form.no_wa}
             onChange={update('no_wa')}
@@ -113,11 +114,14 @@ export default function EditLapanganModal({ lapangan, onClose, onUpdated }) {
           />
 
           <Field
-            label="KOTA (OPSIONAL — untuk filter)"
+            label="KOTA"
             value={form.kota}
             onChange={update('kota')}
             placeholder="mis. Bandung"
+            required
           />
+
+          <FotoLapanganManager lapanganId={lapangan.id} disabled={submitting} />
 
           {error && <p className="text-[12px] font-bold text-whistle-red">{error}</p>}
 

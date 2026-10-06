@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class LapanganResource extends JsonResource
 {
@@ -19,7 +20,7 @@ class LapanganResource extends JsonResource
             'no_wa' => $this->no_wa,
             'rating' => $this->rataRataRating(),
             'foto_utama' => $this->fotoUtama()
-                ? asset('storage/'.$this->fotoUtama()->path_file)
+                ? Storage::disk('public')->url($this->fotoUtama()->path_file)
                 : null,
             // hanya disertakan saat memanggil Lapangan::with('jadwalOperasionals')
             // di controller — kalau relasi tidak di-load, ini otomatis null,

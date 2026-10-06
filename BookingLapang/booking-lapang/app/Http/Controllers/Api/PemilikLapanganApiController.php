@@ -35,7 +35,7 @@ class PemilikLapanganApiController extends Controller
             'harga_per_jam' => 'required|numeric|min:0',
             'alamat' => 'required|string|max:255',
             'no_wa' => 'required|string|max:30',
-            'kota' => 'nullable|string|max:255',
+            'kota' => 'required|string|max:255',
         ]);
 
         $lapangan = Lapangan::create([
@@ -61,7 +61,7 @@ class PemilikLapanganApiController extends Controller
             'harga_per_jam' => 'sometimes|required|numeric|min:0',
             'alamat' => 'sometimes|required|string|max:255',
             'no_wa' => 'sometimes|required|string|max:30',
-            'kota' => 'nullable|string|max:255',
+            'kota' => 'sometimes|required|string|max:255',
         ]);
 
         $lapangan->update($validated);

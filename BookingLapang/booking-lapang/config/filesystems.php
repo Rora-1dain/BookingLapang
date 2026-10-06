@@ -38,7 +38,12 @@ return [
             'report' => false,
         ],
 
-        'public' => [
+        // Disk 'public' dipakai untuk foto lapangan & invoice. Kalau kredensial
+        // S3 (AWS_BUCKET) diisi, pakai S3 supaya file tetap ada di produksi
+        // (serverless Vercel tidak punya disk permanen). Kalau kosong — mis. saat
+        // development lokal — otomatis jatuh ke penyimpanan lokal supaya upload
+        // tetap berhasil, bukan error "bucket tidak ditemukan".
+        'public' => env('AWS_BUCKET') ? [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
             'secret' => env('AWS_SECRET_ACCESS_KEY'),
@@ -47,6 +52,15 @@ return [
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'visibility' => 'public',
+            'throw' => false,
+        ] : [
+            'driver' => 'local',
+            'root' => storage_path('app/public'),
+            // URL relatif supaya bisa di-proxy Vite saat development
+            // (lihat proxy '/storage' di vite.config.js frontend) dan tetap
+            // benar saat diakses same-origin.
+            'url' => '/storage',
             'visibility' => 'public',
             'throw' => false,
         ],
