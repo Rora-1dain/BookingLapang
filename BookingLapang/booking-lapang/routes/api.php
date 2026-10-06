@@ -74,6 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/foto/{foto}/jadikan-utama', [FotoLapanganApiController::class, 'jadikanUtama']);
 
     Route::post('/booking/{booking}/cancel', [BookingApiController::class, 'cancel']);
+    Route::post('/booking/{booking}/refund', [BookingApiController::class, 'mintaRefund']);
     Route::post('/booking/{booking}/bayar', [BookingApiController::class, 'bayar']);
     Route::post('/booking/{booking}/cek-status', [BookingApiController::class, 'cekStatus']);
     Route::get('/booking/{booking}/invoice', [BookingApiController::class, 'invoice']);
@@ -134,7 +135,9 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('laporan/ledger/export', [\App\Http\Controllers\Api\AdminLedgerExportController::class, 'export']);
     // Booking & Refund
     Route::get('/booking', [AdminBookingApiController::class, 'index']);
+    Route::get('/refund', [AdminBookingApiController::class, 'refundIndex']);
     Route::post('/booking/{booking}/refund', [AdminBookingApiController::class, 'refund']);
+    Route::post('/booking/{booking}/refund/tolak', [AdminBookingApiController::class, 'tolakRefund']);
 
     // Approval Lapangan
     Route::get('/lapangan/approval', [AdminLapanganApiController::class, 'approval']);

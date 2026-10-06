@@ -48,7 +48,7 @@ class DashboardController extends Controller
 
         $mitraMenunggu = User::where('status_verifikasi', 'menunggu')->count();
         $totalMitraAktif = Lapangan::whereNotNull('pemilik_id')->distinct('pemilik_id')->count('pemilik_id');
-        $refundMenunggu = Booking::where('status_refund', 'diproses')->count();
+        $refundMenunggu = Booking::whereIn('status_refund', ['diminta', 'diproses'])->count();
 
         return view('admin.dashboard', compact(
             'totalPendapatan', 'bookingPerStatus', 'lapanganFavorit',

@@ -70,6 +70,21 @@ class AdminBookingController extends Controller
         }
     }
 
+    public function tolakRefund(Request $request, Booking $booking, RefundService $refundService)
+    {
+        $this->authorize('refund.proses');
+
+        $validated = $request->validate(['catatan' => 'nullable|string|max:255']);
+
+        try {
+            $refundService->tolakPermintaanRefund($booking, $validated['catatan'] ?? null, auth()->id());
+
+            return back()->with('success', 'Pengajuan refund ditolak.');
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
     public function refundIndex(Request $request, Booking $booking, RefundService $refundservice )
     {
         $this->authorize('refund.proses');
@@ -78,6 +93,7 @@ class AdminBookingController extends Controller
 
         $counts = [
             'semua' => (clone $baseQuery)->count(),
+            'diminta' => (clone $baseQuery)->where('status_refund', 'diminta')->count(),
             'diproses' => (clone $baseQuery)->where('status_refund', 'diproses')->count(),
             'selesai' => (clone $baseQuery)->where('status_refund', 'selesai')->count(),
             'ditolak' => (clone $baseQuery)->where('status_refund', 'ditolak')->count(),

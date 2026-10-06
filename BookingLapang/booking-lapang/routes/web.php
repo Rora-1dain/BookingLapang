@@ -202,6 +202,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/booking/{booking}/refund', [AdminBookingController::class, 'refund'])
         ->name('refund.store');
 
+    Route::post('/booking/{booking}/refund/tolak', [AdminBookingController::class, 'tolakRefund'])
+        ->name('refund.tolak');
+
     Route::get('/lapangan/approval', [AdminLapanganController::class, 'approval'])
         ->name('lapangan.approval');
     Route::post('/lapangan/{lapangan}/setujui', [AdminLapanganController::class, 'setujui'])

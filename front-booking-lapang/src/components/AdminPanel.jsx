@@ -7,7 +7,7 @@ import { formatRupiah, formatTanggal } from '../lib/format'
 const TABS = [
   { key: 'approval', label: 'Approval Lapangan' },
   { key: 'verifikasi', label: 'Verifikasi KYC' },
-  { key: 'refund', label: 'Booking & Refund' },
+  { key: 'refund', label: 'Refund' },
   { key: 'payout', label: 'Payout' },
   { key: 'laporan', label: 'Laporan' },
   { key: 'ulasan', label: 'Ulasan Dilaporkan' },
@@ -258,18 +258,35 @@ function VerifikasiTab() {
   )
 }
 
+const REFUND_BADGE = {
+  diminta: 'bg-amber-100 text-amber-800 border border-amber-300',
+  diproses: 'bg-match-blue/15 text-match-blue border border-match-blue/30',
+  selesai: 'bg-court-green text-cream',
+  ditolak: 'bg-whistle-red text-cream',
+}
+
+const REFUND_LABEL = {
+  diminta: 'Menunggu',
+  diproses: 'Diproses',
+  selesai: 'Selesai',
+  ditolak: 'Ditolak',
+}
+
 function RefundTab() {
   const { data, error, busyId, setBusyId, msg, setMsg, reload } = useTabData(() =>
-    adminApi.fetchAdminBookings({ status_pembayaran: 'paid' })
+    adminApi.fetchRefundRequests()
   )
 
-  async function handleRefund(id) {
-    const alasan = window.prompt('Alasan refund?')
+  const list = data?.data ?? data // { data: [...], counts }
+
+  async function handleProses(b) {
+    const alasan = b.alasan_pembatalan || window.prompt('Alasan refund?')
     if (!alasan) return
-    setBusyId(id)
+    setBusyId(b.id)
     setMsg(null)
     try {
-      await adminApi.refundBooking(id, alasan)
+      await adminApi.refundBooking(b.id, alasan)
+      setMsg('Refund berhasil diproses lewat Midtrans.')
       reload()
     } catch (err) {
       setMsg(err.message)
@@ -278,27 +295,69 @@ function RefundTab() {
     }
   }
 
-  const list = data?.data ?? data // paginator: {data: [...]} atau langsung array
+  async function handleTolak(b) {
+    const catatan = window.prompt('Catatan penolakan (opsional)?') ?? ''
+    setBusyId(b.id)
+    setMsg(null)
+    try {
+      await adminApi.tolakRefund(b.id, catatan)
+      setMsg('Pengajuan refund ditolak.')
+      reload()
+    } catch (err) {
+      setMsg(err.message)
+    } finally {
+      setBusyId(null)
+    }
+  }
 
   return (
     <TabShell error={error} msg={msg} loading={!data && !error} empty={list?.length === 0} onRetry={reload}>
-      <p className="text-[11px] text-muted mb-2">Menampilkan booking berstatus lunas (bisa diajukan refund).</p>
+      <p className="text-[11px] text-muted mb-2">
+        Pengajuan refund dari user. Refund diproses otomatis lewat Midtrans — 100% kalau ≥ 24 jam sebelum jadwal, 50% kalau kurang dari itu.
+      </p>
       <ul className="space-y-2">
         {list?.map((b) => (
-          <li key={b.id} className="bg-white border border-black/10 rounded-lg p-3 flex items-center justify-between gap-2">
-            <div>
-              <p className="font-bold text-ink text-sm">{b.lapangan?.nama_lapangan}</p>
-              <p className="text-[12px] text-muted">
-                {b.user?.name} · {b.tanggal_booking} · {formatRupiah(b.total_harga)}
-              </p>
+          <li key={b.id} className="bg-white border border-black/10 rounded-lg p-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-bold text-ink text-sm truncate">{b.lapangan?.nama_lapangan}</p>
+                <p className="text-[12px] text-muted">
+                  {b.user?.name} · {b.tanggal_booking} · {formatRupiah(b.total_harga)}
+                </p>
+                {b.alasan_pembatalan && (
+                  <p className="text-[12px] text-ink/70 mt-0.5">“{b.alasan_pembatalan}”</p>
+                )}
+                {b.catatan_refund && (
+                  <p className="text-[11px] text-whistle-red mt-0.5">Catatan: {b.catatan_refund}</p>
+                )}
+              </div>
+              <span
+                className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase shrink-0 ${
+                  REFUND_BADGE[b.status_refund] || 'bg-cream text-ink border border-black/20'
+                }`}
+              >
+                {REFUND_LABEL[b.status_refund] || b.status_refund}
+              </span>
             </div>
-            <button
-              onClick={() => handleRefund(b.id)}
-              disabled={busyId === b.id}
-              className="border border-whistle-red text-whistle-red text-xs font-bold px-2.5 py-1.5 rounded uppercase shrink-0 disabled:opacity-60"
-            >
-              Refund
-            </button>
+
+            {b.status_refund === 'diminta' && (
+              <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-black/5">
+                <button
+                  onClick={() => handleProses(b)}
+                  disabled={busyId === b.id}
+                  className="bg-court-green hover:bg-court-green-dark disabled:opacity-60 text-cream text-xs font-bold px-3 py-1.5 rounded uppercase transition-colors"
+                >
+                  Proses
+                </button>
+                <button
+                  onClick={() => handleTolak(b)}
+                  disabled={busyId === b.id}
+                  className="border border-whistle-red text-whistle-red text-xs font-bold px-3 py-1.5 rounded uppercase disabled:opacity-60"
+                >
+                  Tolak
+                </button>
+              </div>
+            )}
           </li>
         ))}
       </ul>

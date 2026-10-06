@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import useLockBodyScroll from '../lib/useLockBodyScroll'
 import { useAuth } from '../context/AuthContext'
-import { fetchMyBookings, cancelBooking } from '../api/booking'
+import { fetchMyBookings, cancelBooking, mintaRefundBooking } from '../api/booking'
 import { unduhInvoice } from '../api/payment'
 import { mulaiChat } from '../api/chat'
 import IconChat from './IconChat'
@@ -13,6 +13,20 @@ const STATUS_BADGE = {
   confirmed: 'bg-court-green text-cream',
   cancelled: 'bg-whistle-red text-cream',
   completed: 'bg-match-blue text-cream',
+}
+
+const REFUND_BADGE = {
+  diminta: 'bg-amber-100 text-amber-800 border border-amber-300',
+  diproses: 'bg-match-blue/15 text-match-blue border border-match-blue/30',
+  selesai: 'bg-court-green text-cream',
+  ditolak: 'bg-whistle-red text-cream',
+}
+
+const REFUND_LABEL = {
+  diminta: 'Refund: menunggu admin',
+  diproses: 'Refund: diproses',
+  selesai: 'Refund: selesai',
+  ditolak: 'Refund: ditolak',
 }
 
 export default function MyBookingsModal({ onClose }) {
@@ -87,6 +101,24 @@ export default function MyBookingsModal({ onClose }) {
     setStatusMsg(null)
     try {
       await cancelBooking(booking.id)
+      load()
+    } catch (err) {
+      setStatusMsg(err.message)
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  // Ajukan refund: tidak langsung memproses uang — booking masuk antrian
+  // "menunggu" di panel admin untuk ditinjau/diproses.
+  async function handleMintaRefund(booking) {
+    const alasan = window.prompt('Alasan refund?')
+    if (!alasan) return
+    setBusyId(booking.id)
+    setStatusMsg(null)
+    try {
+      await mintaRefundBooking(booking.id, alasan)
+      setStatusMsg('Pengajuan refund terkirim. Menunggu konfirmasi admin.')
       load()
     } catch (err) {
       setStatusMsg(err.message)
@@ -193,6 +225,15 @@ export default function MyBookingsModal({ onClose }) {
                     </p>
                   )}
                   <p className="text-[12px] font-bold text-ink mt-0.5">{formatRupiah(b.total_harga)}</p>
+                  {b.status_refund && b.status_refund !== 'belum_refund' && (
+                    <span
+                      className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded mt-1 ${
+                        REFUND_BADGE[b.status_refund] || 'bg-cream text-ink border border-black/20'
+                      }`}
+                    >
+                      {REFUND_LABEL[b.status_refund] || b.status_refund}
+                    </span>
+                  )}
                 </div>
                 <span
                   className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase shrink-0 ${
@@ -254,6 +295,15 @@ export default function MyBookingsModal({ onClose }) {
                     className="border border-whistle-red text-whistle-red text-xs font-bold px-3 py-1.5 rounded uppercase disabled:opacity-60"
                   >
                     Batalkan
+                  </button>
+                )}
+                {b.bisa_diminta_refund && (
+                  <button
+                    onClick={() => handleMintaRefund(b)}
+                    disabled={busyId === b.id}
+                    className="border border-ink text-ink hover:bg-ink hover:text-cream text-xs font-bold px-3 py-1.5 rounded uppercase disabled:opacity-60 transition-colors"
+                  >
+                    {busyId === b.id ? 'Mengirim...' : 'Ajukan Refund'}
                   </button>
                 )}
               </div>

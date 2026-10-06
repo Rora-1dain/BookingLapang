@@ -29,7 +29,7 @@
 
             {{-- Filter status --}}
             <div class="flex items-center gap-2 overflow-x-auto pb-1 bg-surface-container-lowest p-3 rounded-2xl border border-outline-variant">
-                @foreach (['semua' => 'Semua', 'diproses' => 'Diproses', 'selesai' => 'Selesai', 'ditolak' => 'Ditolak'] as $key => $label)
+                @foreach (['semua' => 'Semua', 'diminta' => 'Menunggu', 'diproses' => 'Diproses', 'selesai' => 'Selesai', 'ditolak' => 'Ditolak'] as $key => $label)
                     <a href="{{ route('admin.refund.index', $key === 'semua' ? [] : ['status' => $key]) }}"
                        class="px-4 py-2 rounded-xl text-label-md font-semibold transition-colors whitespace-nowrap {{ $statusAktif === $key ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:bg-surface-container' }}">
                         {{ $label }} <span class="ml-1 {{ $statusAktif === $key ? 'text-on-primary/80' : 'text-outline' }}">{{ $counts[$key] }}</span>
@@ -43,6 +43,7 @@
                     @forelse ($bookings as $booking)
                         @php
                             $badge = match($booking->status_refund) {
+                                'diminta' => ['Menunggu', 'bg-tertiary-fixed text-tertiary'],
                                 'diproses' => ['Diproses', 'bg-tertiary-fixed text-tertiary'],
                                 'selesai' => ['Selesai', 'bg-primary-fixed text-on-primary-fixed'],
                                 default => ['Ditolak', 'bg-secondary-fixed text-on-secondary-fixed-variant'],
@@ -76,6 +77,7 @@
                     @forelse ($bookings as $booking)
                         @php
                             $badge = match($booking->status_refund) {
+                                'diminta' => ['Menunggu', 'bg-tertiary-fixed text-tertiary'],
                                 'diproses' => ['Diproses', 'bg-tertiary-fixed text-tertiary'],
                                 'selesai' => ['Selesai', 'bg-primary-fixed text-on-primary-fixed'],
                                 default => ['Ditolak', 'bg-secondary-fixed text-on-secondary-fixed-variant'],
@@ -142,6 +144,36 @@
                                             <span class="text-on-surface-variant">Hasil Midtrans</span>
                                             <span class="font-semibold {{ str_contains($log->hasil, 'berhasil') ? 'text-primary' : 'text-secondary' }}">{{ $log->hasil }}</span>
                                         </div>
+                                    </div>
+                                @endif
+
+                                @if ($booking->status_refund === 'diminta')
+                                    <div class="p-3.5 rounded-xl bg-tertiary-fixed/40 text-tertiary text-body-sm font-semibold flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-lg">pending_actions</span>
+                                        Pengajuan refund dari user — menunggu keputusan Anda.
+                                    </div>
+
+                                    <div class="flex flex-col sm:flex-row gap-2">
+                                        <form action="{{ route('admin.refund.store', $booking) }}" method="POST" class="flex-1"
+                                              onsubmit="return confirm('Proses refund ini lewat Midtrans?');">
+                                            @csrf
+                                            <input type="hidden" name="alasan" value="{{ $booking->alasan_pembatalan }}">
+                                            <button type="submit"
+                                                class="w-full bg-primary text-on-primary hover:opacity-90 text-sm font-bold px-5 py-3 rounded-lg transition">
+                                                Proses Refund (Midtrans)
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('admin.refund.tolak', $booking) }}" method="POST" class="flex-1"
+                                              onsubmit="return confirm('Tolak pengajuan refund ini?');">
+                                            @csrf
+                                            <input type="text" name="catatan" maxlength="255"
+                                                placeholder="Catatan penolakan (opsional)"
+                                                class="w-full mb-2 text-sm rounded-lg border border-outline-variant px-3 py-2 focus:outline-none">
+                                            <button type="submit"
+                                                class="w-full border border-error text-error hover:bg-error-container text-sm font-bold px-5 py-3 rounded-lg transition">
+                                                Tolak
+                                            </button>
+                                        </form>
                                     </div>
                                 @endif
 

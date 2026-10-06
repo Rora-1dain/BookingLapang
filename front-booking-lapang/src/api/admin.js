@@ -34,12 +34,28 @@ export function tinjauVerifikasi(pemilikId, keputusan, catatan) {
   })
 }
 
-// -- Booking & Refund -----------------------------------------------------
+// -- Refund ---------------------------------------------------------------
+// Daftar seluruh booking (opsional filter status_pembayaran). Masih dipakai
+// endpoint /admin/booking; daftar refund kini lewat fetchRefundRequests().
 export function fetchAdminBookings(params = {}) {
   return apiFetch('/admin/booking', { auth: true, params })
 }
+
+// Daftar pengajuan refund (semua status kecuali belum_refund). Respons:
+// { data: { data: [...], meta }, counts } — diratakan jadi { data, counts }.
+export async function fetchRefundRequests(params = {}) {
+  const json = await apiFetch('/admin/refund', { auth: true, params })
+  return { data: json.data?.data ?? json.data ?? [], counts: json.counts ?? {} }
+}
 export function refundBooking(id, alasan) {
   return apiFetch(`/admin/booking/${id}/refund`, { method: 'POST', auth: true, body: { alasan } })
+}
+export function tolakRefund(id, catatan) {
+  return apiFetch(`/admin/booking/${id}/refund/tolak`, {
+    method: 'POST',
+    auth: true,
+    body: { catatan: catatan || null },
+  })
 }
 
 // -- Payout ke Pemilik ------------------------------------------------------

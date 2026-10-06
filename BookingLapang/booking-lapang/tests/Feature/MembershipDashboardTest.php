@@ -2,8 +2,10 @@
 
 use App\Models\LanggananUser;
 use App\Models\MembershipPaket;
+use App\Models\MembershipTransaction;
 use App\Models\User;
 use App\Services\MembershipService;
+use App\Services\PaymentService;
 
 function paketUji(float $diskon = 10, float $harga = 100000): MembershipPaket
 {
@@ -23,14 +25,42 @@ test('daftar paket membership bisa dilihat tanpa login', function () {
         ->assertJsonStructure(['data' => [['id', 'nama', 'harga_bulanan', 'diskon']]]);
 });
 
-test('berlangganan membuat membership aktif 30 hari', function () {
+test('berlangganan mengembalikan snap token & baru aktif setelah settlement', function () {
     $user = User::factory()->create();
     $paket = paketUji();
+
+    // Midtrans tidak boleh dipanggil sungguhan saat test (tanpa kredensial &
+    // jaringan). Ganti hanya pembuatan Snap Token dengan transaksi lokal;
+    // sinkron status (jalur aktivasi) tetap memakai implementasi asli.
+    $payment = new class extends PaymentService
+    {
+        public function buatTransaksiMembership(User $user, MembershipPaket $paket): array
+        {
+            $trx = MembershipTransaction::create([
+                'user_id' => $user->id,
+                'membership_paket_id' => $paket->id,
+                'order_id' => 'MEMBERSHIP-TEST-'.uniqid(),
+                'gross_amount' => (float) $paket->harga_bulanan,
+                'status' => 'pending',
+            ]);
+
+            return ['trx' => $trx, 'snap_token' => 'SNAP-TOKEN-TEST'];
+        }
+    };
+    $this->app->instance(PaymentService::class, $payment);
 
     $this->actingAs($user, 'sanctum')
         ->postJson('/api/membership/berlangganan', ['membership_paket_id' => $paket->id])
         ->assertCreated()
-        ->assertJsonPath('data.paket.id', $paket->id);
+        ->assertJsonPath('snap_token', 'SNAP-TOKEN-TEST')
+        ->assertJsonStructure(['snap_token', 'client_key', 'order_id', 'transaction_id']);
+
+    // Sebelum pembayaran settlement, membership belum aktif.
+    expect(app(MembershipService::class)->langgananAktif($user->id))->toBeNull();
+
+    // Setelah Midtrans melaporkan settlement, membership aktif 30 hari.
+    $trx = MembershipTransaction::where('user_id', $user->id)->firstOrFail();
+    $payment->sinkronStatusMembership($trx, 'settlement');
 
     $aktif = app(MembershipService::class)->langgananAktif($user->id);
     expect($aktif)->not->toBeNull()

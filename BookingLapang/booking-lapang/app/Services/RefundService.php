@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Booking;
 use App\Models\RefundLog;
 use App\Models\User;
+use App\Notifications\RefundDiminta;
+use App\Notifications\RefundDitolak;
 use App\Notifications\RefundGagal;
 use Exception;
 use Midtrans\Transaction;
@@ -18,13 +20,95 @@ class RefundService
         return $jamSebelumJadwal >= 24 ? 1.0 : 0.5;
     }
 
+    /**
+     * User mengajukan refund sendiri (dua langkah). Tidak memanggil Midtrans —
+     * hanya menandai booking menunggu keputusan admin. Admin yang nanti
+     * memproses (ajukanRefund) atau menolak (tolakPermintaanRefund).
+     */
+    public function mintaRefund(Booking $booking, string $alasan, int $userId): Booking
+    {
+        if ($booking->user_id !== $userId) {
+            throw new Exception('Booking ini bukan milik Anda.');
+        }
+
+        if ($booking->status_pembayaran !== 'paid') {
+            throw new Exception('Hanya booking yang sudah dibayar yang bisa diajukan refund.');
+        }
+
+        if ($booking->status_refund !== 'belum_refund') {
+            throw new Exception('Refund untuk booking ini sudah pernah diajukan.');
+        }
+
+        if (! in_array($booking->status, ['pending', 'confirmed'], true)) {
+            throw new Exception('Booking ini tidak bisa diajukan refund.');
+        }
+
+        // Hanya tolak kalau tanggalnya sudah lewat (booking hari ini masih boleh).
+        if ($booking->tanggal_booking->lt(now()->startOfDay())) {
+            throw new Exception('Booking yang jadwalnya sudah lewat tidak bisa diajukan refund.');
+        }
+
+        $sebelum = ['status_refund' => $booking->status_refund, 'status' => $booking->status];
+
+        $booking->update([
+            'status_refund' => 'diminta',
+            'alasan_pembatalan' => $alasan,
+        ]);
+
+        app(AuditService::class)->catat('refund.diminta', $booking, $sebelum, [
+            'status_refund' => 'diminta',
+            'alasan' => $alasan,
+        ]);
+
+        // Beri tahu seluruh admin bahwa ada pengajuan refund baru. Kegagalan
+        // kirim notifikasi tidak boleh membatalkan pengajuan user (DB sudah
+        // ter-update), jadi ditelan per-admin.
+        foreach (User::where('role', 'admin')->get() as $admin) {
+            try {
+                $admin->notify(new RefundDiminta($booking));
+            } catch (Exception $e) {
+                report($e);
+            }
+        }
+
+        return $booking->fresh();
+    }
+
+    /**
+     * Admin menolak pengajuan refund user (tanpa menyentuh Midtrans).
+     */
+    public function tolakPermintaanRefund(Booking $booking, ?string $catatan, int $adminId): Booking
+    {
+        if ($booking->status_refund !== 'diminta') {
+            throw new Exception('Hanya pengajuan refund yang menunggu bisa ditolak.');
+        }
+
+        $sebelum = ['status_refund' => $booking->status_refund];
+
+        $booking->update([
+            'status_refund' => 'ditolak',
+            'catatan_refund' => $catatan,
+        ]);
+
+        app(AuditService::class)->catat('refund.ditolak', $booking, $sebelum, [
+            'status_refund' => 'ditolak',
+            'catatan' => $catatan,
+        ]);
+
+        $booking->user?->notify(new RefundDitolak($booking));
+
+        return $booking->fresh();
+    }
+
     public function ajukanRefund(Booking $booking, string $alasan, int $adminId): Booking
     {
         if ($booking->status_pembayaran !== 'paid') {
             throw new Exception('Hanya booking yang sudah dibayar yang bisa direfund.');
         }
 
-        if ($booking->status_refund !== 'belum_refund') {
+        // Boleh memproses booking yang belum pernah diajukan (aksi admin
+        // langsung) maupun pengajuan user yang masih menunggu ('diminta').
+        if (! in_array($booking->status_refund, ['belum_refund', 'diminta'], true)) {
             throw new Exception('Refund untuk booking ini sudah pernah diajukan.');
         }
 

@@ -82,7 +82,7 @@ class AdminDashboardApiController extends Controller
             'antrian' => [
                 'lapangan_menunggu' => Lapangan::where('status_approval', 'pending')->count(),
                 'verifikasi_menunggu' => User::where('status_verifikasi', 'menunggu')->count(),
-                'refund_diproses' => Booking::where('status_refund', 'diproses')->count(),
+                'refund_diproses' => Booking::whereIn('status_refund', ['diminta', 'diproses'])->count(),
                 'ulasan_dilaporkan' => Ulasan::where('dilaporkan', true)->where('disembunyikan', false)->count(),
             ],
             'pengguna' => [

@@ -11,6 +11,13 @@ export function cancelBooking(id) {
   return apiFetch(`/booking/${id}/cancel`, { method: 'POST', auth: true })
 }
 
+// POST /api/booking/{id}/refund — user mengajukan refund sendiri.
+// Tidak langsung memproses Midtrans; hanya menandai booking "diminta" agar
+// ditinjau admin di panel.
+export function mintaRefundBooking(id, alasan) {
+  return apiFetch(`/booking/${id}/refund`, { method: 'POST', auth: true, body: { alasan } })
+}
+
 // POST /api/booking — butuh auth:sanctum. Backend yang mengecek bentrok jadwal
 // & jam operasional (BookingService::cekKetersediaan / dalamJamOperasional),
 // jadi frontend tidak perlu (dan tidak bisa) menampilkan grid slot real-time —

@@ -8,6 +8,7 @@ use App\Models\Booking;
 use App\Services\BookingService;
 use App\Services\InvoiceService;
 use App\Services\PaymentService;
+use App\Services\RefundService;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -70,6 +71,24 @@ class BookingApiController extends Controller
         $this->bookingService->batalkanBooking($booking);
 
         return new BookingResource($booking);
+    }
+
+    // POST /api/booking/{booking}/refund — user mengajukan refund sendiri.
+    // Tidak memproses Midtrans; hanya menandai 'diminta' supaya admin meninjau
+    // di panel. Admin yang nanti memproses/menolak.
+    public function mintaRefund(Request $request, Booking $booking, RefundService $refundService)
+    {
+        $booking->pastikanMilikUser($request->user()->id);
+
+        $validated = $request->validate(['alasan' => 'required|string|max:255']);
+
+        try {
+            $booking = $refundService->mintaRefund($booking, $validated['alasan'], $request->user()->id);
+
+            return new BookingResource($booking->load('lapangan'));
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 
     // POST /api/booking/{booking}/bayar — versi API dari BookingController::bayar()

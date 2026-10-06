@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useVenues } from '../context/VenueContext'
 import AuthModal from './AuthModal'
-import HostVenueModal from './HostVenueModal'
 import MyBookingsModal from './MyBookingsModal'
 import IconChat from './IconChat'
 import useChatUnread from '../lib/useChatUnread'
@@ -19,7 +18,6 @@ export default function Navbar() {
   const { filters, setFilters } = useVenues()
   const { user } = useAuth()
   const [showAuth, setShowAuth] = useState(false)
-  const [showHost, setShowHost] = useState(false)
   const [showBookings, setShowBookings] = useState(false)
   const belumDibaca = useChatUnread(!!user)
   const hash = useHash()
@@ -124,14 +122,7 @@ export default function Navbar() {
                 DASHBOARD PEMILIK
               </a>
             )
-          ) : (
-            <button
-              onClick={() => setShowHost(true)}
-              className="hidden sm:inline-flex items-center gap-1.5 bg-ink text-cream font-bold text-[13px] px-3.5 py-2 rounded-lg hover:bg-match-blue transition-colors"
-            >
-              HOST VENUE
-            </button>
-          )}
+          ) : null}
           {user && (
             <a
               href="#/chat"
@@ -167,7 +158,6 @@ export default function Navbar() {
       </div>
 
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
-      {showHost && <HostVenueModal onClose={() => setShowHost(false)} />}
       {showBookings && <MyBookingsModal onClose={() => setShowBookings(false)} />}
     </header>
   )
