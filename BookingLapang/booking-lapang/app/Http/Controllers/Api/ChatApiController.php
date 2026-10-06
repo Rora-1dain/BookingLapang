@@ -90,18 +90,34 @@ class ChatApiController extends Controller
     /** Bentuk ringkas percakapan dari sudut pandang $userId (lawan bicara = pihak satunya). */
     protected function ringkasan(Percakapan $p, int $userId): array
     {
-        $lawan = $p->user_id === $userId ? $p->pemilik : $p->user;
         $admin = $p->tipe === 'admin';
+
+        // Sisi "pemilik" percakapan adalah lawan bicara bagi pemesan. Untuk
+        // percakapan admin, kolom pemilik_id diisi id admin penerima.
+        $sayaSisiPemilik = $p->pemilik_id === $userId;
+        $lawan = $sayaSisiPemilik ? $p->user : $p->pemilik;
+
+        // Judul & peran lawan bergantung pada siapa yang melihat:
+        // - Pemesan melihat admin  → judul "Admin Booking Lapang", peran 'admin'.
+        // - Admin melihat pemesan  → judul nama pemesan, peran 'pemesan'.
+        //   (Jangan pakai label "Admin Booking Lapang" untuk sisi admin, karena
+        //    itu label dirinya sendiri, bukan lawan bicaranya.)
+        if ($admin) {
+            $judul = $sayaSisiPemilik ? ($p->user?->name ?? 'Pemesan') : 'Admin Booking Lapang';
+            $peranLawan = $sayaSisiPemilik ? 'pemesan' : 'admin';
+        } else {
+            $judul = $p->lapangan?->nama_lapangan;
+            $peranLawan = $sayaSisiPemilik ? 'pemesan' : 'pemilik';
+        }
 
         return [
             'id' => $p->id,
             'tipe' => $p->tipe,
             'lapangan_id' => $p->lapangan_id,
-            // Percakapan admin tidak punya lapangan — pakai label khusus sebagai judul.
-            'lapangan' => $admin ? 'Admin Booking Lapang' : $p->lapangan?->nama_lapangan,
+            'lapangan' => $judul,
             'jenis' => $p->lapangan?->jenis,
             'lawan_bicara' => $lawan?->name,
-            'peran_lawan' => $admin ? 'admin' : ($p->user_id === $userId ? 'pemilik' : 'pemesan'),
+            'peran_lawan' => $peranLawan,
             'pesan_terakhir' => $p->pesanTerakhir?->isi,
             'waktu' => ($p->pesanTerakhir?->created_at ?? $p->updated_at)?->toIso8601String(),
             'belum_dibaca' => $p->jumlahBelumDibaca($userId),
