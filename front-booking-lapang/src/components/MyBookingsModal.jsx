@@ -95,6 +95,9 @@ export default function MyBookingsModal({ onClose }) {
     }
   }
 
+  const namaUser = user?.name || user?.data?.name || user?.email?.split('@')[0] || 'Pengguna'
+  const roleUser = user?.role || user?.data?.role
+
   return (
     <div className="fixed inset-0 z-[100] bg-ink/60 flex justify-center px-4 py-8 overflow-y-auto overscroll-contain">
       <div className="my-auto bg-cream w-full max-w-lg rounded-lg border-2 border-ink shadow-tactile p-6 relative">
@@ -118,7 +121,15 @@ export default function MyBookingsModal({ onClose }) {
             Logout
           </button>
         </div>
-        <p className="text-[13px] text-muted mb-3">Masuk sebagai {user?.name}</p>
+        <p className="text-[13px] text-muted mb-3 flex items-center gap-1.5 flex-wrap">
+          <span>Masuk sebagai</span>
+          <strong className="text-ink font-bold">{namaUser}</strong>
+          {roleUser && (
+            <span className="text-[10px] font-bold uppercase bg-match-blue text-cream px-2 py-0.5 rounded">
+              {roleUser === 'pemilik_lapangan' ? 'Pemilik Lapangan' : roleUser === 'admin' ? 'Admin' : 'Penyewa'}
+            </span>
+          )}
+        </p>
 
         {/* Menu Navigasi Fitur User */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-cream-dim rounded-lg mb-4 border border-black/10">

@@ -1,19 +1,24 @@
 import { apiFetch } from './client'
 
-export function login(email, password) {
-  return apiFetch('/login', { method: 'POST', body: { email, password } })
+export async function login(email, password) {
+  const res = await apiFetch('/login', { method: 'POST', body: { email, password } })
+  const user = res?.user?.data ?? res?.user
+  return { ...res, user }
 }
 
 // role: 'user' (pemesan lapangan) | 'pemilik_lapangan'
-export function register({ name, email, password, password_confirmation, kode_referral, role }) {
-  return apiFetch('/register', {
+export async function register({ name, email, password, password_confirmation, kode_referral, role }) {
+  const res = await apiFetch('/register', {
     method: 'POST',
     body: { name, email, password, password_confirmation, kode_referral, role },
   })
+  const user = res?.user?.data ?? res?.user
+  return { ...res, user }
 }
 
-export function me() {
-  return apiFetch('/me', { auth: true })
+export async function me() {
+  const res = await apiFetch('/me', { auth: true })
+  return res?.data ?? res
 }
 
 export function logout() {

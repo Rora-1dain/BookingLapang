@@ -8,7 +8,10 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   // Hydrate langsung dari localStorage supaya saat hard refresh UI tidak
   // "kosong" sekejap dan tidak sempat dianggap logout.
-  const [user, setUser] = useState(() => getUser())
+  const [user, setUser] = useState(() => {
+    const saved = getUser()
+    return saved?.data ?? saved
+  })
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
@@ -22,7 +25,8 @@ export function AuthProvider({ children }) {
     }
     authApi
       .me()
-      .then((u) => {
+      .then((res) => {
+        const u = res?.data ?? res
         setUser(u)
         simpanUser(u)
       })
@@ -43,18 +47,20 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, password) => {
     const res = await authApi.login(email, password)
+    const u = res?.user?.data ?? res?.user
     setToken(res.token)
-    setUser(res.user)
-    simpanUser(res.user)
-    return res.user
+    setUser(u)
+    simpanUser(u)
+    return u
   }, [])
 
   const register = useCallback(async (payload) => {
     const res = await authApi.register(payload)
+    const u = res?.user?.data ?? res?.user
     setToken(res.token)
-    setUser(res.user)
-    simpanUser(res.user)
-    return res.user
+    setUser(u)
+    simpanUser(u)
+    return u
   }, [])
 
   const logout = useCallback(async () => {
