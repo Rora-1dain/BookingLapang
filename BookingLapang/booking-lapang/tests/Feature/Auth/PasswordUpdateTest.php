@@ -2,39 +2,37 @@
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\Sanctum;
 
-test('password can be updated', function () {
-    $user = User::factory()->create();
+test('password can be updated via api', function () {
+    $user = User::factory()->create([
+        'password' => bcrypt('password123'),
+    ]);
+    Sanctum::actingAs($user);
 
-    $response = $this
-        ->actingAs($user)
-        ->from('/profile')
-        ->put('/password', [
-            'current_password' => 'password',
-            'password' => 'new-password',
-            'password_confirmation' => 'new-password',
-        ]);
+    $response = $this->putJson('/api/me/password', [
+        'current_password' => 'password123',
+        'password' => 'new-password123',
+        'password_confirmation' => 'new-password123',
+    ]);
 
-    $response
-        ->assertSessionHasNoErrors()
-        ->assertRedirect('/profile');
+    $response->assertOk()
+        ->assertJson(['message' => 'Password berhasil diperbarui.']);
 
-    $this->assertTrue(Hash::check('new-password', $user->refresh()->password));
+    $this->assertTrue(Hash::check('new-password123', $user->refresh()->password));
 });
 
-test('correct password must be provided to update password', function () {
-    $user = User::factory()->create();
+test('correct password must be provided to update password via api', function () {
+    $user = User::factory()->create([
+        'password' => bcrypt('password123'),
+    ]);
+    Sanctum::actingAs($user);
 
-    $response = $this
-        ->actingAs($user)
-        ->from('/profile')
-        ->put('/password', [
-            'current_password' => 'wrong-password',
-            'password' => 'new-password',
-            'password_confirmation' => 'new-password',
-        ]);
+    $response = $this->putJson('/api/me/password', [
+        'current_password' => 'wrong-password',
+        'password' => 'new-password123',
+        'password_confirmation' => 'new-password123',
+    ]);
 
-    $response
-        ->assertSessionHasErrorsIn('updatePassword', 'current_password')
-        ->assertRedirect('/profile');
+    $response->assertStatus(422);
 });
