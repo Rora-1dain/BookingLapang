@@ -1,41 +1,41 @@
 <?php
 
 use App\Models\User;
+use Laravel\Sanctum\Sanctum;
 
-test('login screen can be rendered', function () {
-    $response = $this->get('/login');
-
-    $response->assertStatus(200);
-});
-
-test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
-
-    $response = $this->post('/login', [
-        'email' => $user->email,
-        'password' => 'password',
+test('users can authenticate via api', function () {
+    $user = User::factory()->create([
+        'password' => bcrypt('password123'),
     ]);
 
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response = $this->postJson('/api/login', [
+        'email' => $user->email,
+        'password' => 'password123',
+    ]);
+
+    $response->assertOk()
+        ->assertJsonStructure(['token', 'user' => ['id', 'email', 'name']]);
 });
 
-test('users can not authenticate with invalid password', function () {
-    $user = User::factory()->create();
+test('users can not authenticate with invalid password via api', function () {
+    $user = User::factory()->create([
+        'password' => bcrypt('password123'),
+    ]);
 
-    $this->post('/login', [
+    $response = $this->postJson('/api/login', [
         'email' => $user->email,
         'password' => 'wrong-password',
     ]);
 
-    $this->assertGuest();
+    $response->assertStatus(401);
 });
 
-test('users can logout', function () {
+test('users can logout via api', function () {
     $user = User::factory()->create();
+    Sanctum::actingAs($user);
 
-    $response = $this->actingAs($user)->post('/logout');
+    $response = $this->postJson('/api/logout');
 
-    $this->assertGuest();
-    $response->assertRedirect('/');
+    $response->assertOk()
+        ->assertJson(['message' => 'Berhasil logout.']);
 });

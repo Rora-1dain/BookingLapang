@@ -15,16 +15,21 @@ class BookingResource extends JsonResource
             'jam_mulai' => $this->jam_mulai,
             'jam_selesai' => $this->jam_selesai,
             'total_harga' => (float) $this->total_harga,
+            'total_diskon' => (float) $this->total_diskon,
             'status' => $this->status,
             'status_pembayaran' => $this->status_pembayaran,
             'status_refund' => $this->status_refund,
             'catatan_refund' => $this->catatan_refund,
             'bisa_dibatalkan' => $this->status === 'pending',
-            'bisa_dibayar' => $this->status_pembayaran !== 'paid',
+            'bisa_dibayar' => $this->status_pembayaran !== 'paid' && $this->status !== 'cancelled',
             'bisa_diminta_refund' => $this->status_pembayaran === 'paid'
                 && $this->status_refund === 'belum_refund'
                 && in_array($this->status, ['pending', 'confirmed'], true)
                 && $this->tanggal_booking >= now()->startOfDay(),
+            'ulasan' => $this->whenLoaded('ulasan'),
+            'bisa_diulas' => $this->status_pembayaran === 'paid'
+                && $this->status !== 'cancelled'
+                && ! $this->relationLoaded('ulasan') || ! $this->ulasan,
         ];
     }
 }

@@ -9,8 +9,10 @@ use App\Services\BookingService;
 use App\Services\InvoiceService;
 use App\Services\PaymentService;
 use App\Services\RefundService;
+use App\Services\VoucherService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class BookingApiController extends Controller
 {
@@ -18,7 +20,7 @@ class BookingApiController extends Controller
 
     public function index(Request $request)
     {
-        $query = Booking::with('lapangan')
+        $query = Booking::with(['lapangan', 'ulasan'])
             ->where('user_id', $request->user()->id)
             ->latest();
 
@@ -37,24 +39,25 @@ class BookingApiController extends Controller
             return response()->json(['message' => 'Tidak berhak melihat booking ini.'], 403);
         }
 
-        return new BookingResource($booking->load('lapangan'));
+        return new BookingResource($booking->load(['lapangan', 'ulasan']));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, VoucherService $voucherService)
     {
         $validated = $request->validate([
             'lapangan_id' => 'required|exists:lapangans,id',
             'tanggal_booking' => 'required|date|after_or_equal:today',
             'jam_mulai' => 'required|date_format:H:i',
             'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
+            'kode_voucher' => 'nullable|string',
         ]);
 
         $validated['user_id'] = $request->user()->id;
 
         try {
-            $booking = $this->bookingService->buatBooking($validated);
+            $booking = $this->bookingService->buatBooking($validated, $voucherService);
 
-            return (new BookingResource($booking->load('lapangan')))
+            return (new BookingResource($booking->load(['lapangan', 'ulasan'])))
                 ->response()
                 ->setStatusCode(201);
         } catch (Exception $e) {
@@ -70,12 +73,9 @@ class BookingApiController extends Controller
 
         $this->bookingService->batalkanBooking($booking);
 
-        return new BookingResource($booking);
+        return new BookingResource($booking->load('lapangan'));
     }
 
-    // POST /api/booking/{booking}/refund — user mengajukan refund sendiri.
-    // Tidak memproses Midtrans; hanya menandai 'diminta' supaya admin meninjau
-    // di panel. Admin yang nanti memproses/menolak.
     public function mintaRefund(Request $request, Booking $booking, RefundService $refundService)
     {
         $booking->pastikanMilikUser($request->user()->id);
@@ -91,9 +91,6 @@ class BookingApiController extends Controller
         }
     }
 
-    // POST /api/booking/{booking}/bayar — versi API dari BookingController::bayar()
-    // (web). Mengembalikan snap_token Midtrans + client_key supaya frontend bisa
-    // muat snap.js sendiri dan panggil snap.pay() tanpa perlu render Blade.
     public function bayar(Request $request, Booking $booking, PaymentService $paymentService)
     {
         $booking->pastikanMilikUser($request->user()->id);
@@ -111,10 +108,6 @@ class BookingApiController extends Controller
         ]);
     }
 
-    // POST /api/booking/{booking}/cek-status — versi API dari BookingController
-    // ::cekStatus() (web). Dipanggil dari React setelah popup Midtrans
-    // onSuccess/onPending, karena webhook /payment/notification butuh sedikit
-    // waktu sampai — ini pengecekan aktif langsung ke Midtrans sebagai fallback.
     public function cekStatus(Request $request, Booking $booking, PaymentService $paymentService)
     {
         $booking->pastikanMilikUser($request->user()->id);
@@ -128,9 +121,6 @@ class BookingApiController extends Controller
         return response()->json($hasil);
     }
 
-    // GET /api/booking/{booking}/invoice — versi API dari BookingController
-    // ::invoice() (web). Mengembalikan PDF mentah (bukan JSON) supaya di React
-    // tinggal di-fetch dengan header Authorization lalu diunduh sebagai blob.
     public function invoice(Request $request, Booking $booking, InvoiceService $invoiceService)
     {
         $isPemilik = $booking->user_id === $request->user()->id;
@@ -150,5 +140,42 @@ class BookingApiController extends Controller
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="invoice-'.$booking->payment_reference.'.pdf"',
         ]);
+    }
+
+    public function kirimUlangInvoice(Request $request, Booking $booking, InvoiceService $invoiceService)
+    {
+        $isPemilik = $booking->user_id === $request->user()->id;
+        $isAdmin = $request->user()->role === 'admin';
+
+        if (! $isPemilik && ! $isAdmin) {
+            return response()->json(['message' => 'Tidak berhak.'], 403);
+        }
+
+        $pdf = $invoiceService->buatPdf($booking);
+
+        Mail::to($booking->user->email)->send(
+            new \App\Mail\InvoiceMail($booking, $pdf->output())
+        );
+
+        return response()->json(['message' => 'Invoice telah dikirim ulang ke email Anda.']);
+    }
+
+    public function cekKetersediaan(Request $request)
+    {
+        $data = $request->validate([
+            'lapangan_id' => 'required|exists:lapangans,id',
+            'tanggal_booking' => 'required|date',
+            'jam_mulai' => 'required',
+            'jam_selesai' => 'required',
+        ]);
+
+        $tersedia = $this->bookingService->cekKetersediaan(
+            (int) $data['lapangan_id'],
+            $data['tanggal_booking'],
+            $data['jam_mulai'],
+            $data['jam_selesai']
+        );
+
+        return response()->json(['tersedia' => $tersedia]);
     }
 }

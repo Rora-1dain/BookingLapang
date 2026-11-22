@@ -60,7 +60,7 @@
   'nunomaduro/termwind' => 
   array (
     'providers' => 
-    array (
+    array 
       0 => 'Termwind\\Laravel\\TermwindServiceProvider',
     ),
   ),

@@ -66,23 +66,27 @@ test('skenario 7: seluruh Notification memakai ChannelSesuaiPreferensi', functio
     }
 });
 
-test('halaman pengaturan notifikasi tampil', function () {
-    $this->actingAs(User::factory()->create())
-        ->get(route('pengaturan.notifikasi'))
-        ->assertOk()
-        ->assertSee('Pengaturan Notifikasi');
+test('preferensi notifikasi bisa dibaca via api', function () {
+    $user = User::factory()->create();
+    \Laravel\Sanctum\Sanctum::actingAs($user);
+
+    $response = $this->getJson('/api/notifikasi/preferensi');
+
+    $response->assertOk()
+        ->assertJsonStructure(['data' => ['chat', 'booking']]);
 });
 
-test('simpan preferensi lewat form: yang tidak dicentang jadi false', function () {
+test('simpan preferensi lewat api', function () {
     $user = User::factory()->create();
+    \Laravel\Sanctum\Sanctum::actingAs($user);
 
-    $this->actingAs($user)
-        ->put(route('notifikasi.preferensi.update'), [
-            'preferensi' => [
-                'chat' => ['email' => '0', 'database' => '1'],
-            ],
-        ])
-        ->assertRedirect();
+    $response = $this->putJson('/api/notifikasi/preferensi', [
+        'preferensi' => [
+            'chat' => ['email' => false, 'database' => true],
+        ],
+    ]);
+
+    $response->assertOk();
 
     $this->assertDatabaseHas('notification_preferences', [
         'user_id' => $user->id,

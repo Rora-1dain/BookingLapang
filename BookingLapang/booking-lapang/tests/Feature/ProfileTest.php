@@ -1,85 +1,63 @@
 <?php
 
 use App\Models\User;
+use Laravel\Sanctum\Sanctum;
 
-test('profile page is displayed', function () {
+test('profile data can be retrieved via api', function () {
     $user = User::factory()->create();
+    Sanctum::actingAs($user);
 
-    $response = $this
-        ->actingAs($user)
-        ->get('/profile');
+    $response = $this->getJson('/api/me/profile');
 
-    $response->assertOk();
+    $response->assertOk()
+        ->assertJsonStructure(['user' => ['id', 'email', 'name'], 'tier', 'poin']);
 });
 
-test('profile information can be updated', function () {
+test('profile information can be updated via api', function () {
     $user = User::factory()->create();
+    Sanctum::actingAs($user);
 
-    $response = $this
-        ->actingAs($user)
-        ->patch('/profile', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+    $response = $this->putJson('/api/me/profile', [
+        'name' => 'Test User Updated',
+        'email' => 'updated@example.com',
+    ]);
 
-    $response
-        ->assertSessionHasNoErrors()
-        ->assertRedirect('/profile');
+    $response->assertOk()
+        ->assertJson(['message' => 'Profil berhasil diperbarui.']);
 
     $user->refresh();
 
-    $this->assertSame('Test User', $user->name);
-    $this->assertSame('test@example.com', $user->email);
-    $this->assertNull($user->email_verified_at);
+    $this->assertSame('Test User Updated', $user->name);
+    $this->assertSame('updated@example.com', $user->email);
 });
 
-test('email verification status is unchanged when the email address is unchanged', function () {
-    $user = User::factory()->create();
+test('user can delete their account via api', function () {
+    $user = User::factory()->create([
+        'password' => bcrypt('password123'),
+    ]);
+    Sanctum::actingAs($user);
 
-    $response = $this
-        ->actingAs($user)
-        ->patch('/profile', [
-            'name' => 'Test User',
-            'email' => $user->email,
-        ]);
+    $response = $this->deleteJson('/api/me', [
+        'password' => 'password123',
+    ]);
 
-    $response
-        ->assertSessionHasNoErrors()
-        ->assertRedirect('/profile');
+    $response->assertOk()
+        ->assertJson(['message' => 'Akun berhasil dihapus.']);
 
-    $this->assertNotNull($user->refresh()->email_verified_at);
+    $this->assertNull(User::find($user->id));
 });
 
-test('user can delete their account', function () {
-    $user = User::factory()->create();
+test('correct password must be provided to delete account via api', function () {
+    $user = User::factory()->create([
+        'password' => bcrypt('password123'),
+    ]);
+    Sanctum::actingAs($user);
 
-    $response = $this
-        ->actingAs($user)
-        ->delete('/profile', [
-            'password' => 'password',
-        ]);
+    $response = $this->deleteJson('/api/me', [
+        'password' => 'wrong-password',
+    ]);
 
-    $response
-        ->assertSessionHasNoErrors()
-        ->assertRedirect('/');
+    $response->assertStatus(422);
 
-    $this->assertGuest();
-    $this->assertNull($user->fresh());
-});
-
-test('correct password must be provided to delete account', function () {
-    $user = User::factory()->create();
-
-    $response = $this
-        ->actingAs($user)
-        ->from('/profile')
-        ->delete('/profile', [
-            'password' => 'wrong-password',
-        ]);
-
-    $response
-        ->assertSessionHasErrorsIn('userDeletion', 'password')
-        ->assertRedirect('/profile');
-
-    $this->assertNotNull($user->fresh());
+    $this->assertNotNull(User::find($user->id));
 });

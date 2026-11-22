@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\VerifikasiService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AdminVerifikasiApiController extends Controller
 {
@@ -14,6 +15,15 @@ class AdminVerifikasiApiController extends Controller
         $menunggu = User::where('status_verifikasi', 'menunggu')->latest()->get();
 
         return response()->json(['data' => $menunggu]);
+    }
+
+    public function lihatDokumen(User $pemilik)
+    {
+        if (! $pemilik->path_dokumen_identitas || ! Storage::disk('local')->exists($pemilik->path_dokumen_identitas)) {
+            return response()->json(['message' => 'Dokumen tidak ditemukan.'], 404);
+        }
+
+        return Storage::disk('local')->response($pemilik->path_dokumen_identitas);
     }
 
     public function tinjau(Request $request, User $pemilik, VerifikasiService $verifikasiService)
